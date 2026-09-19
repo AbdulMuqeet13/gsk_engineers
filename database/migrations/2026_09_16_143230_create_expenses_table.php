@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->string('reference')->unique();
+            $table->string('reference', 100)->unique();
             $table->date('date');
             $table->string('description', 500);
             $table->decimal('amount', 18, 2);
-            $table->string('status');
+            $table->string('status', 50);
             $table->foreignId('account_head_id')->constrained()->restrictOnDelete();
             $table->foreignId('payment_account_id')->constrained('account_heads')->restrictOnDelete();
             $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();

@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->string('reference')->unique();
+            $table->string('reference', 100)->unique();
             $table->string('description');
-            $table->string('type');
-            $table->string('status');
+            $table->string('type', 50);
+            $table->string('status', 50);
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->foreignId('reversed_by_id')->nullable()->constrained('journal_entries')->nullOnDelete();
             $table->foreignId('reversal_of_id')->nullable()->constrained('journal_entries')->nullOnDelete();

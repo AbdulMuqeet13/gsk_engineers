@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('payroll_runs', function (Blueprint $table) {
             $table->id();
-            $table->string('reference')->unique();
+            $table->string('reference', 100)->unique();
             $table->date('period_start');
             $table->date('period_end');
             $table->string('description', 500)->nullable();
             $table->decimal('total_amount', 18, 2)->default(0);
-            $table->string('status');
+            $table->string('status', 50);
             $table->foreignId('payment_account_id')->constrained('account_heads')->restrictOnDelete();
             $table->foreignId('journal_entry_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();

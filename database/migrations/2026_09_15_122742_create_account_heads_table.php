@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('account_heads', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
+            $table->string('code', 50)->unique();
             $table->string('name');
-            $table->string('type');
-            $table->string('normal_balance');
+            $table->string('type', 50);
+            $table->string('normal_balance', 50);
             $table->foreignId('parent_id')->nullable()->constrained('account_heads')->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

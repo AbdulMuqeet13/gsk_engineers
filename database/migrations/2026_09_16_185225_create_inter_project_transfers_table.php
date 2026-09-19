@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('inter_project_transfers', function (Blueprint $table) {
             $table->id();
-            $table->string('reference')->unique();
+            $table->string('reference', 100)->unique();
             $table->foreignId('from_project_id')->constrained('projects')->restrictOnDelete();
             $table->foreignId('to_project_id')->constrained('projects')->restrictOnDelete();
             $table->foreignId('from_account_id')->constrained('account_heads')->restrictOnDelete();

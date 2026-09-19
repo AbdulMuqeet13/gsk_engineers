@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->nullable()->unique();
+            $table->string('email', 191)->nullable()->unique();
             $table->string('phone')->nullable();
-            $table->string('type');
+            $table->string('type', 50);
             $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
             $table->string('designation');
             $table->string('department');

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->date('date');
-            $table->string('status');
+            $table->string('status', 50);
             $table->time('check_in')->nullable();
             $table->time('check_out')->nullable();
             $table->text('notes')->nullable();
