@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasAttachments;
 use App\Enums\ProjectStatus;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -33,7 +34,7 @@ use Spatie\Activitylog\Support\LogOptions;
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasAttachments, HasFactory, LogsActivity, SoftDeletes;
 
     /**
      * @return array<string, string>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountHeadController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BalanceSheetController;
 use App\Http\Controllers\DashboardController;
@@ -16,7 +17,9 @@ use App\Http\Controllers\PayrollReportController;
 use App\Http\Controllers\PayrollRunController;
 use App\Http\Controllers\ProfitAndLossController;
 use App\Http\Controllers\ProjectAssignmentController;
+use App\Http\Controllers\ProjectCashbookController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectLedgerController;
 use App\Http\Controllers\TrialBalanceController;
 use Illuminate\Support\Facades\Route;
 
@@ -137,6 +140,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('reports/payroll/export', [PayrollReportController::class, 'export'])
         ->name('reports.payroll.export');
+
+    Route::get('reports/project-cashbook', [ProjectCashbookController::class, 'index'])
+        ->name('reports.project-cashbook');
+
+    Route::get('reports/project-cashbook/export', [ProjectCashbookController::class, 'export'])
+        ->name('reports.project-cashbook.export');
+
+    Route::get('reports/project-ledger', [ProjectLedgerController::class, 'index'])
+        ->name('reports.project-ledger');
+
+    Route::get('reports/project-ledger/export', [ProjectLedgerController::class, 'export'])
+        ->name('reports.project-ledger.export');
+
+    Route::post('attachments', [AttachmentController::class, 'store'])
+        ->name('attachments.store');
+
+    Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])
+        ->name('attachments.download');
+
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])
+        ->name('attachments.destroy');
+
+    Route::get('payroll/{payroll_run}/payslips/{payslip}/download', [PayrollRunController::class, 'downloadPayslip'])
+        ->name('payroll.payslips.download');
 });
 
 require __DIR__.'/settings.php';

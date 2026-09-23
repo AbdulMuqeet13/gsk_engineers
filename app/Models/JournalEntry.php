@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasAttachments;
 use App\Enums\JournalEntryStatus;
 use App\Enums\JournalEntryType;
 use Database\Factories\JournalEntryFactory;
@@ -38,7 +39,7 @@ use Spatie\Activitylog\Support\LogOptions;
 class JournalEntry extends Model
 {
     /** @use HasFactory<JournalEntryFactory> */
-    use HasFactory, LogsActivity;
+    use HasAttachments, HasFactory, LogsActivity;
 
     /**
      * @return array<string, string>

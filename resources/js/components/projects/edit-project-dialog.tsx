@@ -20,6 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { update } from '@/actions/App/Http/Controllers/ProjectController';
+import { AttachmentList } from '@/components/attachments/attachment-list';
 import type { Project, ProjectStatus } from '@/types';
 
 type EditProjectDialogProps = {
@@ -40,8 +41,8 @@ export function EditProjectDialog({
         name: project.name,
         client: project.client ?? '',
         status: project.status,
-        start_date: project.start_date ?? '',
-        end_date: project.end_date ?? '',
+        start_date: project.start_date?.split('T')[0] ?? '',
+        end_date: project.end_date?.split('T')[0] ?? '',
         budget: project.budget ?? '',
     });
 
@@ -228,6 +229,14 @@ export function EditProjectDialog({
                             )}
                         </div>
                     </div>
+
+                    <AttachmentList
+                        attachments={project.attachments ?? []}
+                        attachableType="project"
+                        attachableId={project.id}
+                        canUpload
+                        canDelete
+                    />
 
                     <DialogFooter>
                         <Button

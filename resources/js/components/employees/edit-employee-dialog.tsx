@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { AttachmentList } from '@/components/attachments/attachment-list';
 import type { Employee, EmployeeType } from '@/types';
 
 type EditEmployeeDialogProps = {
@@ -45,7 +46,7 @@ export function EditEmployeeDialog({
         project_id: employee.project_id,
         designation: employee.designation,
         department: employee.department,
-        date_of_joining: employee.date_of_joining,
+        date_of_joining: employee.date_of_joining?.split('T')[0] ?? '',
         salary: employee.salary,
         cnic: employee.cnic,
         address: employee.address,
@@ -312,6 +313,14 @@ export function EditEmployeeDialog({
                         />
                         <Label htmlFor="edit-is-active">Active</Label>
                     </div>
+
+                    <AttachmentList
+                        attachments={employee.attachments ?? []}
+                        attachableType="employee"
+                        attachableId={employee.id}
+                        canUpload
+                        canDelete
+                    />
 
                     <DialogFooter>
                         <Button

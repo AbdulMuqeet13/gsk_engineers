@@ -26,6 +26,7 @@ export type Project = {
     start_date: string | null;
     end_date: string | null;
     budget: string | null;
+    attachments?: Attachment[];
     created_at: string;
     updated_at: string;
 };
@@ -45,6 +46,7 @@ export type Employee = {
     cnic: string;
     address: string;
     is_active: boolean;
+    attachments?: Attachment[];
     created_at: string;
     updated_at: string;
 };
@@ -79,6 +81,7 @@ export type JournalEntry = {
     lines_count?: number;
     reversed_by?: { id: number; reference: string } | null;
     reversal_of?: { id: number; reference: string } | null;
+    attachments?: Attachment[];
     created_at: string;
     updated_at: string;
 };
@@ -123,6 +126,7 @@ export type Expense = {
     journal_entry?: Pick<JournalEntry, 'id' | 'reference'> | null;
     creator?: { id: number; name: string };
     approver?: { id: number; name: string } | null;
+    attachments?: Attachment[];
     created_at: string;
     updated_at: string;
 };
@@ -283,4 +287,43 @@ export type ProjectBreakdown = {
     code: string;
     income: string;
     expenses: string;
+};
+
+export type Attachment = {
+    id: number;
+    file_name: string;
+    file_path: string;
+    file_size: number;
+    mime_type: string;
+    uploaded_by: number;
+    created_at: string;
+};
+
+export type CashbookRow = {
+    id: number;
+    date: string;
+    reference: string;
+    description: string;
+    account: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    money_in: string;
+    money_out: string;
+    balance: string;
+};
+
+export type CashbookSummary = {
+    openingBalance: string;
+    totalIn: string;
+    totalOut: string;
+    closingBalance: string;
+};
+
+export type ProjectLedgerRow = {
+    id: number;
+    date: string;
+    reference: string;
+    description: string;
+    account: Pick<AccountHead, 'id' | 'code' | 'name' | 'type'>;
+    debit: string;
+    credit: string;
+    balance: string | null;
 };

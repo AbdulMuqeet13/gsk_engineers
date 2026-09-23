@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { AttachmentList } from '@/components/attachments/attachment-list';
 import type { AccountHead, Expense, Project } from '@/types';
 import { update } from '@/actions/App/Http/Controllers/ExpenseController';
 
@@ -261,6 +262,14 @@ export function EditExpenseDialog({
                             </p>
                         )}
                     </div>
+
+                    <AttachmentList
+                        attachments={expense.attachments ?? []}
+                        attachableType="expense"
+                        attachableId={expense.id}
+                        canUpload
+                        canDelete
+                    />
 
                     <DialogFooter>
                         <Button

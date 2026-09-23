@@ -31,7 +31,7 @@ class JournalEntryController extends Controller
         $this->authorize('viewAny', JournalEntry::class);
 
         $journalEntries = JournalEntry::query()
-            ->with(['creator:id,name', 'lines.accountHead:id,code,name'])
+            ->with(['creator:id,name', 'lines.accountHead:id,code,name', 'attachments'])
             ->withCount('lines')
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {

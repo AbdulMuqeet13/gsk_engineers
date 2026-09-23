@@ -39,6 +39,7 @@ class ExpenseController extends Controller
                 'project:id,name,code',
                 'creator:id,name',
                 'approver:id,name',
+                'attachments',
             ])
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {

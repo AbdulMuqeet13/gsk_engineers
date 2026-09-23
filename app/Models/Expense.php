@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasAttachments;
 use App\Enums\ExpenseStatus;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -46,7 +47,7 @@ use Spatie\Activitylog\Support\LogOptions;
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */
-    use HasFactory, LogsActivity;
+    use HasAttachments, HasFactory, LogsActivity;
 
     /**
      * @return array<string, string>

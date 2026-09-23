@@ -22,6 +22,7 @@ import {
     JournalLineFormRows,
     type JournalLineFormData,
 } from '@/components/journal-entries/journal-line-form-rows';
+import { AttachmentList } from '@/components/attachments/attachment-list';
 import type {
     AccountHead,
     JournalEntry,
@@ -65,7 +66,7 @@ export function EditJournalEntryDialog({
     projects,
 }: EditJournalEntryDialogProps) {
     const { data, setData, put, processing, errors, reset } = useForm({
-        date: journalEntry.date,
+        date: journalEntry.date.split('T')[0],
         description: journalEntry.description,
         type: journalEntry.type as JournalEntryType,
         lines: mapLinesToFormData(journalEntry),
@@ -73,7 +74,7 @@ export function EditJournalEntryDialog({
 
     useEffect(() => {
         setData({
-            date: journalEntry.date,
+            date: journalEntry.date.split('T')[0],
             description: journalEntry.description,
             type: journalEntry.type,
             lines: mapLinesToFormData(journalEntry),
@@ -195,6 +196,16 @@ export function EditJournalEntryDialog({
                                 errors={errors}
                             />
                         </div>
+                    </div>
+
+                    <div className="px-6">
+                        <AttachmentList
+                            attachments={journalEntry.attachments ?? []}
+                            attachableType="journal_entry"
+                            attachableId={journalEntry.id}
+                            canUpload
+                            canDelete
+                        />
                     </div>
 
                     <DialogFooter className="shrink-0 border-t px-6 py-4">
