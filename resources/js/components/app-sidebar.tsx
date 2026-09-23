@@ -26,7 +26,9 @@ import ProjectAssignmentController from '@/actions/App/Http/Controllers/ProjectA
 import PayrollReportController from '@/actions/App/Http/Controllers/PayrollReportController';
 import PayrollRunController from '@/actions/App/Http/Controllers/PayrollRunController';
 import ProfitAndLossController from '@/actions/App/Http/Controllers/ProfitAndLossController';
+import ProjectCashbookController from '@/actions/App/Http/Controllers/ProjectCashbookController';
 import ProjectController from '@/actions/App/Http/Controllers/ProjectController';
+import ProjectLedgerController from '@/actions/App/Http/Controllers/ProjectLedgerController';
 import TrialBalanceController from '@/actions/App/Http/Controllers/TrialBalanceController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -158,6 +160,16 @@ const mainNavItems: NavItem[] = [
                 title: 'Income & Expense Summary',
                 href: IncomeExpenseSummaryController.index().url,
                 permission: 'reports.financial',
+            },
+            {
+                title: 'Project Cashbook',
+                href: ProjectCashbookController.index().url,
+                permission: 'reports.project',
+            },
+            {
+                title: 'Project Ledger',
+                href: ProjectLedgerController.index().url,
+                permission: 'reports.project',
             },
             {
                 title: 'Inter-Project Position',

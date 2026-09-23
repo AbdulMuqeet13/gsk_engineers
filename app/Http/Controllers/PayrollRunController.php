@@ -18,11 +18,13 @@ use App\Http\Requests\Payroll\UpdatePayslipRequest;
 use App\Models\AccountHead;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class PayrollRunController extends Controller
 {
@@ -160,5 +162,25 @@ class PayrollRunController extends Controller
         }
 
         return redirect()->route('payroll.show', $payrollRun);
+    }
+
+    public function downloadPayslip(PayrollRun $payrollRun, Payslip $payslip): HttpResponse
+    {
+        $this->authorize('view', $payrollRun);
+
+        abort_unless($payslip->payroll_run_id === $payrollRun->id, 404);
+
+        $payslip->load('employee');
+
+        $pdf = Pdf::loadView('payroll.payslip', [
+            'payrollRun' => $payrollRun,
+            'payslip' => $payslip,
+            'employee' => $payslip->employee,
+        ]);
+
+        $employeeName = str_replace(' ', '-', strtolower($payslip->employee->name));
+        $period = $payrollRun->period_start->format('Y-m');
+
+        return $pdf->download("payslip-{$employeeName}-{$period}.pdf");
     }
 }

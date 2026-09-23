@@ -63,8 +63,9 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                 onEdit: setEditingPayslip,
                 canRun,
                 isDraft,
+                payrollRunId: payrollRun.id,
             }),
-        [canRun, isDraft],
+        [canRun, isDraft, payrollRun.id],
     );
 
     return (

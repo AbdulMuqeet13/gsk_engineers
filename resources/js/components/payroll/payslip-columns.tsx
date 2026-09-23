@@ -1,12 +1,14 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil } from 'lucide-react';
+import { Download, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Payslip } from '@/types';
+import { downloadPayslip } from '@/actions/App/Http/Controllers/PayrollRunController';
 
 type PayslipColumnsOptions = {
     onEdit?: (payslip: Payslip) => void;
     canRun: boolean;
     isDraft: boolean;
+    payrollRunId: number;
 };
 
 function formatAmount(amount: string): string {
@@ -19,6 +21,7 @@ export function getPayslipColumns({
     onEdit,
     canRun,
     isDraft,
+    payrollRunId,
 }: PayslipColumnsOptions): ColumnDef<Payslip>[] {
     const columns: ColumnDef<Payslip>[] = [
         {
@@ -103,23 +106,41 @@ export function getPayslipColumns({
         },
     ];
 
-    if (isDraft && canRun) {
-        columns.push({
-            id: 'actions',
-            header: () => <span className="sr-only">Actions</span>,
-            cell: ({ row }) => (
+    columns.push({
+        id: 'actions',
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => (
+            <div className="flex items-center gap-1">
                 <Button
                     variant="ghost"
                     size="icon"
                     className="size-8"
-                    onClick={() => onEdit?.(row.original)}
+                    asChild
                 >
-                    <Pencil className="size-4" />
-                    <span className="sr-only">Edit payslip</span>
+                    <a
+                        href={downloadPayslip({
+                            payroll_run: payrollRunId,
+                            payslip: row.original.id,
+                        }).url}
+                    >
+                        <Download className="size-4" />
+                        <span className="sr-only">Download payslip</span>
+                    </a>
                 </Button>
-            ),
-        });
-    }
+                {isDraft && canRun && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => onEdit?.(row.original)}
+                    >
+                        <Pencil className="size-4" />
+                        <span className="sr-only">Edit payslip</span>
+                    </Button>
+                )}
+            </div>
+        ),
+    });
 
     return columns;
 }
