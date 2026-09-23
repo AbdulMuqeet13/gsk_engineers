@@ -11,6 +11,7 @@ use App\Http\Requests\Employees\StoreEmployeeRequest;
 use App\Http\Requests\Employees\UpdateEmployeeRequest;
 use App\Models\Employee;
 use App\Models\Project;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class EmployeeController extends Controller
         $this->authorize('viewAny', Employee::class);
 
         $employees = Employee::query()
-            ->with('project:id,name,code')
+            ->with(['project:id,name,code', 'attachments'])
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -74,9 +75,12 @@ class EmployeeController extends Controller
     {
         $this->authorize('delete', $employee);
 
-        $action->execute($employee);
-
-        $this->flashSuccess('Employee deleted successfully.');
+        try {
+            $action->execute($employee);
+            $this->flashSuccess('Employee deleted successfully.');
+        } catch (DomainException $e) {
+            $this->flashError($e->getMessage());
+        }
 
         return redirect()->route('employees.index');
     }

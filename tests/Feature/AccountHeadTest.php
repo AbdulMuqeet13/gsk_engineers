@@ -6,6 +6,7 @@ use App\Enums\AccountType;
 use App\Enums\NormalBalance;
 use App\Enums\RoleEnum;
 use App\Models\AccountHead;
+use App\Models\JournalEntry;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -170,5 +171,40 @@ class AccountHeadTest extends TestCase
             'code' => '1001',
             'parent_id' => $parent->id,
         ]);
+    }
+
+    public function test_destroy_fails_when_account_has_journal_lines(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $account = AccountHead::factory()->asset()->create();
+        $creditAccount = AccountHead::factory()->create(['type' => 'liability', 'normal_balance' => 'credit']);
+
+        JournalEntry::factory()
+            ->draft()
+            ->withBalancedLines($account, $creditAccount)
+            ->create();
+
+        $this->actingAs($user)
+            ->delete(route('account-heads.destroy', $account))
+            ->assertRedirect(route('account-heads.index'));
+
+        $this->assertDatabaseHas('account_heads', ['id' => $account->id, 'deleted_at' => null]);
+    }
+
+    public function test_destroy_fails_when_account_has_children(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $parent = AccountHead::factory()->asset()->create();
+        AccountHead::factory()->asset()->create(['parent_id' => $parent->id]);
+
+        $this->actingAs($user)
+            ->delete(route('account-heads.destroy', $parent))
+            ->assertRedirect(route('account-heads.index'));
+
+        $this->assertDatabaseHas('account_heads', ['id' => $parent->id, 'deleted_at' => null]);
     }
 }

@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\ProjectStatus;
 use App\Enums\RoleEnum;
+use App\Models\AccountHead;
+use App\Models\InterProjectTransfer;
+use App\Models\JournalEntry;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -132,6 +135,56 @@ class ProjectTest extends TestCase
     }
 
     public function test_destroy_soft_deletes_project(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $project = Project::factory()->create();
+
+        $this->actingAs($user)
+            ->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'));
+
+        $this->assertSoftDeleted('projects', ['id' => $project->id]);
+    }
+
+    public function test_destroy_fails_when_project_has_posted_entries(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $project = Project::factory()->create();
+        $debitAccount = AccountHead::factory()->asset()->create();
+        $creditAccount = AccountHead::factory()->create(['type' => 'liability', 'normal_balance' => 'credit']);
+
+        JournalEntry::factory()
+            ->posted()
+            ->withBalancedLines($debitAccount, $creditAccount, '5000.00', $project->id)
+            ->create();
+
+        $this->actingAs($user)
+            ->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'deleted_at' => null]);
+    }
+
+    public function test_destroy_fails_when_project_has_transfers(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $project = Project::factory()->create();
+        InterProjectTransfer::factory()->create(['from_project_id' => $project->id]);
+
+        $this->actingAs($user)
+            ->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'deleted_at' => null]);
+    }
+
+    public function test_destroy_succeeds_when_project_has_no_financial_records(): void
     {
         $user = User::factory()->create();
         $user->assignRole(RoleEnum::SuperAdmin);

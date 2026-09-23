@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasAttachments;
 use App\Enums\EmployeeType;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -35,12 +36,13 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $deleted_at
  * @property-read Project|null $project
  * @property-read Collection<int, ProjectAssignment> $assignments
+ * @property-read Collection<int, Payslip> $payslips
  */
 #[Fillable(['name', 'email', 'phone', 'type', 'project_id', 'designation', 'department', 'date_of_joining', 'salary', 'cnic', 'address', 'is_active'])]
 class Employee extends Model
 {
     /** @use HasFactory<EmployeeFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasAttachments, HasFactory, LogsActivity, SoftDeletes;
 
     /**
      * @return array<string, string>
@@ -69,6 +71,14 @@ class Employee extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(ProjectAssignment::class);
+    }
+
+    /**
+     * @return HasMany<Payslip, $this>
+     */
+    public function payslips(): HasMany
+    {
+        return $this->hasMany(Payslip::class);
     }
 
     /**

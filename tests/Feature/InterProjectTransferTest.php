@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ProjectStatus;
 use App\Enums\RoleEnum;
 use App\Models\AccountHead;
 use App\Models\InterProjectTransfer;
@@ -250,5 +251,22 @@ class InterProjectTransferTest extends TestCase
             ->post(route('transfers.reverse', $transfer));
 
         $response->assertRedirect(route('transfers.index'));
+    }
+
+    public function test_store_rejects_completed_project(): void
+    {
+        $completedProject = Project::factory()->create(['status' => ProjectStatus::Completed]);
+
+        $response = $this->actingAs($this->user)->post(route('transfers.store'), [
+            'from_project_id' => $completedProject->id,
+            'to_project_id' => $this->projectB->id,
+            'from_account_id' => $this->cashAccount->id,
+            'to_account_id' => $this->cashAccount->id,
+            'amount' => '50000.00',
+            'date' => '2026-09-16',
+            'purpose' => 'Should fail',
+        ]);
+
+        $response->assertSessionHasErrors('from_project_id');
     }
 }

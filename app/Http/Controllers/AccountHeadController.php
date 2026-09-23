@@ -11,6 +11,7 @@ use App\Enums\NormalBalance;
 use App\Http\Requests\AccountHeads\StoreAccountHeadRequest;
 use App\Http\Requests\AccountHeads\UpdateAccountHeadRequest;
 use App\Models\AccountHead;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -73,9 +74,12 @@ class AccountHeadController extends Controller
     {
         $this->authorize('delete', $accountHead);
 
-        $action->execute($accountHead);
-
-        $this->flashSuccess('Account head deleted successfully.');
+        try {
+            $action->execute($accountHead);
+            $this->flashSuccess('Account head deleted successfully.');
+        } catch (DomainException $e) {
+            $this->flashError($e->getMessage());
+        }
 
         return redirect()->route('account-heads.index');
     }

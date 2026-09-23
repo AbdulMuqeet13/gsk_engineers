@@ -18,8 +18,8 @@ class StoreTransferRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'from_project_id' => ['required', 'integer', Rule::exists('projects', 'id')],
-            'to_project_id' => ['required', 'integer', Rule::exists('projects', 'id'), 'different:from_project_id'],
+            'from_project_id' => ['required', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')->whereNotIn('status', ['completed', 'cancelled'])],
+            'to_project_id' => ['required', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')->whereNotIn('status', ['completed', 'cancelled']), 'different:from_project_id'],
             'from_account_id' => ['required', 'integer', Rule::exists('account_heads', 'id')->where('type', 'asset')->where('is_active', true)],
             'to_account_id' => ['required', 'integer', Rule::exists('account_heads', 'id')->where('is_active', true)],
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ProjectStatus;
 use App\Enums\RoleEnum;
 use App\Models\AccountHead;
 use App\Models\Expense;
@@ -376,5 +377,24 @@ class ExpenseTest extends TestCase
         $this->actingAs($user)
             ->post(route('expenses.reject', $expense), ['reason' => 'Invalid'])
             ->assertForbidden();
+    }
+
+    public function test_store_rejects_completed_project(): void
+    {
+        $project = Project::factory()->create(['status' => ProjectStatus::Completed]);
+
+        $data = [
+            'date' => '2026-01-15',
+            'description' => 'Should not work',
+            'amount' => '1000.00',
+            'account_head_id' => $this->expenseAccount->id,
+            'payment_account_id' => $this->cashAccount->id,
+            'project_id' => $project->id,
+            'notes' => null,
+        ];
+
+        $this->actingAs($this->user)
+            ->post(route('expenses.store'), $data)
+            ->assertSessionHasErrors('project_id');
     }
 }

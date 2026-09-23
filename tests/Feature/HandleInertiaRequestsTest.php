@@ -56,17 +56,11 @@ class HandleInertiaRequestsTest extends TestCase
         $this->assertContains(PermissionEnum::SettingsManage->value, $permissions);
     }
 
-    public function test_unauthenticated_request_shares_empty_auth(): void
+    public function test_unauthenticated_request_redirects_to_login(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
-
-        $page = $response->viewData('page');
-
-        $this->assertArrayHasKey('auth', $page['props']);
-        $this->assertEmpty($page['props']['auth']['roles']);
-        $this->assertEmpty($page['props']['auth']['permissions']);
+        $response->assertRedirect(route('login'));
     }
 
     public function test_flash_toast_is_shared_when_present(): void

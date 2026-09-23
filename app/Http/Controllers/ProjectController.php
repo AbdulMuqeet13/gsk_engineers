@@ -10,6 +10,7 @@ use App\Enums\ProjectStatus;
 use App\Http\Requests\Projects\StoreProjectRequest;
 use App\Http\Requests\Projects\UpdateProjectRequest;
 use App\Models\Project;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,6 +25,7 @@ class ProjectController extends Controller
         $this->authorize('viewAny', Project::class);
 
         $projects = Project::query()
+            ->with('attachments')
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -69,9 +71,12 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        $action->execute($project);
-
-        $this->flashSuccess('Project deleted successfully.');
+        try {
+            $action->execute($project);
+            $this->flashSuccess('Project deleted successfully.');
+        } catch (DomainException $e) {
+            $this->flashError($e->getMessage());
+        }
 
         return redirect()->route('projects.index');
     }

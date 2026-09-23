@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\EmployeeType;
 use App\Enums\RoleEnum;
 use App\Models\Employee;
+use App\Models\Payslip;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -194,6 +195,35 @@ class EmployeeTest extends TestCase
     }
 
     public function test_destroy_soft_deletes_employee(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $employee = Employee::factory()->create();
+
+        $this->actingAs($user)
+            ->delete(route('employees.destroy', $employee))
+            ->assertRedirect(route('employees.index'));
+
+        $this->assertSoftDeleted('employees', ['id' => $employee->id]);
+    }
+
+    public function test_destroy_fails_when_employee_has_payslips(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $employee = Employee::factory()->create();
+        Payslip::factory()->create(['employee_id' => $employee->id]);
+
+        $this->actingAs($user)
+            ->delete(route('employees.destroy', $employee))
+            ->assertRedirect(route('employees.index'));
+
+        $this->assertDatabaseHas('employees', ['id' => $employee->id, 'deleted_at' => null]);
+    }
+
+    public function test_destroy_succeeds_when_employee_has_no_payslips(): void
     {
         $user = User::factory()->create();
         $user->assignRole(RoleEnum::SuperAdmin);

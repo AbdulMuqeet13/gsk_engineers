@@ -334,4 +334,26 @@ class JournalEntryTest extends TestCase
             'reversal_of_id' => $entry->id,
         ]);
     }
+
+    public function test_store_rejects_inactive_account_head(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $inactiveAccount = AccountHead::factory()->asset()->create(['is_active' => false]);
+
+        $data = [
+            'date' => '2026-01-15',
+            'description' => 'Should fail',
+            'type' => JournalEntryType::Standard->value,
+            'lines' => [
+                ['account_head_id' => $inactiveAccount->id, 'project_id' => null, 'debit' => '1000.00', 'credit' => '0.00', 'memo' => null],
+                ['account_head_id' => $this->creditAccount->id, 'project_id' => null, 'debit' => '0.00', 'credit' => '1000.00', 'memo' => null],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->post(route('journal-entries.store'), $data)
+            ->assertSessionHasErrors('lines.0.account_head_id');
+    }
 }
