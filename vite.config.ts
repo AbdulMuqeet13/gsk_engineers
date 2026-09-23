@@ -26,8 +26,6 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
-            routes: false,
-            actions: false,
         }),
     ]),
     server: {
