@@ -86,8 +86,8 @@ class PayrollReportController extends Controller
             $reportRuns[] = [
                 'id' => $run->id,
                 'reference' => $run->reference,
-                'period_start' => $run->period_start->toDateString(),
-                'period_end' => $run->period_end->toDateString(),
+                'period_start' => $run->period_start->format('d-m-Y'),
+                'period_end' => $run->period_end->format('d-m-Y'),
                 'total_amount' => $run->total_amount,
                 'payslips_count' => $runEmployees,
                 'payslips' => $run->payslips->map(fn ($slip) => [

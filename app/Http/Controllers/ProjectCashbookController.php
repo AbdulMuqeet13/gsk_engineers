@@ -179,7 +179,7 @@ class ProjectCashbookController extends Controller
 
             $rows[] = [
                 'id' => $line->id,
-                'date' => $line->journalEntry->date,
+                'date' => $line->journalEntry->date->format('d-m-Y'),
                 'reference' => $line->journalEntry->reference,
                 'description' => $line->journalEntry->description,
                 'account' => [
