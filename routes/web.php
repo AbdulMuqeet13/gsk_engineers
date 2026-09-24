@@ -21,6 +21,7 @@ use App\Http\Controllers\ProjectCashbookController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectLedgerController;
 use App\Http\Controllers\TrialBalanceController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -164,6 +165,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('payroll/{payroll_run}/payslips/{payslip}/download', [PayrollRunController::class, 'downloadPayslip'])
         ->name('payroll.payslips.download');
+
+    Route::get('user-guide/download', function () {
+        $pdf = Pdf::loadView('user-guide')
+            ->setPaper('a4')
+            ->setOption('isPhpEnabled', true);
+
+        return $pdf->download('GSK-Engineers-ERP-User-Guide.pdf');
+    })->name('user-guide.download');
 });
 
 require __DIR__.'/settings.php';
