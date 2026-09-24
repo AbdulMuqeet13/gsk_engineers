@@ -1,0 +1,1 @@
+import{r as e}from"./wayfinder-BMBnsgWZ.js";import{n as t}from"./createLucideIcon-BDkn2Vo1.js";var n=e();function r({message:e,className:r=``,...i}){return e?(0,n.jsx)(`p`,{...i,className:t(`text-sm text-destructive`,r),children:e}):null}export{r as t};

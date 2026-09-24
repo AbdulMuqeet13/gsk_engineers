@@ -20,7 +20,7 @@
 | **Accounting** | `accounting.view`, `accounting.create`, `accounting.post`, `accounting.reverse` |
 | **Expenses** | `expenses.view`, `expenses.create`, `expenses.update`, `expenses.delete`, `expenses.approve` |
 | **Payroll** | `payroll.view`, `payroll.run`, `payroll.approve` |
-| **Reports** | `reports.view`, `reports.export` |
+| **Reports** | `reports.financial`, `reports.project`, `reports.payroll` |
 | **User Management** | `users.view`, `users.manage` |
 
 ## Implementation

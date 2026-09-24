@@ -104,11 +104,20 @@
 | `position-columns.tsx` | Inter-project position columns with net balance coloring |
 | `profit-and-loss-columns.tsx` | P&L columns: code, account name, amount |
 | `balance-sheet-columns.tsx` | Balance sheet columns: code, account name, balance |
+| `income-expense-summary-columns.tsx` | By-category and by-project column definitions |
+| `payroll-report-columns.tsx` | Payroll run columns with expandable payslip detail |
+| `project-cashbook-columns.tsx` | Cashbook columns: date, ref, account, money in/out, balance |
+| `project-ledger-columns.tsx` | Ledger columns: date, ref, account, type, debit, credit, balance |
 
 ### Trial Balance (`components/trial-balance/`)
 | File | Purpose |
 |------|---------|
 | `trial-balance-columns.tsx` | Column definitions with type badge, debit/credit/balance |
+
+### Attachments (`components/attachments/`)
+| File | Purpose |
+|------|---------|
+| `attachment-list.tsx` | File upload UI, attachment list with download/delete, supports all attachable types |
 
 ## shadcn/ui Primitives (`components/ui/`)
 

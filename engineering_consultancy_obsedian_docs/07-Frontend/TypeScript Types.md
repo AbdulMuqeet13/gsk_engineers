@@ -303,6 +303,54 @@ export type FinancialStatementRow = {
 
 Used by both Profit & Loss and Balance Sheet pages. Represents an account with its computed balance for a financial statement.
 
+### Attachment
+```typescript
+export type Attachment = {
+    id: number;
+    file_name: string;
+    file_path: string;
+    file_size: number;
+    mime_type: string;
+    uploaded_by: number;
+    created_at: string;
+};
+```
+
+### CashbookRow & CashbookSummary
+```typescript
+export type CashbookRow = {
+    id: number;
+    date: string;
+    reference: string;
+    description: string;
+    account: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    money_in: string;
+    money_out: string;
+    balance: string;
+};
+
+export type CashbookSummary = {
+    openingBalance: string;
+    totalIn: string;
+    totalOut: string;
+    closingBalance: string;
+};
+```
+
+### ProjectLedgerRow
+```typescript
+export type ProjectLedgerRow = {
+    id: number;
+    date: string;
+    reference: string;
+    description: string;
+    account: Pick<AccountHead, 'id' | 'code' | 'name' | 'type'>;
+    debit: string;
+    credit: string;
+    balance: string | null;
+};
+```
+
 ## Note on Decimal Fields
 
 Fields cast as `decimal:2` in PHP come as **strings** in JSON (e.g. `"50000.00"`), not numbers. TypeScript types reflect this with `string` type for `salary`, `budget`, `allocation_percent`, `debit`, `credit`, `amount`, `balance`.

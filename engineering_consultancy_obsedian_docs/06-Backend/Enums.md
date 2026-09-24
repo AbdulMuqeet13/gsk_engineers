@@ -67,8 +67,39 @@ All enums are string-backed with TitleCase keys and a `values()` static helper.
 | Approved | `approved` |
 | Rejected | `rejected` |
 
+### AttendanceStatus (`app/Enums/AttendanceStatus.php`)
+| Key | Value |
+|-----|-------|
+| Present | `present` |
+| Absent | `absent` |
+| HalfDay | `half_day` |
+| Leave | `leave` |
+
+### LeaveType (`app/Enums/LeaveType.php`)
+| Key | Value |
+|-----|-------|
+| Annual | `annual` |
+| Sick | `sick` |
+| Casual | `casual` |
+| Unpaid | `unpaid` |
+
+### LeaveStatus (`app/Enums/LeaveStatus.php`)
+| Key | Value |
+|-----|-------|
+| Pending | `pending` |
+| Approved | `approved` |
+| Rejected | `rejected` |
+
+### PayrollStatus (`app/Enums/PayrollStatus.php`)
+| Key | Value |
+|-----|-------|
+| Draft | `draft` |
+| Submitted | `submitted` |
+| Approved | `approved` |
+| Rejected | `rejected` |
+
 ### PermissionEnum (`app/Enums/PermissionEnum.php`)
-Categories: ChartOfAccounts, Projects, Employees, Attendance, Leave, Accounting, Expenses (including Approve), Payroll, Transfers, Reports, Settings, Users.
+Categories: ChartOfAccounts, Projects, Employees, Attendance, Leave, Accounting, Expenses (including Approve), Payroll, Transfers, Reports (`reports.financial`, `reports.project`, `reports.payroll`), Settings, Users.
 
 ## TypeScript Mirrors
 
@@ -82,4 +113,8 @@ type EmployeeType = 'internal' | 'project';
 type JournalEntryType = 'standard' | 'simple' | 'payroll' | 'transfer' | 'opening' | 'expense';
 type JournalEntryStatus = 'draft' | 'posted';
 type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'leave';
+type LeaveType = 'annual' | 'sick' | 'casual' | 'unpaid';
+type LeaveStatus = 'pending' | 'approved' | 'rejected';
+type PayrollStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 ```

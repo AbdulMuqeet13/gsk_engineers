@@ -167,6 +167,69 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 **Filters:** as_at_date, project_id
 **Permission:** `reports.financial`
 
+### Reports -- Income & Expense Summary
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| GET | `/reports/income-expense-summary` | `reports.income-expense-summary` | IncomeExpenseSummaryController@index |
+| GET | `/reports/income-expense-summary/export` | `reports.income-expense-summary.export` | IncomeExpenseSummaryController@export |
+
+**Index Props:** rows (by category: code/name/type/balance, by project: project/income/expenses/net), totals (totalIncome, totalExpenses, netProfit), projects (optional)
+**Filters:** date_from, date_to, project_id, group_by (category|project)
+**Permission:** `reports.financial`
+**Export:** PDF, Excel
+
+### Reports -- Payroll Report
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| GET | `/reports/payroll` | `reports.payroll` | PayrollReportController@index |
+| GET | `/reports/payroll/export` | `reports.payroll.export` | PayrollReportController@export |
+
+**Index Props:** runs (approved PayrollRun with payslips), summary (totalRuns, totalEmployees, totalDisbursed)
+**Filters:** date_from, date_to
+**Permission:** `reports.payroll`
+**Export:** PDF, Excel
+
+### Reports -- Project Cashbook
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| GET | `/reports/project-cashbook` | `reports.project-cashbook` | ProjectCashbookController@index |
+| GET | `/reports/project-cashbook/export` | `reports.project-cashbook.export` | ProjectCashbookController@export |
+
+**Index Props:** rows (CashbookRow[]), summary (CashbookSummary), cashAccounts, projects
+**Filters:** project_id (required), date_from, date_to, account_id
+**Permission:** `reports.project`
+**Export:** PDF, Excel
+
+### Reports -- Project Ledger
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| GET | `/reports/project-ledger` | `reports.project-ledger` | ProjectLedgerController@index |
+| GET | `/reports/project-ledger/export` | `reports.project-ledger.export` | ProjectLedgerController@export |
+
+**Index Props:** rows (ProjectLedgerRow[]), totals (totalDebit, totalCredit), accountHeads, projects
+**Filters:** project_id (required), date_from, date_to, account_head_id
+**Permission:** `reports.project`
+**Export:** PDF, Excel
+
+### Payslip Download
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| GET | `/payroll/{payroll_run}/payslips/{payslip}/download` | `payroll.payslips.download` | PayrollRunController@downloadPayslip |
+
+**Permission:** `payroll.view`
+**Output:** PDF salary slip
+
+### File Attachments
+| Method | URI | Name | Controller Method |
+|--------|-----|------|------------------|
+| POST | `/attachments` | `attachments.store` | AttachmentController@store |
+| GET | `/attachments/{attachment}/download` | `attachments.download` | AttachmentController@download |
+| DELETE | `/attachments/{attachment}` | `attachments.destroy` | AttachmentController@destroy |
+
+**Attachable types:** expense, employee, project, journal_entry
+**Allowed files:** PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX (max 10 MB)
+**Permission:** Per-type permission checks (e.g., `expenses.create` for expense attachments)
+
 ## Route Parameter Note
 
 The Chart of Accounts route uses `.parameter('chart-of-accounts', 'account_head')` to match the controller's `AccountHead $accountHead` type hint. Without this, Laravel generates `{chart_of_account}` which doesn't match.

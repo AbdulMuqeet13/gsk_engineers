@@ -207,3 +207,52 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 | projects | Project[] | Inertia::optional |
 
 **Features:** As-at date and project filters, asset/liability/equity sections with subtotals, balanced/unbalanced indicator
+
+### Income & Expense Summary
+**Path:** `pages/reports/income-expense-summary.tsx`
+**Route:** `/reports/income-expense-summary`
+
+| Prop | Type | Source |
+|------|------|--------|
+| rows | object[] | By category: {code, name, type, balance}; By project: {project_code, project_name, total_income, total_expenses, net} |
+| totals | object | { totalIncome, totalExpenses, netProfit } |
+| projects | Project[] | Inertia::optional |
+
+**Features:** Date range and project filters, group-by toggle (Category/Project), two table layouts, net profit coloring (green/red), PDF/Excel export
+
+### Payroll Report
+**Path:** `pages/reports/payroll-report.tsx`
+**Route:** `/reports/payroll`
+
+| Prop | Type | Source |
+|------|------|--------|
+| runs | PayrollRun[] | Approved runs with payslips and employee details |
+| summary | object | { totalRuns, totalEmployees, totalDisbursed } |
+
+**Features:** Period date filters, 3 summary cards, expandable rows with payslip detail tables, PDF/Excel export
+
+### Project Cashbook
+**Path:** `pages/reports/project-cashbook.tsx`
+**Route:** `/reports/project-cashbook`
+
+| Prop | Type | Source |
+|------|------|--------|
+| rows | CashbookRow[] | Cash transactions for selected project |
+| summary | CashbookSummary | { openingBalance, totalIn, totalOut, closingBalance } |
+| cashAccounts | AccountHead[] | Cash/bank accounts (codes 1001, 1002, 1003) |
+| projects | Project[] | For project selector |
+
+**Features:** Project selector (required), date range and account filters, 4 summary cards, running balance, PDF/Excel export
+
+### Project Ledger
+**Path:** `pages/reports/project-ledger.tsx`
+**Route:** `/reports/project-ledger`
+
+| Prop | Type | Source |
+|------|------|--------|
+| rows | ProjectLedgerRow[] | All posted transactions for selected project |
+| totals | object | { totalDebit, totalCredit } |
+| accountHeads | AccountHead[] | Active accounts for filter |
+| projects | Project[] | For project selector |
+
+**Features:** Project selector (required), date range and account filters, running balance (single account only), PDF/Excel export

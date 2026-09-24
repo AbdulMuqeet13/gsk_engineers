@@ -2,18 +2,24 @@
 
 See [[02-Architecture/Database Schema]] for detailed column definitions.
 
-## Current Tables (Phase 1-4)
+## Current Tables (Phases 1-8)
 
 | Table | Model | SoftDeletes | Key Relationships |
 |-------|-------|-------------|-------------------|
 | `users` | User | No | hasRoles, causesActivity |
-| `account_heads` | AccountHead | Yes | self-ref parent/children |
-| `projects` | Project | Yes | hasMany employees, assignments |
-| `employees` | Employee | Yes | belongsTo project, hasMany assignments |
+| `account_heads` | AccountHead | Yes | self-ref parent/children, hasMany journalLines |
+| `projects` | Project | Yes | hasMany employees, assignments, morphMany attachments |
+| `employees` | Employee | Yes | belongsTo project, hasMany assignments + payslips, morphMany attachments |
 | `project_assignments` | ProjectAssignment | No | belongsTo employee + project |
-| `journal_entries` | JournalEntry | No | hasMany lines, belongsTo creator, self-ref reversals |
+| `journal_entries` | JournalEntry | No | hasMany lines, belongsTo creator, self-ref reversals, morphMany attachments |
 | `journal_lines` | JournalLine | No | belongsTo journalEntry + accountHead + project |
-| `expenses` | Expense | No | belongsTo accountHead + paymentAccount + project + journalEntry + creator + approver |
+| `expenses` | Expense | No | belongsTo accountHead + paymentAccount + project + journalEntry + creator + approver, morphMany attachments |
+| `attendance` | Attendance | No | belongsTo employee + marker |
+| `leave_requests` | LeaveRequest | No | belongsTo employee + creator + approver |
+| `payroll_runs` | PayrollRun | No | hasMany payslips, belongsTo paymentAccount + journalEntry + creator + approver |
+| `payslips` | Payslip | No | belongsTo payrollRun + employee |
+| `inter_project_transfers` | InterProjectTransfer | No | belongsTo fromProject + toProject + fromAccount + toAccount + journalEntry + creator |
+| `attachments` | Attachment | No | morphTo attachable (expense, employee, project, journal_entry), belongsTo uploader |
 | `activity_log` | Activity (Spatie) | No | polymorphic subject + causer |
 | `roles` | Role (Spatie) | No | many-to-many permissions |
 | `permissions` | Permission (Spatie) | No | many-to-many roles |
@@ -23,13 +29,3 @@ See [[02-Architecture/Database Schema]] for detailed column definitions.
 | `sessions` | - | No | Laravel session driver |
 | `cache` | - | No | Laravel cache driver |
 | `jobs` | - | No | Laravel queue |
-
-## Planned Tables (Phase 5+)
-
-| Table | Phase | Purpose |
-|-------|-------|---------|
-| `attendance` | 5 | Daily attendance records |
-| `leave_requests` | 5 | Leave requests with approval flow |
-| `payroll_runs` | 5 | Payroll period batches |
-| `payslips` | 5 | Individual employee pay records |
-| `inter_project_transfers` | 6 | Fund movement between projects |

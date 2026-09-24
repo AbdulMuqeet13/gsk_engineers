@@ -54,6 +54,42 @@ These delegate to `JournalService` (constructor-injected).
 
 These delegate to `ExpenseService` (constructor-injected).
 
+### Attendance (`app/Actions/Attendance/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `CreateAttendanceAction` | `array $data, User $user` | `Attendance` |
+| `UpdateAttendanceAction` | `Attendance $attendance, array $data` | `Attendance` |
+| `DeleteAttendanceAction` | `Attendance $attendance` | `void` |
+
+### Leave (`app/Actions/Leave/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `CreateLeaveAction` | `array $data, User $user` | `LeaveRequest` |
+| `ApproveLeaveAction` | `LeaveRequest $leave, User $approver` | `void` |
+| `RejectLeaveAction` | `LeaveRequest $leave, User $rejector, string $reason` | `void` |
+| `DeleteLeaveAction` | `LeaveRequest $leave` | `void` |
+
+These delegate to `LeaveService`. Only pending leaves can be approved, rejected, or deleted.
+
+### Payroll (`app/Actions/Payroll/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `CreatePayrollRunAction` | `array $data, User $user` | `PayrollRun` |
+| `SubmitPayrollRunAction` | `PayrollRun $run` | `void` |
+| `ApprovePayrollRunAction` | `PayrollRun $run, User $approver` | `void` |
+| `RejectPayrollRunAction` | `PayrollRun $run, User $rejector, string $reason` | `void` |
+| `DeletePayrollRunAction` | `PayrollRun $run` | `void` |
+
+These delegate to `PayrollService`. Only drafts can be deleted.
+
+### Transfers (`app/Actions/Transfers/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `ExecuteTransferAction` | `array $data, User $user` | `InterProjectTransfer` |
+| `ReverseTransferAction` | `InterProjectTransfer $transfer` | `void` |
+
+These delegate to `TransferService`.
+
 ## Usage Pattern
 
 Actions are method-injected into controller methods:
@@ -71,6 +107,18 @@ public function store(StoreEmployeeRequest $request, CreateEmployee $action): Re
 
 Delete actions call `$model->delete()` which triggers:
 - SoftDeletes on models that use it (AccountHead, Project, Employee)
-- Hard delete on ProjectAssignment, Expense (no SoftDeletes)
+- Hard delete on ProjectAssignment, Expense, PayrollRun, LeaveRequest (no SoftDeletes)
 - `cascadeOnDelete` on project_assignments FKs, journal_lines FKs
-- Expense deletion only allowed for drafts (enforced by ExpenseService)
+
+### Delete Safety Checks (Phase 8)
+
+Actions perform dependency checks before deletion to prevent orphaned data:
+
+| Entity | Safety Check | Exception |
+|--------|-------------|-----------|
+| Employee | Cannot delete if payslips exist | `DomainException` |
+| Project | Cannot delete if has posted JEs, approved expenses, or transfers | `DomainException` |
+| Account Head | Cannot delete if has posted JEs or child accounts | `DomainException` |
+| Expense | Must be draft | `ExpenseNotDraftException` |
+| Payroll Run | Must be draft | `PayrollNotDraftException` |
+| Leave Request | Must be pending | `LeaveNotPendingException` |

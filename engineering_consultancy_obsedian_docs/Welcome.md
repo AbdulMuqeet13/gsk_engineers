@@ -21,9 +21,25 @@ Welcome to the knowledge base for the **Civil Engineering Consultancy ERP**. Thi
 - [[03-Conventions/Testing]] - Test structure and conventions
 - [[03-Conventions/Code Style]] - PHP and TypeScript formatting rules
 
+### User Guide
+- [[09-User-Guide/Getting Started]] - First-time setup, roles, navigation, key concepts
+- [[09-User-Guide/Projects]] - Project management and assignments
+- [[09-User-Guide/Employees and HR]] - Employees, attendance, leave requests
+- [[09-User-Guide/Accounting]] - Chart of accounts, journal entries, general ledger, trial balance
+- [[09-User-Guide/Expenses]] - Expense entry and approval workflow
+- [[09-User-Guide/Payroll]] - Payroll runs, payslips, PDF download
+- [[09-User-Guide/Transfers]] - Inter-project fund transfers
+- [[09-User-Guide/Reports]] - Financial statements, project reports, payroll report, exports
+
 ### Completed Phases
 - [[04-Phases/Phase 1 - Foundation]] - Auth, roles, permissions, layout, base components
 - [[04-Phases/Phase 2 - Master Data]] - Chart of Accounts, Projects, Employees, Assignments
+- [[04-Phases/Phase 3 - Accounting Core]] - JournalService, journal entries, general ledger, trial balance
+- [[04-Phases/Phase 4 - Expenses]] - Expense CRUD with approval workflow
+- [[04-Phases/Phase 5 - Payroll]] - Attendance, leave, payroll runs, payslips
+- [[04-Phases/Phase 6 - Inter-Project Transfers]] - TransferService, receivable/payable, position report
+- [[04-Phases/Phase 7 - Financial Statements]] - P&L, balance sheet
+- [[04-Phases/Phase 8 - Reports and Enhancements]] - Reports, attachments, payslip PDF, delete safety
 
 ### Database
 - [[05-Database/Tables Reference]] - Every table with columns and indexes
