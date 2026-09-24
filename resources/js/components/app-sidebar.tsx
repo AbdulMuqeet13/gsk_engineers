@@ -8,10 +8,12 @@ import {
     Receipt,
     Settings,
     Users,
+    Fingerprint,
     Wallet,
 } from 'lucide-react';
 import { useMemo } from 'react';
 import AccountHeadController from '@/actions/App/Http/Controllers/AccountHeadController';
+import BiometricDeviceController from '@/actions/App/Http/Controllers/BiometricDeviceController';
 import EmployeeController from '@/actions/App/Http/Controllers/EmployeeController';
 import AttendanceController from '@/actions/App/Http/Controllers/AttendanceController';
 import ExpenseController from '@/actions/App/Http/Controllers/ExpenseController';
@@ -139,6 +141,12 @@ const mainNavItems: NavItem[] = [
         href: PayrollRunController.index().url,
         icon: Wallet,
         permission: 'payroll.view',
+    },
+    {
+        title: 'Biometric Devices',
+        href: BiometricDeviceController.index().url,
+        icon: Fingerprint,
+        permission: 'biometric.manage',
     },
     {
         title: 'Reports',

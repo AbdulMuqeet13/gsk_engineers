@@ -58,6 +58,9 @@ enum PermissionEnum: string
     case ReportsProject = 'reports.project';
     case ReportsPayroll = 'reports.payroll';
 
+    // Biometric
+    case BiometricManage = 'biometric.manage';
+
     // Settings
     case SettingsManage = 'settings.manage';
 

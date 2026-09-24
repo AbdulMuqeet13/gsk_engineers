@@ -4,6 +4,8 @@ use App\Http\Controllers\AccountHeadController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BalanceSheetController;
+use App\Http\Controllers\BiometricDeviceController;
+use App\Http\Controllers\BiometricEnrollmentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExpenseController;
@@ -75,6 +77,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('attendance', AttendanceController::class)
         ->except(['create', 'edit', 'show']);
+
+    Route::resource('biometric-devices', BiometricDeviceController::class)
+        ->except(['show', 'create', 'edit']);
+
+    Route::post('employees/{employee}/enroll', [BiometricEnrollmentController::class, 'store'])
+        ->name('employees.enroll');
+
+    Route::delete('employee-fingerprints/{fingerprint}', [BiometricEnrollmentController::class, 'destroy'])
+        ->name('employee-fingerprints.destroy');
 
     Route::resource('leave', LeaveRequestController::class)
         ->except(['create', 'edit', 'show', 'update'])

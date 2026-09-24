@@ -136,6 +136,9 @@ class RolesAndPermissionsSeeder extends Seeder
             PermissionEnum::PayrollRun->value,
             PermissionEnum::PayrollApprove->value,
 
+            // Biometric
+            PermissionEnum::BiometricManage->value,
+
             // Reports (payroll)
             PermissionEnum::ReportsView->value,
             PermissionEnum::ReportsPayroll->value,

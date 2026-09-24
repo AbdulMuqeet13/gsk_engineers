@@ -44,6 +44,7 @@ export function CreateExpenseDialog({
         payment_account_id: '',
         project_id: '',
         notes: '',
+        cheque_number: '',
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -228,22 +229,45 @@ export function CreateExpenseDialog({
                         )}
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="create-notes">Notes (optional)</Label>
-                        <Textarea
-                            id="create-notes"
-                            value={data.notes}
-                            onChange={(e) =>
-                                setData('notes', e.target.value)
-                            }
-                            placeholder="Additional notes"
-                            rows={3}
-                        />
-                        {errors.notes && (
-                            <p className="text-destructive text-sm">
-                                {errors.notes}
-                            </p>
-                        )}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="create-notes">
+                                Notes (optional)
+                            </Label>
+                            <Textarea
+                                id="create-notes"
+                                value={data.notes}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
+                                placeholder="Additional notes"
+                                rows={3}
+                            />
+                            {errors.notes && (
+                                <p className="text-destructive text-sm">
+                                    {errors.notes}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="create-cheque">
+                                Cheque No. (optional)
+                            </Label>
+                            <Input
+                                id="create-cheque"
+                                value={data.cheque_number}
+                                onChange={(e) =>
+                                    setData('cheque_number', e.target.value)
+                                }
+                                placeholder="e.g. CHQ-001234"
+                            />
+                            {errors.cheque_number && (
+                                <p className="text-destructive text-sm">
+                                    {errors.cheque_number}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     <DialogFooter>

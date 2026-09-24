@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 export const download = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ download.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 download.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ download.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 download.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ download.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 download.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ download.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 const downloadForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const downloadForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 downloadForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ downloadForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:169
+* @see routes/web.php:180
 * @route '/user-guide/download'
 */
 downloadForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

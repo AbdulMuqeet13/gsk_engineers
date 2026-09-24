@@ -49,6 +49,7 @@ export function EditExpenseDialog({
         payment_account_id: String(expense.payment_account_id),
         project_id: expense.project_id?.toString() ?? '',
         notes: expense.notes ?? '',
+        cheque_number: expense.cheque_number ?? '',
     });
 
     useEffect(() => {
@@ -60,6 +61,7 @@ export function EditExpenseDialog({
             payment_account_id: String(expense.payment_account_id),
             project_id: expense.project_id?.toString() ?? '',
             notes: expense.notes ?? '',
+            cheque_number: expense.cheque_number ?? '',
         });
     }, [expense]);
 
@@ -246,22 +248,45 @@ export function EditExpenseDialog({
                         )}
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-notes">Notes (optional)</Label>
-                        <Textarea
-                            id="edit-notes"
-                            value={data.notes}
-                            onChange={(e) =>
-                                setData('notes', e.target.value)
-                            }
-                            placeholder="Additional notes"
-                            rows={3}
-                        />
-                        {errors.notes && (
-                            <p className="text-destructive text-sm">
-                                {errors.notes}
-                            </p>
-                        )}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-notes">
+                                Notes (optional)
+                            </Label>
+                            <Textarea
+                                id="edit-notes"
+                                value={data.notes}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
+                                placeholder="Additional notes"
+                                rows={3}
+                            />
+                            {errors.notes && (
+                                <p className="text-destructive text-sm">
+                                    {errors.notes}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-cheque">
+                                Cheque No. (optional)
+                            </Label>
+                            <Input
+                                id="edit-cheque"
+                                value={data.cheque_number}
+                                onChange={(e) =>
+                                    setData('cheque_number', e.target.value)
+                                }
+                                placeholder="e.g. CHQ-001234"
+                            />
+                            {errors.cheque_number && (
+                                <p className="text-destructive text-sm">
+                                    {errors.cheque_number}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     <AttachmentList

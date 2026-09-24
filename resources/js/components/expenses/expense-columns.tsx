@@ -124,6 +124,15 @@ export function getExpenseColumns({
             ),
         },
         {
+            accessorKey: 'cheque_number',
+            header: () => <span>Cheque No.</span>,
+            cell: ({ row }) => (
+                <span className="text-muted-foreground text-sm">
+                    {row.original.cheque_number ?? '--'}
+                </span>
+            ),
+        },
+        {
             accessorKey: 'status',
             header: () => <span>Status</span>,
             cell: ({ row }) => (

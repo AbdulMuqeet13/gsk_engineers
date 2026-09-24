@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AttendanceSource;
 use App\Enums\AttendanceStatus;
 use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,14 +22,15 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $check_in
  * @property string|null $check_out
  * @property string|null $notes
- * @property int $marked_by
+ * @property AttendanceSource $source
+ * @property int|null $marked_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Employee $employee
  * @property-read User $marker
  */
 #[Fillable([
-    'employee_id', 'date', 'status', 'check_in', 'check_out', 'notes', 'marked_by',
+    'employee_id', 'date', 'status', 'check_in', 'check_out', 'notes', 'source', 'marked_by',
 ])]
 class Attendance extends Model
 {
@@ -43,6 +45,7 @@ class Attendance extends Model
         return [
             'date' => 'date:d-m-Y',
             'status' => AttendanceStatus::class,
+            'source' => AttendanceSource::class,
         ];
     }
 

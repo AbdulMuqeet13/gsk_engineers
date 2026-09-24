@@ -30,6 +30,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $approved_at
  * @property string|null $rejection_reason
  * @property string|null $notes
+ * @property string|null $cheque_number
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read AccountHead $accountHead
@@ -42,7 +43,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable([
     'reference', 'date', 'description', 'amount', 'status',
     'account_head_id', 'payment_account_id', 'project_id', 'journal_entry_id',
-    'created_by', 'approved_by', 'approved_at', 'rejection_reason', 'notes',
+    'created_by', 'approved_by', 'approved_at', 'rejection_reason', 'notes', 'cheque_number',
 ])]
 class Expense extends Model
 {

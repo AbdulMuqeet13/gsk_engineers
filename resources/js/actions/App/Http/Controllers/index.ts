@@ -1,3 +1,4 @@
+import Api from './Api'
 import DashboardController from './DashboardController'
 import AccountHeadController from './AccountHeadController'
 import ProjectController from './ProjectController'
@@ -8,6 +9,8 @@ import GeneralLedgerController from './GeneralLedgerController'
 import TrialBalanceController from './TrialBalanceController'
 import ExpenseController from './ExpenseController'
 import AttendanceController from './AttendanceController'
+import BiometricDeviceController from './BiometricDeviceController'
+import BiometricEnrollmentController from './BiometricEnrollmentController'
 import LeaveRequestController from './LeaveRequestController'
 import PayrollRunController from './PayrollRunController'
 import InterProjectTransferController from './InterProjectTransferController'
@@ -22,6 +25,7 @@ import AttachmentController from './AttachmentController'
 import Settings from './Settings'
 
 const Controllers = {
+    Api: Object.assign(Api, Api),
     DashboardController: Object.assign(DashboardController, DashboardController),
     AccountHeadController: Object.assign(AccountHeadController, AccountHeadController),
     ProjectController: Object.assign(ProjectController, ProjectController),
@@ -32,6 +36,8 @@ const Controllers = {
     TrialBalanceController: Object.assign(TrialBalanceController, TrialBalanceController),
     ExpenseController: Object.assign(ExpenseController, ExpenseController),
     AttendanceController: Object.assign(AttendanceController, AttendanceController),
+    BiometricDeviceController: Object.assign(BiometricDeviceController, BiometricDeviceController),
+    BiometricEnrollmentController: Object.assign(BiometricEnrollmentController, BiometricEnrollmentController),
     LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),
     PayrollRunController: Object.assign(PayrollRunController, PayrollRunController),
     InterProjectTransferController: Object.assign(InterProjectTransferController, InterProjectTransferController),

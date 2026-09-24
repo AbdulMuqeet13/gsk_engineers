@@ -25,6 +25,7 @@ class StoreTransferRequest extends FormRequest
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
             'date' => ['required', 'date'],
             'purpose' => ['required', 'string', 'max:500'],
+            'cheque_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

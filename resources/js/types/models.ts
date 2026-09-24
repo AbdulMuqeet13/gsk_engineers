@@ -47,6 +47,7 @@ export type Employee = {
     address: string;
     is_active: boolean;
     attachments?: Attachment[];
+    fingerprints?: EmployeeFingerprint[];
     created_at: string;
     updated_at: string;
 };
@@ -120,6 +121,7 @@ export type Expense = {
     approved_at: string | null;
     rejection_reason: string | null;
     notes: string | null;
+    cheque_number: string | null;
     account_head?: Pick<AccountHead, 'id' | 'code' | 'name'>;
     payment_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
     project?: Pick<Project, 'id' | 'name' | 'code'> | null;
@@ -132,6 +134,7 @@ export type Expense = {
 };
 
 export type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'leave';
+export type AttendanceSource = 'manual' | 'biometric';
 
 export type Attendance = {
     id: number;
@@ -141,9 +144,10 @@ export type Attendance = {
     check_in: string | null;
     check_out: string | null;
     notes: string | null;
-    marked_by: number;
+    source: AttendanceSource;
+    marked_by: number | null;
     employee?: Pick<Employee, 'id' | 'name'>;
-    marker?: { id: number; name: string };
+    marker?: { id: number; name: string } | null;
     created_at: string;
     updated_at: string;
 };
@@ -222,6 +226,7 @@ export type InterProjectTransfer = {
     amount: string;
     date: string;
     purpose: string;
+    cheque_number: string | null;
     journal_entry_id: number | null;
     created_by: number;
     from_project?: Pick<Project, 'id' | 'name' | 'code'>;
@@ -326,4 +331,39 @@ export type ProjectLedgerRow = {
     debit: string;
     credit: string;
     balance: string | null;
+};
+
+export type BiometricDevice = {
+    id: number;
+    name: string;
+    serial_number: string;
+    model: string | null;
+    location: string | null;
+    last_heartbeat_at: string | null;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+};
+
+export type EmployeeFingerprint = {
+    id: number;
+    employee_id: number;
+    device_user_id: string;
+    enrolled_at: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type DeviceCommandStatus = 'pending' | 'sent' | 'acknowledged';
+
+export type DeviceCommand = {
+    id: number;
+    biometric_device_id: number;
+    sequence: number;
+    command: string;
+    status: DeviceCommandStatus;
+    sent_at: string | null;
+    acknowledged_at: string | null;
+    created_at: string;
+    updated_at: string;
 };

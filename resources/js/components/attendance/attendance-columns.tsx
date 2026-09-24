@@ -108,6 +108,17 @@ export function getAttendanceColumns({
             ),
         },
         {
+            accessorKey: 'source',
+            header: () => <span>Source</span>,
+            cell: ({ row }) => (
+                <Badge
+                    variant={row.original.source === 'biometric' ? 'info-soft' : 'secondary'}
+                >
+                    {row.original.source === 'biometric' ? 'Biometric' : 'Manual'}
+                </Badge>
+            ),
+        },
+        {
             id: 'marked_by',
             header: () => <span>Marked By</span>,
             cell: ({ row }) => (

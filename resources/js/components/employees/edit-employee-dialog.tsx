@@ -1,6 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
+import { Fingerprint, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import EmployeeController from '@/actions/App/Http/Controllers/EmployeeController';
+import BiometricEnrollmentController from '@/actions/App/Http/Controllers/BiometricEnrollmentController';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -21,6 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { AttachmentList } from '@/components/attachments/attachment-list';
+import { useCan } from '@/hooks/use-can';
 import { toInputDate } from '@/lib/utils';
 import type { Employee, EmployeeType } from '@/types';
 
@@ -39,6 +42,9 @@ export function EditEmployeeDialog({
     employeeTypes,
     projects,
 }: EditEmployeeDialogProps) {
+    const { can } = useCan();
+    const canManageBiometric = can('biometric.manage');
+
     const { data, setData, put, processing, errors, reset } = useForm({
         name: employee.name,
         email: employee.email ?? '',
@@ -322,6 +328,70 @@ export function EditEmployeeDialog({
                         canUpload
                         canDelete
                     />
+
+                    {canManageBiometric && (
+                        <div className="space-y-2">
+                            <Label>Biometric Enrollment</Label>
+                            {employee.fingerprints &&
+                            employee.fingerprints.length > 0 ? (
+                                <div className="space-y-1">
+                                    {employee.fingerprints.map((fp) => (
+                                        <div
+                                            key={fp.id}
+                                            className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                                        >
+                                            <span>
+                                                PIN: {fp.device_user_id}
+                                                {fp.enrolled_at && (
+                                                    <span className="text-muted-foreground ml-2">
+                                                        (enrolled{' '}
+                                                        {fp.enrolled_at})
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-7"
+                                                onClick={() =>
+                                                    router.delete(
+                                                        BiometricEnrollmentController.destroy(
+                                                            fp,
+                                                        ).url,
+                                                    )
+                                                }
+                                            >
+                                                <Trash2 className="text-destructive size-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">
+                                    Not enrolled on any biometric device.
+                                </p>
+                            )}
+                            {(!employee.fingerprints ||
+                                employee.fingerprints.length === 0) && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        router.post(
+                                            BiometricEnrollmentController.store(
+                                                employee,
+                                            ).url,
+                                        )
+                                    }
+                                >
+                                    <Fingerprint className="mr-2 size-4" />
+                                    Enroll on Biometric Devices
+                                </Button>
+                            )}
+                        </div>
+                    )}
 
                     <DialogFooter>
                         <Button

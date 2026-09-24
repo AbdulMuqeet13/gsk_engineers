@@ -37,6 +37,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Project|null $project
  * @property-read Collection<int, ProjectAssignment> $assignments
  * @property-read Collection<int, Payslip> $payslips
+ * @property-read Collection<int, EmployeeFingerprint> $fingerprints
  */
 #[Fillable(['name', 'email', 'phone', 'type', 'project_id', 'designation', 'department', 'date_of_joining', 'salary', 'cnic', 'address', 'is_active'])]
 class Employee extends Model
@@ -79,6 +80,14 @@ class Employee extends Model
     public function payslips(): HasMany
     {
         return $this->hasMany(Payslip::class);
+    }
+
+    /**
+     * @return HasMany<EmployeeFingerprint, $this>
+     */
+    public function fingerprints(): HasMany
+    {
+        return $this->hasMany(EmployeeFingerprint::class);
     }
 
     /**

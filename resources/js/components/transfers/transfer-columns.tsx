@@ -114,6 +114,15 @@ export function getTransferColumns({
             ),
         },
         {
+            accessorKey: 'cheque_number',
+            header: () => <span>Cheque No.</span>,
+            cell: ({ row }) => (
+                <span className="text-muted-foreground text-sm">
+                    {row.original.cheque_number ?? '--'}
+                </span>
+            ),
+        },
+        {
             id: 'status',
             header: () => <span>Status</span>,
             cell: ({ row }) => {

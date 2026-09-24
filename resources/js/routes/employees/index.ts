@@ -341,11 +341,92 @@ destroyForm.delete = (args: { employee: number | { id: number } } | [employee: n
 
 destroy.form = destroyForm
 
+/**
+* @see \App\Http\Controllers\BiometricEnrollmentController::enroll
+* @see app/Http/Controllers/BiometricEnrollmentController.php:16
+* @route '/employees/{employee}/enroll'
+*/
+export const enroll = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: enroll.url(args, options),
+    method: 'post',
+})
+
+enroll.definition = {
+    methods: ["post"],
+    url: '/employees/{employee}/enroll',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\BiometricEnrollmentController::enroll
+* @see app/Http/Controllers/BiometricEnrollmentController.php:16
+* @route '/employees/{employee}/enroll'
+*/
+enroll.url = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { employee: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { employee: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            employee: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        employee: typeof args.employee === 'object'
+        ? args.employee.id
+        : args.employee,
+    }
+
+    return enroll.definition.url
+            .replace('{employee}', parsedArgs.employee.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BiometricEnrollmentController::enroll
+* @see app/Http/Controllers/BiometricEnrollmentController.php:16
+* @route '/employees/{employee}/enroll'
+*/
+enroll.post = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: enroll.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BiometricEnrollmentController::enroll
+* @see app/Http/Controllers/BiometricEnrollmentController.php:16
+* @route '/employees/{employee}/enroll'
+*/
+const enrollForm = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: enroll.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BiometricEnrollmentController::enroll
+* @see app/Http/Controllers/BiometricEnrollmentController.php:16
+* @route '/employees/{employee}/enroll'
+*/
+enrollForm.post = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: enroll.url(args, options),
+    method: 'post',
+})
+
+enroll.form = enrollForm
+
 const employees = {
     index: Object.assign(index, index),
     store: Object.assign(store, store),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+    enroll: Object.assign(enroll, enroll),
 }
 
 export default employees

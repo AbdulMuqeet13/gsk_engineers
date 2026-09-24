@@ -26,6 +26,7 @@ class UpdateExpenseRequest extends FormRequest
             'payment_account_id' => ['required', 'integer', Rule::exists('account_heads', 'id')->where('type', 'asset')->where('is_active', true)],
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')->whereNotIn('status', ['completed', 'cancelled'])],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'cheque_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

@@ -26,7 +26,7 @@ class EmployeeController extends Controller
         $this->authorize('viewAny', Employee::class);
 
         $employees = Employee::query()
-            ->with(['project:id,name,code', 'attachments'])
+            ->with(['project:id,name,code', 'attachments', 'fingerprints'])
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

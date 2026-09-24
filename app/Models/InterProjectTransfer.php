@@ -21,6 +21,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $amount
  * @property Carbon $date
  * @property string $purpose
+ * @property string|null $cheque_number
  * @property int|null $journal_entry_id
  * @property int $created_by
  * @property Carbon|null $created_at
@@ -34,7 +35,7 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 #[Fillable([
     'reference', 'from_project_id', 'to_project_id', 'from_account_id', 'to_account_id',
-    'amount', 'date', 'purpose', 'journal_entry_id', 'created_by',
+    'amount', 'date', 'purpose', 'cheque_number', 'journal_entry_id', 'created_by',
 ])]
 class InterProjectTransfer extends Model
 {
