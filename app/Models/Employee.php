@@ -51,7 +51,7 @@ class Employee extends Model
     {
         return [
             'type' => EmployeeType::class,
-            'date_of_joining' => 'date',
+            'date_of_joining' => 'date:d-m-Y',
             'salary' => 'decimal:2',
             'is_active' => 'boolean',
         ];

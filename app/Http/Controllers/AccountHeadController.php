@@ -48,7 +48,7 @@ class AccountHeadController extends Controller
             'accountHeads' => $accountHeads,
             'accountTypes' => AccountType::values(),
             'normalBalances' => NormalBalance::values(),
-            'parentAccounts' => Inertia::optional(fn () => AccountHead::select('id', 'name', 'code')->orderBy('code')->get()),
+            'parentAccounts' => fn () => AccountHead::select('id', 'name', 'code')->orderBy('code')->get(),
         ]);
     }
 

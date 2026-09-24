@@ -53,11 +53,11 @@ class PayrollRun extends Model
     protected function casts(): array
     {
         return [
-            'period_start' => 'date',
-            'period_end' => 'date',
+            'period_start' => 'date:d-m-Y',
+            'period_end' => 'date:d-m-Y',
             'total_amount' => 'decimal:2',
             'status' => PayrollStatus::class,
-            'approved_at' => 'datetime',
+            'approved_at' => 'datetime:d-m-Y',
         ];
     }
 

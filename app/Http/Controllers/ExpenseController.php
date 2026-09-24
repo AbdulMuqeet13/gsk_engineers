@@ -62,20 +62,20 @@ class ExpenseController extends Controller
         return Inertia::render('expenses/index', [
             'expenses' => $expenses,
             'expenseStatuses' => ExpenseStatus::values(),
-            'expenseAccounts' => Inertia::optional(fn () => AccountHead::where('is_active', true)
+            'expenseAccounts' => fn () => AccountHead::where('is_active', true)
                 ->where('type', 'expense')
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
-                ->get()),
-            'paymentAccounts' => Inertia::optional(fn () => AccountHead::where('is_active', true)
+                ->get(),
+            'paymentAccounts' => fn () => AccountHead::where('is_active', true)
                 ->where('type', 'asset')
                 ->whereIn('code', ['1001', '1002'])
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
-                ->get()),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+                ->get(),
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

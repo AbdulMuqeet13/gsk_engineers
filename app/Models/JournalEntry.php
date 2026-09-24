@@ -47,7 +47,7 @@ class JournalEntry extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'date',
+            'date' => 'date:d-m-Y',
             'type' => JournalEntryType::class,
             'status' => JournalEntryStatus::class,
         ];

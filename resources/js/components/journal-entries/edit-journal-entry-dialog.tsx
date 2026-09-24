@@ -23,6 +23,7 @@ import {
     type JournalLineFormData,
 } from '@/components/journal-entries/journal-line-form-rows';
 import { AttachmentList } from '@/components/attachments/attachment-list';
+import { toInputDate } from '@/lib/utils';
 import type {
     AccountHead,
     JournalEntry,
@@ -66,7 +67,7 @@ export function EditJournalEntryDialog({
     projects,
 }: EditJournalEntryDialogProps) {
     const { data, setData, put, processing, errors, reset } = useForm({
-        date: journalEntry.date.split('T')[0],
+        date: toInputDate(journalEntry.date),
         description: journalEntry.description,
         type: journalEntry.type as JournalEntryType,
         lines: mapLinesToFormData(journalEntry),
@@ -74,7 +75,7 @@ export function EditJournalEntryDialog({
 
     useEffect(() => {
         setData({
-            date: journalEntry.date.split('T')[0],
+            date: toInputDate(journalEntry.date),
             description: journalEntry.description,
             type: journalEntry.type,
             lines: mapLinesToFormData(journalEntry),

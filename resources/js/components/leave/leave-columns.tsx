@@ -34,16 +34,6 @@ const leaveTypeBadgeVariants: Record<string, 'info-soft' | 'warning-soft' | 'def
     unpaid: 'secondary',
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 export function getLeaveColumns({
     sort,
     onSort,
@@ -87,8 +77,8 @@ export function getLeaveColumns({
             ),
             cell: ({ row }) => (
                 <span className="text-sm">
-                    {formatDate(row.original.start_date)} &ndash;{' '}
-                    {formatDate(row.original.end_date)}
+                    {row.original.start_date} &ndash;{' '}
+                    {row.original.end_date}
                 </span>
             ),
         },

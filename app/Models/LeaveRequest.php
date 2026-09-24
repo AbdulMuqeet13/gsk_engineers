@@ -48,11 +48,11 @@ class LeaveRequest extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'end_date' => 'date',
+            'start_date' => 'date:d-m-Y',
+            'end_date' => 'date:d-m-Y',
             'leave_type' => LeaveType::class,
             'status' => LeaveStatus::class,
-            'approved_at' => 'datetime',
+            'approved_at' => 'datetime:d-m-Y',
         ];
     }
 

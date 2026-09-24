@@ -18,16 +18,6 @@ type ApproveLeaveDialogProps = {
     leave: LeaveRequest;
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 export function ApproveLeaveDialog({
     open,
     onClose,
@@ -73,8 +63,8 @@ export function ApproveLeaveDialog({
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Period</span>
                         <span className="font-medium">
-                            {formatDate(leave.start_date)} &ndash;{' '}
-                            {formatDate(leave.end_date)}
+                            {leave.start_date} &ndash;{' '}
+                            {leave.end_date}
                         </span>
                     </div>
                     <div className="flex justify-between">

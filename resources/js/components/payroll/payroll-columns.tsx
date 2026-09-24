@@ -31,16 +31,6 @@ const statusBadgeVariants: Record<string, 'secondary' | 'info-soft' | 'success-s
     rejected: 'destructive-soft',
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 function formatAmount(amount: string): string {
     return parseFloat(amount).toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -89,8 +79,8 @@ export function getPayrollColumns({
             ),
             cell: ({ row }) => (
                 <span className="text-sm">
-                    {formatDate(row.original.period_start)} &ndash;{' '}
-                    {formatDate(row.original.period_end)}
+                    {row.original.period_start} &ndash;{' '}
+                    {row.original.period_end}
                 </span>
             ),
         },

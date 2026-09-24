@@ -39,9 +39,9 @@ class ProjectLedgerController extends Controller
                 ->where('is_active', true)
                 ->orderBy('code')
                 ->get(),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

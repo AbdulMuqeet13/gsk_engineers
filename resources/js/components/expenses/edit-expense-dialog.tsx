@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { AttachmentList } from '@/components/attachments/attachment-list';
+import { toInputDate } from '@/lib/utils';
 import type { AccountHead, Expense, Project } from '@/types';
 import { update } from '@/actions/App/Http/Controllers/ExpenseController';
 
@@ -41,7 +42,7 @@ export function EditExpenseDialog({
     projects,
 }: EditExpenseDialogProps) {
     const { data, setData, put, processing, errors, reset } = useForm({
-        date: expense.date.split('T')[0],
+        date: toInputDate(expense.date),
         description: expense.description,
         amount: expense.amount,
         account_head_id: String(expense.account_head_id),
@@ -52,7 +53,7 @@ export function EditExpenseDialog({
 
     useEffect(() => {
         setData({
-            date: expense.date.split('T')[0],
+            date: toInputDate(expense.date),
             description: expense.description,
             amount: expense.amount,
             account_head_id: String(expense.account_head_id),

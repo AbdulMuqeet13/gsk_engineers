@@ -41,8 +41,8 @@ class ProjectAssignmentController extends Controller
 
         return Inertia::render('projects/assignments/index', [
             'assignments' => $assignments,
-            'employees' => Inertia::optional(fn () => Employee::internal()->select('id', 'name')->orderBy('name')->get()),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')->orderBy('name')->get()),
+            'employees' => fn () => Employee::internal()->select('id', 'name')->orderBy('name')->get(),
+            'projects' => fn () => Project::select('id', 'name', 'code')->orderBy('name')->get(),
         ]);
     }
 

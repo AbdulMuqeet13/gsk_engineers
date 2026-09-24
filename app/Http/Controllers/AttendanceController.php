@@ -48,13 +48,13 @@ class AttendanceController extends Controller
         return Inertia::render('employees/attendance/index', [
             'attendances' => $attendances,
             'attendanceStatuses' => AttendanceStatus::values(),
-            'employees' => Inertia::optional(fn () => Employee::where('is_active', true)
+            'employees' => fn () => Employee::where('is_active', true)
                 ->select('id', 'name')
                 ->orderBy('name')
-                ->get()),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+                ->get(),
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

@@ -28,9 +28,9 @@ class IncomeExpenseSummaryController extends Controller
 
         return Inertia::render('reports/income-expense-summary', array_merge($data, [
             'groupBy' => $groupBy,
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]));
     }
 

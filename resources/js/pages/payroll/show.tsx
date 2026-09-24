@@ -27,16 +27,6 @@ const statusBadgeVariants: Record<string, 'secondary' | 'info-soft' | 'success-s
     rejected: 'destructive-soft',
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 function formatAmount(amount: string): string {
     return parseFloat(amount).toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -125,8 +115,8 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                     <div className="space-y-1">
                         <p className="text-muted-foreground text-sm">Period</p>
                         <p className="text-sm font-medium">
-                            {formatDate(payrollRun.period_start)} &ndash;{' '}
-                            {formatDate(payrollRun.period_end)}
+                            {payrollRun.period_start} &ndash;{' '}
+                            {payrollRun.period_end}
                         </p>
                     </div>
                     <div className="space-y-1">
@@ -164,7 +154,7 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                                 {payrollRun.approver.name}
                                 {payrollRun.approved_at && (
                                     <span className="text-muted-foreground ml-1 text-xs">
-                                        on {formatDate(payrollRun.approved_at)}
+                                        on {payrollRun.approved_at}
                                     </span>
                                 )}
                             </p>

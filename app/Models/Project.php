@@ -43,8 +43,8 @@ class Project extends Model
     {
         return [
             'status' => ProjectStatus::class,
-            'start_date' => 'date',
-            'end_date' => 'date',
+            'start_date' => 'date:d-m-Y',
+            'end_date' => 'date:d-m-Y',
             'budget' => 'decimal:2',
         ];
     }

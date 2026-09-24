@@ -52,14 +52,14 @@ class InterProjectTransferController extends Controller
 
         return Inertia::render('transfers/index', [
             'transfers' => $transfers,
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
-            'assetAccounts' => Inertia::optional(fn () => AccountHead::where('is_active', true)
+                ->get(),
+            'assetAccounts' => fn () => AccountHead::where('is_active', true)
                 ->where('type', 'asset')
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
-                ->get()),
+                ->get(),
         ]);
     }
 

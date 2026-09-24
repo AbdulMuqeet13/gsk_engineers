@@ -39,7 +39,7 @@ export function DeleteAttendanceDialog({
                         Are you sure you want to delete the attendance record
                         for{' '}
                         <strong>{attendance.employee?.name}</strong> on{' '}
-                        <strong>{attendance.date.split('T')[0]}</strong>? This
+                        <strong>{attendance.date}</strong>? This
                         action cannot be undone.
                     </DialogDescription>
                 </DialogHeader>

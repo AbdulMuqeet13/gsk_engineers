@@ -18,16 +18,6 @@ type ApprovePayrollDialogProps = {
     payrollRun: PayrollRun;
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 function formatAmount(amount: string): string {
     return parseFloat(amount).toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -70,8 +60,8 @@ export function ApprovePayrollDialog({
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Period</span>
                         <span className="font-medium">
-                            {formatDate(payrollRun.period_start)} &ndash;{' '}
-                            {formatDate(payrollRun.period_end)}
+                            {payrollRun.period_start} &ndash;{' '}
+                            {payrollRun.period_end}
                         </span>
                     </div>
                     <div className="flex justify-between">

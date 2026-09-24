@@ -21,9 +21,9 @@ class BalanceSheetController extends Controller
         $data = $this->getReportData($request);
 
         return Inertia::render('reports/balance-sheet', array_merge($data, [
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]));
     }
 

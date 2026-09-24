@@ -51,9 +51,9 @@ class ProjectCashbookController extends Controller
             'rows' => $rows,
             'summary' => $summary,
             'cashAccounts' => $cashAccounts,
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

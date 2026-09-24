@@ -10,3 +10,13 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }
+
+/**
+ * Convert a dd-mm-yyyy date string to yyyy-mm-dd for HTML date inputs.
+ */
+export function toInputDate(value: string | null | undefined): string {
+    if (!value) return '';
+    const parts = value.split('-');
+    if (parts.length !== 3) return value;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}

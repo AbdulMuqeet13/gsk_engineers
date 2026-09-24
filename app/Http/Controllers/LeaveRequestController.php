@@ -54,10 +54,10 @@ class LeaveRequestController extends Controller
             'leaveRequests' => $leaveRequests,
             'leaveStatuses' => LeaveStatus::values(),
             'leaveTypes' => LeaveType::values(),
-            'employees' => Inertia::optional(fn () => Employee::where('is_active', true)
+            'employees' => fn () => Employee::where('is_active', true)
                 ->select('id', 'name')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

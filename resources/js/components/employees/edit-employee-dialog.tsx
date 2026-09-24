@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { AttachmentList } from '@/components/attachments/attachment-list';
+import { toInputDate } from '@/lib/utils';
 import type { Employee, EmployeeType } from '@/types';
 
 type EditEmployeeDialogProps = {
@@ -46,7 +47,7 @@ export function EditEmployeeDialog({
         project_id: employee.project_id,
         designation: employee.designation,
         department: employee.department,
-        date_of_joining: employee.date_of_joining?.split('T')[0] ?? '',
+        date_of_joining: toInputDate(employee.date_of_joining),
         salary: employee.salary,
         cnic: employee.cnic,
         address: employee.address,

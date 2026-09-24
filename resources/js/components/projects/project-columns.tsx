@@ -34,14 +34,6 @@ function formatBudget(value: string | null): string {
     }).format(Number(value));
 }
 
-function formatDate(value: string | null): string {
-    if (!value) {
-        return '-';
-    }
-
-    return new Date(value).toLocaleDateString();
-}
-
 export function getProjectColumns({
     sort,
     onSort,
@@ -103,12 +95,12 @@ export function getProjectColumns({
         {
             accessorKey: 'start_date',
             header: () => <span>Start Date</span>,
-            cell: ({ row }) => formatDate(row.original.start_date),
+            cell: ({ row }) => row.original.start_date ?? '--',
         },
         {
             accessorKey: 'end_date',
             header: () => <span>End Date</span>,
-            cell: ({ row }) => formatDate(row.original.end_date),
+            cell: ({ row }) => row.original.end_date ?? '--',
         },
         {
             id: 'actions',

@@ -54,13 +54,13 @@ class JournalEntryController extends Controller
             'journalEntries' => $journalEntries,
             'entryTypes' => JournalEntryType::values(),
             'entryStatuses' => JournalEntryStatus::values(),
-            'accountHeads' => Inertia::optional(fn () => AccountHead::where('is_active', true)
+            'accountHeads' => fn () => AccountHead::where('is_active', true)
                 ->select('id', 'code', 'name', 'type', 'normal_balance')
                 ->orderBy('code')
-                ->get()),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')
+                ->get(),
+            'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
         ]);
     }
 

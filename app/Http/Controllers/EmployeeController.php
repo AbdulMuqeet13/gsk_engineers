@@ -49,7 +49,7 @@ class EmployeeController extends Controller
         return Inertia::render('employees/index', [
             'employees' => $employees,
             'employeeTypes' => EmployeeType::values(),
-            'projects' => Inertia::optional(fn () => Project::select('id', 'name', 'code')->orderBy('name')->get()),
+            'projects' => fn () => Project::select('id', 'name', 'code')->orderBy('name')->get(),
         ]);
     }
 

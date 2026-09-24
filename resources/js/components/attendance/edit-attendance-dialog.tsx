@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { toInputDate } from '@/lib/utils';
 import type { Attendance, Employee } from '@/types';
 import { update } from '@/actions/App/Http/Controllers/AttendanceController';
 
@@ -39,7 +40,7 @@ export function EditAttendanceDialog({
 }: EditAttendanceDialogProps) {
     const { data, setData, put, processing, errors, reset } = useForm({
         employee_id: String(attendance.employee_id),
-        date: attendance.date.split('T')[0],
+        date: toInputDate(attendance.date),
         status: attendance.status,
         check_in: attendance.check_in ?? '',
         check_out: attendance.check_out ?? '',
@@ -49,7 +50,7 @@ export function EditAttendanceDialog({
     useEffect(() => {
         setData({
             employee_id: String(attendance.employee_id),
-            date: attendance.date.split('T')[0],
+            date: toInputDate(attendance.date),
             status: attendance.status,
             check_in: attendance.check_in ?? '',
             check_out: attendance.check_out ?? '',

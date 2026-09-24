@@ -33,16 +33,6 @@ const statusLabels: Record<string, string> = {
     leave: 'Leave',
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 export function getAttendanceColumns({
     sort,
     onSort,
@@ -63,7 +53,7 @@ export function getAttendanceColumns({
             ),
             cell: ({ row }) => (
                 <span className="text-sm">
-                    {formatDate(row.original.date)}
+                    {row.original.date}
                 </span>
             ),
         },

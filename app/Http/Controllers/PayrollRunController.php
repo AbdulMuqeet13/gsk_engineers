@@ -60,11 +60,11 @@ class PayrollRunController extends Controller
         return Inertia::render('payroll/index', [
             'payrollRuns' => $payrollRuns,
             'payrollStatuses' => PayrollStatus::values(),
-            'paymentAccounts' => Inertia::optional(fn () => AccountHead::where('is_active', true)
+            'paymentAccounts' => fn () => AccountHead::where('is_active', true)
                 ->where('type', 'asset')
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
-                ->get()),
+                ->get(),
         ]);
     }
 

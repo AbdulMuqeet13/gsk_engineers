@@ -45,16 +45,6 @@ function computeTotal(entry: JournalEntry): string {
     return total.toFixed(2);
 }
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 export function getJournalEntryColumns({
     sort,
     onSort,
@@ -78,7 +68,7 @@ export function getJournalEntryColumns({
                 />
             ),
             cell: ({ row }) => (
-                <span className="text-sm">{formatDate(row.original.date)}</span>
+                <span className="text-sm">{row.original.date}</span>
             ),
         },
         {

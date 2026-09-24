@@ -18,16 +18,6 @@ type TransferColumnsOptions = {
     canCreate: boolean;
 };
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 function formatAmount(amount: string): string {
     return parseFloat(amount).toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -52,7 +42,7 @@ export function getTransferColumns({
                 />
             ),
             cell: ({ row }) => (
-                <span className="text-sm">{formatDate(row.original.date)}</span>
+                <span className="text-sm">{row.original.date}</span>
             ),
         },
         {
