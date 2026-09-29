@@ -21,6 +21,7 @@
 | **shadcn/ui** | New York style | Component library |
 | **@tanstack/react-table** | v9 | DataTable engine |
 | **Sonner** | - | Toast notifications |
+| **react-day-picker** | 9.x | Calendar behind the shadcn date picker |
 | **Wayfinder** | - | Type-safe route generation |
 
 ## Development Tools

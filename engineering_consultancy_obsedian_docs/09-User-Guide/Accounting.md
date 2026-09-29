@@ -20,13 +20,13 @@ Navigate to **Accounting > Chart of Accounts**.
 
 ### Default Accounts
 
-The system comes pre-seeded with 20 default accounts organized hierarchically:
+The system comes pre-seeded with 23 default accounts organized hierarchically:
 
-- **Assets (1000s):** Cash in Hand (1001), Bank Account (1002), Petty Cash (1003), Accounts Receivable (1010), Inter-Project Receivable (1020)
-- **Liabilities (2000s):** Accounts Payable (2001), Inter-Project Payable (2020)
-- **Equity (3000s):** Owner's Equity (3001), Retained Earnings (3002)
-- **Income (4000s):** Service Revenue (4001), Consultancy Fees (4002), Other Income (4003)
-- **Expenses (5000s):** Salaries & Wages (5001), Office Rent (5002), Utilities (5003), Transportation (5004), Office Supplies (5005), Professional Fees (5006), Depreciation (5007), General Expenses (5008)
+- **Assets (1000):** Cash (1001), Bank (1002), Project Fund (1003), Accounts Receivable (1010), Inter-Project Receivable (1020)
+- **Liabilities (2000):** Accounts Payable (2010), Inter-Project Payable (2020), Salary Tax Payable (2030), Employee Security Deposits (2040)
+- **Equity (3000):** Owner Equity (3001), Retained Earnings (3002)
+- **Income (4000):** Project Income (4001)
+- **Expenses (5000):** Salaries (5001), Rent (5002), Fuel (5003), Food (5004), General Expenses (5005), Project Allowances (5006)
 
 ### Managing Accounts
 
@@ -58,6 +58,8 @@ A journal entry consists of:
 | Payroll | Auto-created when a payroll run is approved |
 | Transfer | Auto-created for inter-project transfers |
 | Opening | Opening balance entries |
+| Income | Auto-created when a project income is recorded |
+| Account Transfer | Auto-created for transfers between the company's own accounts |
 
 ### Creating a Journal Entry
 

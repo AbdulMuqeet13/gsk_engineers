@@ -256,3 +256,35 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 | projects | Project[] | For project selector |
 
 **Features:** Project selector (required), date range and account filters, running balance (single account only), PDF/Excel export
+
+### Incomes
+**File:** `pages/incomes/index.tsx`
+| Prop | Type | Source |
+|------|------|--------|
+| incomes | PaginatedData\<ProjectIncome\> | Filtered, sorted by date/amount |
+| projects | Project[] | For filter and form |
+| incomeAccounts | AccountHead[] | Active income accounts |
+| assetAccounts | AccountHead[] | Active asset accounts |
+
+### Account Transfers
+**File:** `pages/account-transfers/index.tsx`
+| Prop | Type | Source |
+|------|------|--------|
+| accountTransfers | PaginatedData\<AccountTransfer\> | Filtered by account (either side), project, dates |
+| projects | Project[] | Optional project tag |
+| assetAccounts | AccountHead[] | Active asset accounts |
+
+### Employee Show
+**File:** `pages/employees/show.tsx`
+| Prop | Type | Source |
+|------|------|--------|
+| employee | Employee | With salaries, assignments + allowances, security refunds |
+| securityBalance | string | `Employee::securityBalance()` |
+| currentSalaryId | number \| null | Record effective today |
+| payslips | Payslip[] | Last 12 with payroll run |
+| salaryComponents | SalaryComponent[] | Active, ordered |
+| salaryChangeTypes | SalaryChangeType[] | Excludes `initial` |
+| paymentAccounts | AccountHead[] | For security refunds |
+
+### Salary Components
+**File:** `pages/payroll/salary-components/index.tsx` -- prop `salaryComponents` (all, ordered). DataTable without pagination.

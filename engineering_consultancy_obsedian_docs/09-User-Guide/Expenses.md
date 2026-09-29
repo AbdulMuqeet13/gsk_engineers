@@ -97,3 +97,53 @@ The system enforces separation between expense creators and approvers:
 - **Project Managers** can create expenses (`expenses.create`)
 - **Accountants** can approve/reject expenses (`expenses.approve`)
 - Both roles can view expenses (`expenses.view`)
+
+## Vendor Credit Purchases and Partial Payments
+
+The Expenses module only records expenses paid immediately from Cash or Bank. To record a purchase **on credit** from a vendor and pay it in parts, use **Journal Entries** with the **Accounts Payable** account.
+
+### One-time setup: a payable account per vendor (recommended)
+
+In **Accounting → Chart of Accounts**, add an account for each credit vendor:
+- **Code:** 2011, 2012, ... **Name:** `Payable – ABC Traders` **Type:** Liability **Parent:** 2010 Accounts Payable
+
+This gives each vendor its own balance. (Using 2010 for everyone works, but you can't see who is owed what.)
+
+### Step 1 -- Record the purchase
+
+Example: cement from ABC Traders for **100,000** on the Motorway project, **40,000** paid now from Bank.
+
+**Accounting → Journal Entries → Create**, Type **Expense**, Description `ABC Traders – cement, Bill #123`:
+
+| Account | Project | Debit | Credit | Memo |
+|---|---|---|---|---|
+| 5005 General Expenses (or the right expense account) | Motorway | 100,000 | | Cement, Bill #123 |
+| 1002 Bank | Motorway | | 40,000 | Paid on purchase |
+| 2011 Payable – ABC Traders | Motorway | | 60,000 | Balance due, Bill #123 |
+
+Debits must equal credits. Save, then **Post** the entry. If nothing is paid up front, omit the Bank line and credit the vendor the full amount.
+
+### Step 2 -- Record each later payment
+
+Example: 25,000 paid two weeks later:
+
+| Account | Project | Debit | Credit | Memo |
+|---|---|---|---|---|
+| 2011 Payable – ABC Traders | Motorway | 25,000 | | Part payment, Bill #123 |
+| 1002 Bank | Motorway | | 25,000 | Chq #... |
+
+**Post** it. Repeat until the balance is zero. This entry does not touch an expense account, so the cost is not counted twice.
+
+### Seeing what you owe
+
+- **One vendor:** **Accounting → General Ledger**, select the vendor's payable account -- the running balance is the amount still owed.
+- **All vendors:** **Trial Balance** / **Balance Sheet** under Liabilities.
+- **Project cost:** Project Ledger and Income & Expense Summary include the full purchase amount.
+
+### Tips
+
+- Put the bill number in the description and memos to match payments to bills.
+- Posted entries can't be edited -- **Reverse** and re-enter to correct.
+- Tag payment lines with the same project as the purchase so the project cashbook matches.
+- This method does not give a per-bill Unpaid / Partially Paid / Paid status; that needs a dedicated vendors feature.
+

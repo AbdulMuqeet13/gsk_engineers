@@ -230,6 +230,59 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 **Allowed files:** PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX (max 10 MB)
 **Permission:** Per-type permission checks (e.g., `expenses.create` for expense attachments)
 
+### Employees -- Phase 9 additions
+| Method | URI | Name | Controller Method |
+|--------|-----|------|-------------------|
+| GET | `/employees/{employee}` | `employees.show` | EmployeeController@show |
+| POST | `/employees/{employee}/salaries` | `employees.salaries.store` | EmployeeSalaryController@store |
+| DELETE | `/employees/{employee}/salaries/{salary}` | `employees.salaries.destroy` | EmployeeSalaryController@destroy (scoped binding) |
+| POST | `/employees/{employee}/security-refunds` | `employees.security-refunds.store` | SecurityRefundController@store |
+
+**Show Props:** employee (salaries.components, salaries.creator, assignments.project + allowances, securityRefunds), securityBalance, currentSalaryId, payslips (last 12), salaryComponents, salaryChangeTypes, paymentAccounts
+**Index Props (added):** salaryComponents; employees eager-load `currentSalary`
+
+### Incomes
+| Method | URI | Name | Controller Method |
+|--------|-----|------|-------------------|
+| GET | `/incomes` | `incomes.index` | ProjectIncomeController@index |
+| POST | `/incomes` | `incomes.store` | ProjectIncomeController@store |
+| POST | `/incomes/{income}/reverse` | `incomes.reverse` | ProjectIncomeController@reverse |
+
+**Index Props:** incomes (paginated, with project + incomeAccount + depositAccount + journalEntry + creator), projects, incomeAccounts, assetAccounts
+**Filters:** search (reference/description/received_from), project_id, deposit_account_id, date_from, date_to; sort whitelisted to date/amount
+**Permission:** `incomes.view` / `incomes.create`
+
+### Account Transfers
+| Method | URI | Name | Controller Method |
+|--------|-----|------|-------------------|
+| GET | `/account-transfers` | `account-transfers.index` | AccountTransferController@index |
+| POST | `/account-transfers` | `account-transfers.store` | AccountTransferController@store |
+| POST | `/account-transfers/{account_transfer}/reverse` | `account-transfers.reverse` | AccountTransferController@reverse |
+
+**Index Props:** accountTransfers (paginated), projects, assetAccounts
+**Filters:** search, account_id (either side), project_id, date_from, date_to
+**Permission:** `account-transfers.view` / `account-transfers.create`
+
+### Salary Components
+| Method | URI | Name | Controller Method |
+|--------|-----|------|-------------------|
+| GET | `/payroll/salary-components` | `salary-components.index` | SalaryComponentController@index |
+| POST | `/payroll/salary-components` | `salary-components.store` | SalaryComponentController@store |
+| PUT | `/payroll/salary-components/{salary_component}` | `salary-components.update` | SalaryComponentController@update |
+| DELETE | `/payroll/salary-components/{salary_component}` | `salary-components.destroy` | SalaryComponentController@destroy |
+
+Registered **before** the `payroll` resource so `/payroll/salary-components` isn't captured by `payroll/{payroll_run}`.
+**Permission:** view `payroll.view`, manage `payroll.run`
+
+### Payroll -- Phase 9 changes
+- `store` flashes how many active employees were skipped (no salary effective by period end) and catches `OverlappingPayrollException`
+- `show` loads `payslips.items.project`
+- `downloadPayslip` loads `items.project` for the itemised PDF
+
+## Toasts
+
+`App\Concerns\FlashesToast` (`flashSuccess`, `flashError`, `flashInfo`, `flashWarning`) uses `Inertia::flash('toast', [...])`. Assert in tests with `$response->assertInertiaFlash('toast', [...])`.
+
 ## Route Parameter Note
 
 The Chart of Accounts route uses `.parameter('chart-of-accounts', 'account_head')` to match the controller's `AccountHead $accountHead` type hint. Without this, Laravel generates `{chart_of_account}` which doesn't match.

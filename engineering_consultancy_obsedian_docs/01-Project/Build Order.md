@@ -14,7 +14,8 @@ Work in this sequence. Do not start a later step until the earlier accounting in
 | 6 | **Inter-Project Transfers** | Done | TransferService, receivable/payable tracking, position report |
 | 7 | **Financial Statements** | Done | P&L, balance sheet with date and project filters |
 | 8 | **Reports & Enhancements** | Done | Reports (Income/Expense, Payroll, Cashbook, Ledger), attachments, payslip PDF, delete safety |
-| 9 | **Hardening** | Pending | Role checks, audit trail review, edge cases, polish |
+| 9 | **Incomes, Account Transfers & Salary Structure** | Done | Project incomes, account transfers, salary history/breakdown, tax, security deposit, project allowances, date picker |
+| 10 | **Hardening** | Pending | Role checks, audit trail review, edge cases, polish |
 
 ## Dependencies
 
@@ -27,7 +28,8 @@ Phase 1 (Foundation)
               └─> Phase 6 (Inter-Project Transfers)
                     └─> Phase 7 (Financial Statements)
                           └─> Phase 8 (Reports & Enhancements)
-                                └─> Phase 9 (Hardening)
+                                └─> Phase 9 (Incomes, Account Transfers & Salary Structure)
+                                      └─> Phase 10 (Hardening)
 ```
 
 ## Critical Rule

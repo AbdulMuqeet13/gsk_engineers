@@ -73,10 +73,13 @@ Navigate to **Projects > Assignments** to manage staff allocation.
 2. Select an **Employee** and a **Project**.
 3. Enter the **Role** (e.g., Site Engineer, Project Lead).
 4. Set **Allocation %** (0-100) -- how much of the employee's time is allocated.
-5. Click **Save**.
+5. Optionally add **Monthly Allowances** for this project: click **Add**, enter a name (e.g. Site Allowance) and amount. Add as many as needed; the total is shown.
+6. Click **Assign**.
+
+Allowances are added to the employee's gross pay in every payroll run and charged to this project (account 5006 Project Allowances, tagged with the project). The assignments list shows each assignment's allowance total -- hover it to see the breakdown.
 
 Each employee can only be assigned to a project once (unique combination).
 
 ### Editing / Deleting Assignments
 
-Use the three-dot menu on any assignment row to edit or delete it.
+Use the three-dot menu on any assignment row to edit or delete it. Editing lets you add, change or remove allowances; payslips already generated keep the allowances they were created with.

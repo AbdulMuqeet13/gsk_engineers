@@ -153,3 +153,6 @@ Managed by `spatie/laravel-activitylog`. Logs all model create/update/delete eve
 
 ### Spatie Permission Tables
 - `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`
+
+### Phase 9 tables
+`project_incomes`, `account_transfers`, `salary_components`, `employee_salaries`, `employee_salary_components`, `assignment_allowances`, `payslip_items`, `security_refunds` -- see [[05-Database/Tables Reference#Phase 9 Column Notes]]. `employees.salary` removed; `payslips` gained the breakdown columns.

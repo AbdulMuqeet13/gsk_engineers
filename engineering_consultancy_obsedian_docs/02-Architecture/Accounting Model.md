@@ -16,16 +16,16 @@ Hierarchical structure with 5 account types:
 | Type | Normal Balance | Examples |
 |------|---------------|----------|
 | Asset | Debit | Cash, Bank, Project Fund, Accounts Receivable |
-| Liability | Credit | Accounts Payable, Inter-Project Payable |
+| Liability | Credit | Accounts Payable, Inter-Project Payable, Salary Tax Payable, Employee Security Deposits |
 | Equity | Credit | Owner Equity, Retained Earnings |
 | Income | Credit | Project Income |
-| Expense | Debit | Salaries, Rent, Fuel, Food, General |
+| Expense | Debit | Salaries, Rent, Fuel, Food, General, Project Allowances |
 
 ## Journal Entries
 
 ### Header (`journal_entries`)
 - `date`, `reference` (auto-generated: JE-YYYY-NNNNNN), `description`
-- `type`: standard, simple, payroll, transfer, opening, expense
+- `type`: standard, simple, payroll, transfer, opening, expense, income, account_transfer
 - `status`: draft (editable) or posted (immutable)
 - `created_by` (FK to users)
 - `reversal_of_id`, `reversed_by_id` (self-referencing FKs for reversal chain)
@@ -90,3 +90,39 @@ All derived live from `journal_lines` -- never stored as totals:
 | **Trial Balance** | Every account with debit/credit balance (must balance) |
 | **Profit & Loss** | Income minus expenses over a period, filterable by project |
 | **Balance Sheet** | Assets = Liabilities + Equity at a date, includes period net profit |
+
+## Project Incomes (Phase 9)
+
+`IncomeService::record()` posts immediately (type `income`), both lines tagged with the project:
+- **Debit** deposit account (Cash / Bank / 1010 Accounts Receivable)
+- **Credit** income account (default 4001 Project Income)
+
+## Account Transfers (Phase 9)
+
+`AccountTransferService::execute()` posts immediately (type `account_transfer`), optional project on both lines:
+- **Debit** destination asset account
+- **Credit** source asset account
+
+Typical use: Receivable → Bank when a client pays an invoice that was recorded as receivable.
+
+## Payroll (Phase 9)
+
+On approval `PayrollService` posts one balanced entry (type `payroll`); zero lines are skipped:
+
+| Account | Debit | Credit |
+|---|---|---|
+| 5001 Salaries | Σ(salary − other deductions) | |
+| 5006 Project Allowances | Σ allowances, one line per project | |
+| 2030 Salary Tax Payable | | Σ tax |
+| 2040 Employee Security Deposits | | Σ security |
+| Payment account | | Σ net |
+
+Salary expense is booked at **gross**, not net; tax and security become liabilities.
+
+## Security Deposit Refunds (Phase 9)
+
+`SecurityDepositService::refund()`: **Debit** 2040 Employee Security Deposits / **Credit** payment account. Refund cannot exceed `Employee::securityBalance()` (security from approved payroll − refunds).
+
+## Vendor Credit Purchases (manual)
+
+No vendor module yet. Credit purchases are recorded as journal entries: Dr expense / Cr Bank (paid part) / Cr 2010 Accounts Payable or a per-vendor child account (unpaid part); later payments Dr payable / Cr Bank. See [[09-User-Guide/Expenses#Vendor Credit Purchases and Partial Payments]].

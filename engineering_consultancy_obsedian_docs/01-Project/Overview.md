@@ -18,10 +18,12 @@ Single currency: **PKR** (Pakistani Rupee). All amounts stored as `decimal(18,2)
 |--------|-------------|
 | **Project Management** | CRUD projects, assign staff, track status and budget |
 | **Employee & HR** | Internal vs project employees, profiles, attendance, leave |
-| **Payroll** | Payroll runs, payslips, auto-post to journal |
+| **Payroll** | Salary history & breakdown, tax, refundable security, project allowances, payroll runs, payslips, auto-post to journal |
 | **Expenses** | Simple entry for Salaries/Rent/Fuel/Food/General, auto-post to journal |
 | **Accounting Core** | Journal entries, general ledger, trial balance |
+| **Incomes** | Project payments received into Cash / Bank / Receivable, auto-post to journal |
 | **Inter-Project Transfers** | Move funds between projects, track receivables/payables |
+| **Account Transfers** | Move funds between the company's own asset accounts |
 | **Financial Statements** | P&L, Balance Sheet, derived live from journal lines |
 | **Reports & Dashboards** | Project-wise reports, PDF/Excel export |
 | **Cashbook** | Per-project running in/out list |

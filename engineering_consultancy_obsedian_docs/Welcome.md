@@ -24,11 +24,13 @@ Welcome to the knowledge base for the **Civil Engineering Consultancy ERP**. Thi
 ### User Guide
 - [[09-User-Guide/Getting Started]] - First-time setup, roles, navigation, key concepts
 - [[09-User-Guide/Projects]] - Project management and assignments
-- [[09-User-Guide/Employees and HR]] - Employees, attendance, leave requests
+- [[09-User-Guide/Employees and HR]] - Employees, salary history, security deposit, attendance, leave
 - [[09-User-Guide/Accounting]] - Chart of accounts, journal entries, general ledger, trial balance
-- [[09-User-Guide/Expenses]] - Expense entry and approval workflow
-- [[09-User-Guide/Payroll]] - Payroll runs, payslips, PDF download
+- [[09-User-Guide/Expenses]] - Expense entry, approval workflow, vendor credit purchases
+- [[09-User-Guide/Incomes]] - Recording project payments received
+- [[09-User-Guide/Payroll]] - Payroll runs, salary breakdown, tax, security, allowances, payslip PDF
 - [[09-User-Guide/Transfers]] - Inter-project fund transfers
+- [[09-User-Guide/Account Transfers]] - Moving money between your own accounts
 - [[09-User-Guide/Reports]] - Financial statements, project reports, payroll report, exports
 
 ### Completed Phases
@@ -40,6 +42,7 @@ Welcome to the knowledge base for the **Civil Engineering Consultancy ERP**. Thi
 - [[04-Phases/Phase 6 - Inter-Project Transfers]] - TransferService, receivable/payable, position report
 - [[04-Phases/Phase 7 - Financial Statements]] - P&L, balance sheet
 - [[04-Phases/Phase 8 - Reports and Enhancements]] - Reports, attachments, payslip PDF, delete safety
+- [[04-Phases/Phase 9 - Incomes, Account Transfers and Salary Structure]] - Incomes, account transfers, salary history/breakdown, tax, security, allowances, date picker
 
 ### Database
 - [[05-Database/Tables Reference]] - Every table with columns and indexes

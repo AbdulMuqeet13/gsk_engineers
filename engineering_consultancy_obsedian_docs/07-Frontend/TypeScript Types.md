@@ -354,3 +354,14 @@ export type ProjectLedgerRow = {
 ## Note on Decimal Fields
 
 Fields cast as `decimal:2` in PHP come as **strings** in JSON (e.g. `"50000.00"`), not numbers. TypeScript types reflect this with `string` type for `salary`, `budget`, `allocation_percent`, `debit`, `credit`, `amount`, `balance`.
+
+## Phase 9 Types
+
+`ProjectIncome`, `AccountTransfer`, `SalaryComponent`, `EmployeeSalary`, `EmployeeSalaryComponent`, `AssignmentAllowance`, `SecurityRefund`, `PayslipItem`, `SalaryChangeType`, `PayslipItemType` (all in `resources/js/types/models.ts`).
+
+Changes:
+- `Employee`: `salary` removed; added `current_salary`, `salaries`, `assignments`, `security_refunds`
+- `ProjectAssignment`: added `allowances`
+- `Payslip`: `basic_salary` → `salary_amount`; added `employee_salary_id`, `allowances_amount`, `gross_salary`, `tax_amount`, `security_amount`, `items`, `payroll_run`
+- `JournalEntryType`: added `income`, `account_transfer`
+- `Permission` (`types/permissions.ts`): added `incomes.*`, `account-transfers.*`

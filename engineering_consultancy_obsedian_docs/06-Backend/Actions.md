@@ -90,6 +90,43 @@ These delegate to `PayrollService`. Only drafts can be deleted.
 
 These delegate to `TransferService`.
 
+### Incomes (`app/Actions/Incomes/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `CreateProjectIncomeAction` | `array $data, User $user` | `ProjectIncome` |
+| `ReverseProjectIncomeAction` | `ProjectIncome $income, User $user, string $reason` | `void` |
+
+### Account Transfers (`app/Actions/AccountTransfers/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `CreateAccountTransferAction` | `array $data, User $user` | `AccountTransfer` |
+| `ReverseAccountTransferAction` | `AccountTransfer $transfer, User $user, string $reason` | `void` |
+
+### Salaries (`app/Actions/Salaries/`)
+| Action | Input | Output |
+|--------|-------|--------|
+| `RecordEmployeeSalaryAction` | `Employee $employee, array $data, User $user` | `EmployeeSalary` |
+| `DeleteEmployeeSalaryAction` | `EmployeeSalary $salary` | `void` |
+| `RefundSecurityDepositAction` | `Employee $employee, array $data, User $user` | `SecurityRefund` |
+| `CreateSalaryComponentAction` | `array $data` | `SalaryComponent` |
+| `UpdateSalaryComponentAction` | `SalaryComponent $component, array $data` | `SalaryComponent` |
+| `DeleteSalaryComponentAction` | `SalaryComponent $component` | `void` (soft delete) |
+
+### Phase 9 changes to existing actions
+- `CreateEmployeeAction::execute(array $data, ?User $user)` delegates to `EmployeeService::create()` (employee + initial salary)
+- `Create/UpdateProjectAssignmentAction` delegate to `ProjectAssignmentService` (syncs allowances)
+
+## Services (Phase 9)
+| Service | Responsibility |
+|---------|----------------|
+| `IncomeService` | Record/reverse project incomes, `INC-` references |
+| `AccountTransferService` | Execute/reverse account transfers, `ACT-` references |
+| `SalaryService` | Record salary records (gross = Σ components), guarded delete |
+| `EmployeeService` | Create employee + initial salary in one transaction |
+| `SecurityDepositService` | Refund security (row lock, balance check, journal entry) |
+| `ProjectAssignmentService` | Create/update assignments and replace allowances |
+| `PayrollService` | Now uses salary history, allowances, tax, security; overlap guard; itemised journal |
+
 ## Usage Pattern
 
 Actions are method-injected into controller methods:

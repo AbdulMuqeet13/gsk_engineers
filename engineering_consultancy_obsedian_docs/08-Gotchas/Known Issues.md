@@ -119,3 +119,29 @@ Without defaults, `.map()` calls on these props will crash with "Cannot read pro
 - Axios removed -- use built-in XHR client or install Axios separately
 - `router.cancel()` replaced by `router.cancelAll()`
 - Always use `router.reload({ only: [...] })` for partial reloading, not `router.get()` on the same route
+
+## Phase 9 Gotchas
+
+### Dates must be sent as ISO
+Display format is `dd-mm-yyyy`, but always submit `YYYY-MM-DD`. PHP's `strtotime` reads dashed dates as day-month-year, so sending display strings would silently swap day and month for US-style input. `DatePicker` already emits ISO.
+
+### Clearing Inertia GET filters
+`router.reload({ data })` merges `data` into the **current** query string. Omitting a key keeps its old value; pass the key as `undefined` to remove it (fixed in `useDataTable`).
+
+### Toasts need `Inertia::flash`
+`session()->flash('toast', ...)` does not fire the frontend `flash` event. Use `FlashesToast` (which calls `Inertia::flash`).
+
+### New permissions need the seeder
+Permissions exist only after `RolesAndPermissionsSeeder` runs; until then sidebar items are hidden even for Super Admin (sidebar filters on `getAllPermissions()`). The seeder resets roles to defaults.
+
+### shadcn CLI picks pnpm
+`npx shadcn add ...` tried `pnpm` and extra packages (`radix-ui`, `date-fns`). This project uses **npm**: install the dependency with npm and add the component file manually.
+
+### Prettier is not configured
+There is no Prettier config or dependency; `npx prettier` downloads defaults (double quotes) and reformats files. Don't run it -- match the existing style by hand.
+
+### Current vs latest salary
+`Employee::currentSalary` excludes future-dated records; payroll uses `salaryEffectiveOn(period_end)`. Don't use "latest record" for display.
+
+### Payroll run overlap
+A new run cannot overlap a non-rejected run. Demo data already has July-September 2026 runs.

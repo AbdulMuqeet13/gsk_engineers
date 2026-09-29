@@ -19,7 +19,10 @@
 | **Employees** | `employees.view`, `employees.create`, `employees.update`, `employees.delete` |
 | **Accounting** | `accounting.view`, `accounting.create`, `accounting.post`, `accounting.reverse` |
 | **Expenses** | `expenses.view`, `expenses.create`, `expenses.update`, `expenses.delete`, `expenses.approve` |
-| **Payroll** | `payroll.view`, `payroll.run`, `payroll.approve` |
+| **Payroll** | `payroll.view`, `payroll.run` (also salary components), `payroll.approve` (also security refunds) |
+| **Incomes** | `incomes.view`, `incomes.create` |
+| **Transfers** | `transfers.view`, `transfers.create` |
+| **Account Transfers** | `account-transfers.view`, `account-transfers.create` |
 | **Reports** | `reports.financial`, `reports.project`, `reports.payroll` |
 | **User Management** | `users.view`, `users.manage` |
 
@@ -31,3 +34,10 @@
 - Policies in `app/Policies/` enforce authorization server-side
 - Super Admin bypass: `Gate::before()` in `AppServiceProvider` returns `true` for Super Admin role
 - Frontend: permission filtering is client-side (hide UI elements), but server is the real gate
+
+## Notes (Phase 9)
+
+- Accountant gets `incomes.*` and `account-transfers.*`; Viewer gets the `.view` permissions.
+- Salary records use `employees.update`; assignment allowances use `projects.assign`.
+- New permissions only reach the database via `RolesAndPermissionsSeeder` -- run it after deploying. It uses `syncPermissions`, which resets every role to the seeded defaults.
+- The sidebar is filtered by `auth.permissions` (from `getAllPermissions()`), so un-seeded permissions hide menu items even for Super Admin.

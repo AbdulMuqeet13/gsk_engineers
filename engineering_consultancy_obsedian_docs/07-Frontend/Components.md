@@ -6,7 +6,8 @@
 |-----------|------|---------|
 | DataTable | `components/data-table/data-table.tsx` | Reusable table with TanStack v9 |
 | AppSidebar | `components/app-sidebar.tsx` | Main navigation sidebar |
-| useDataTable | `hooks/use-data-table.ts` | Partial reloading, search, filters |
+| useDataTable | `hooks/use-data-table.ts` | Partial reloading, search, filters (cleared filters sent as `undefined` so they leave the URL) |
+| DatePicker | `components/date-picker.tsx` | shadcn Calendar in a Popover; shows dd-mm-yyyy, emits ISO `YYYY-MM-DD`; props `value`, `onChange`, `clearable`, `size`, `placeholder` |
 
 ## Module Components
 
@@ -121,4 +122,56 @@
 
 ## shadcn/ui Primitives (`components/ui/`)
 
-Installed via shadcn CLI (New York style). Includes: Button, Dialog, Input, Select, Label, Table, Badge, DropdownMenu, Form, Card, and more.
+Installed via shadcn CLI (New York style). Includes: Button, Dialog, Input, Select, Label, Table, Badge, DropdownMenu, Form, Card, Popover, **Calendar** (added manually in Phase 9, `react-day-picker` v9), and more.
+
+### Incomes (`components/incomes/`)
+| File | Purpose |
+|------|---------|
+| `income-columns.tsx` | Date, reference, project, received from, amount, accounts, status (Posted/Reversed), reverse action |
+| `create-income-dialog.tsx` | Record Income form; income account defaults to 4001 |
+| `reverse-income-dialog.tsx` | Reverse with optional reason |
+
+### Account Transfers (`components/account-transfers/`)
+| File | Purpose |
+|------|---------|
+| `account-transfer-columns.tsx` | From/to account, amount, project, status, reverse action |
+| `create-account-transfer-dialog.tsx` | From/to asset accounts (source excluded from destination), optional project |
+| `reverse-account-transfer-dialog.tsx` | Reverse with optional reason |
+
+### Employees -- Phase 9 additions (`components/employees/`)
+| File | Purpose |
+|------|---------|
+| `salary-breakdown-fields.tsx` | Component amount inputs, tax, security, live gross/net; `buildComponentAmounts()` helper |
+| `add-salary-record-dialog.tsx` | Increment / revision form pre-filled from the latest record |
+| `delete-salary-record-dialog.tsx` | Delete confirmation |
+| `refund-security-dialog.tsx` | Refund amount, date, pay-from account |
+| `employee-current-salary-card.tsx` | Current breakdown + allowances + net; notes upcoming change |
+| `employee-salary-history-card.tsx` | History table with change vs previous and Upcoming badge |
+| `employee-assignments-card.tsx` | Assignments with allowances |
+| `employee-security-card.tsx` | Balance held, refunds, Refund button |
+| `employee-payslips-card.tsx` | Last 12 payslips |
+
+### Salary Components (`components/salary-components/`)
+| File | Purpose |
+|------|---------|
+| `salary-component-columns.tsx` | Order, name, status, edit/delete |
+| `salary-component-form-dialog.tsx` | Create/edit (one dialog for both) |
+| `delete-salary-component-dialog.tsx` | Soft delete confirmation |
+
+### Project Assignments -- Phase 9 additions
+| File | Purpose |
+|------|---------|
+| `allowances-field.tsx` | Repeater for named monthly allowances with total |
+
+### Payroll -- Phase 9 additions
+| File | Purpose |
+|------|---------|
+| `payslip-breakdown-dialog.tsx` | Earnings (components, allowances with project code) and deductions |
+| `payslip-columns.tsx` | Now shows salary, allowances, gross, tax, security, other deductions, net |
+| `edit-payslip-dialog.tsx` | Edits tax, security, other deductions with live net |
+
+### Utilities
+| File | Exports |
+|------|---------|
+| `lib/dates.ts` | `parseIsoDate`, `toIsoDate`, `formatDate` (dd-mm-yyyy) |
+| `lib/utils.ts` | `toInputDate` (server dd-mm-yyyy → ISO), `formatAmount` |

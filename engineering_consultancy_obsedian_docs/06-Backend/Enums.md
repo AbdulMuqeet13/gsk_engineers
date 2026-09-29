@@ -52,6 +52,8 @@ All enums are string-backed with TitleCase keys and a `values()` static helper.
 | Transfer | `transfer` |
 | Opening | `opening` |
 | Expense | `expense` |
+| Income | `income` |
+| AccountTransfer | `account_transfer` |
 
 ### JournalEntryStatus (`app/Enums/JournalEntryStatus.php`)
 | Key | Value |
@@ -99,7 +101,21 @@ All enums are string-backed with TitleCase keys and a `values()` static helper.
 | Rejected | `rejected` |
 
 ### PermissionEnum (`app/Enums/PermissionEnum.php`)
-Categories: ChartOfAccounts, Projects, Employees, Attendance, Leave, Accounting, Expenses (including Approve), Payroll, Transfers, Reports (`reports.financial`, `reports.project`, `reports.payroll`), Settings, Users.
+Categories: ChartOfAccounts, Projects, Employees, Attendance, Leave, Accounting, Expenses (including Approve), Payroll, Transfers, Incomes (`incomes.view`, `incomes.create`), Account Transfers (`account-transfers.view`, `account-transfers.create`), Biometric, Reports (`reports.financial`, `reports.project`, `reports.payroll`), Settings, Users.
+
+### SalaryChangeType (`app/Enums/SalaryChangeType.php`)
+| Key | Value |
+|-----|-------|
+| Initial | `initial` |
+| Increment | `increment` |
+| Decrement | `decrement` |
+| Revision | `revision` |
+
+### PayslipItemType (`app/Enums/PayslipItemType.php`)
+| Key | Value |
+|-----|-------|
+| Component | `component` |
+| Allowance | `allowance` |
 
 ## TypeScript Mirrors
 
@@ -110,11 +126,13 @@ type AccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
 type NormalBalance = 'debit' | 'credit';
 type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled';
 type EmployeeType = 'internal' | 'project';
-type JournalEntryType = 'standard' | 'simple' | 'payroll' | 'transfer' | 'opening' | 'expense';
+type JournalEntryType = 'standard' | 'simple' | 'payroll' | 'transfer' | 'opening' | 'expense' | 'income' | 'account_transfer';
 type JournalEntryStatus = 'draft' | 'posted';
 type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'leave';
 type LeaveType = 'annual' | 'sick' | 'casual' | 'unpaid';
 type LeaveStatus = 'pending' | 'approved' | 'rejected';
 type PayrollStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+type SalaryChangeType = 'initial' | 'increment' | 'decrement' | 'revision';
+type PayslipItemType = 'component' | 'allowance';
 ```

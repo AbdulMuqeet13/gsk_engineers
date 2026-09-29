@@ -124,3 +124,22 @@ export type Employee = {
 - Enum types as string unions matching PHP enum values
 - Model types with optional relationship fields
 - Barrel-exported from `resources/js/types/index.ts`
+
+## Dates (Phase 9)
+
+- **Never** use `<Input type="date">` -- use `DatePicker` from `@/components/date-picker`.
+- Form state and requests use ISO `YYYY-MM-DD`; the picker displays **dd-mm-yyyy**.
+- Server sends display dates as `dd-mm-yyyy` (model casts); when pre-filling an edit form convert with `toInputDate()`.
+- Filters: `<DatePicker clearable size="sm" className="w-[150px]" ... />` and `setFilter(key, value || undefined)`.
+
+## Money Formatting
+
+Use `formatAmount()` from `@/lib/utils` in new code (older columns files still define local helpers).
+
+## Select Triggers in Grids
+
+Radix `SelectTrigger` is `w-fit` by default; in two-column dialog grids give it `className="w-full min-w-0"` (and `min-w-0` on the grid cell) so long values truncate instead of overflowing.
+
+## Toasts
+
+Controllers flash via `FlashesToast` → `Inertia::flash('toast', ...)`; `useFlashToast` listens to the `flash` router event. Don't read toasts from shared props.

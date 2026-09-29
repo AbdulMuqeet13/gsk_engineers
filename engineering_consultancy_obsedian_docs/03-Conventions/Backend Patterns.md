@@ -158,3 +158,11 @@ enum EmployeeType: string
 - String-backed with **TitleCase** keys
 - `values()` static helper returns array of string values
 - Used in model casts, Form Request validation (`Rule::enum`), and as Inertia props
+
+## Phase 9 Patterns
+
+- **Orchestration services:** when one action needs two services (e.g. employee + initial salary), add a service that composes them (`EmployeeService`) -- actions never call two services.
+- **Snapshots:** payroll copies salary components and allowances into `payslip_items` so history never changes when master data does.
+- **Guard in both layers:** business rules that need a friendly field error (payroll overlap) are checked in the Form Request `after()` *and* enforced in the service with a domain exception (race-safe).
+- **Resolve accounts lazily:** journal line builders resolve account codes with `firstOrFail()` only for lines that carry an amount.
+- **Reusable rules:** `App\Concerns\SalaryValidationRules` (rules + attribute names + after-check helper).

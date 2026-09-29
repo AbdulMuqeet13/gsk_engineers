@@ -39,15 +39,24 @@ If you cannot see a menu item or perform an action, your role may not have the r
 The **sidebar** on the left provides access to all modules:
 
 - **Dashboard** -- Overview of key metrics
-- **Projects** -- Project list and assignments
-- **HR** -- Employees, attendance, leave requests
+- **Projects** -- Project list and assignments (with allowances)
+- **Employees** -- Employees (with salary history), attendance, leave requests
 - **Accounting** -- Chart of accounts, journal entries, general ledger, trial balance
+- **Incomes** -- Payments received for projects
 - **Expenses** -- Expense entry and approval
-- **Payroll** -- Payroll runs with payslip management
 - **Transfers** -- Inter-project fund transfers
+- **Account Transfers** -- Moving money between your own accounts (Bank ↔ Cash, Receivable → Bank)
+- **Payroll** -- Payroll runs and salary components
+- **Biometric Devices** -- ZKTeco attendance devices
 - **Reports** -- Financial statements and operational reports
 
 Click the **chevron** next to a section to expand or collapse its sub-items. On mobile, use the **hamburger menu** to toggle the sidebar.
+
+## Dates and Notifications
+
+- **Dates** are shown everywhere as **dd-mm-yyyy** (e.g. 29-09-2026), including PDFs and Excel exports. Times show as `dd-mm-yyyy hh:mm AM/PM`.
+- **Picking a date:** click a date field to open the calendar. Use the month and year drop-downs to jump quickly (useful for joining dates). Date filters on list pages have an **×** to clear them.
+- **Notifications:** after saving, approving, reversing etc., a message appears in the corner confirming success or explaining an error.
 
 ## Key Concepts
 
