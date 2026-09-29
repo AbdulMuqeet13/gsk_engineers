@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountHeadController;
+use App\Http\Controllers\AccountTransferController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BalanceSheetController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\BiometricDeviceController;
 use App\Http\Controllers\BiometricEnrollmentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeSalaryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GeneralLedgerController;
 use App\Http\Controllers\IncomeExpenseSummaryController;
@@ -21,7 +23,10 @@ use App\Http\Controllers\ProfitAndLossController;
 use App\Http\Controllers\ProjectAssignmentController;
 use App\Http\Controllers\ProjectCashbookController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectIncomeController;
 use App\Http\Controllers\ProjectLedgerController;
+use App\Http\Controllers\SalaryComponentController;
+use App\Http\Controllers\SecurityRefundController;
 use App\Http\Controllers\TrialBalanceController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
@@ -40,7 +45,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['create', 'edit', 'show']);
 
     Route::resource('employees', EmployeeController::class)
-        ->except(['create', 'edit', 'show']);
+        ->except(['create', 'edit']);
+
+    Route::post('employees/{employee}/salaries', [EmployeeSalaryController::class, 'store'])
+        ->name('employees.salaries.store');
+
+    Route::delete('employees/{employee}/salaries/{salary}', [EmployeeSalaryController::class, 'destroy'])
+        ->name('employees.salaries.destroy')
+        ->scopeBindings();
+
+    Route::post('employees/{employee}/security-refunds', [SecurityRefundController::class, 'store'])
+        ->name('employees.security-refunds.store');
 
     Route::resource('projects/assignments', ProjectAssignmentController::class)
         ->except(['create', 'edit', 'show'])
@@ -97,6 +112,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('leave/{leave_request}/reject', [LeaveRequestController::class, 'reject'])
         ->name('leave.reject');
 
+    Route::resource('payroll/salary-components', SalaryComponentController::class)
+        ->except(['create', 'edit', 'show'])
+        ->names('salary-components')
+        ->parameter('salary-components', 'salary_component');
+
     Route::resource('payroll', PayrollRunController::class)
         ->except(['create', 'edit', 'update'])
         ->parameter('payroll', 'payroll_run');
@@ -119,6 +139,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('transfers/{transfer}/reverse', [InterProjectTransferController::class, 'reverse'])
         ->name('transfers.reverse');
+
+    Route::resource('incomes', ProjectIncomeController::class)
+        ->only(['index', 'store'])
+        ->parameter('incomes', 'income');
+
+    Route::post('incomes/{income}/reverse', [ProjectIncomeController::class, 'reverse'])
+        ->name('incomes.reverse');
+
+    Route::resource('account-transfers', AccountTransferController::class)
+        ->only(['index', 'store'])
+        ->parameter('account-transfers', 'account_transfer');
+
+    Route::post('account-transfers/{account_transfer}/reverse', [AccountTransferController::class, 'reverse'])
+        ->name('account-transfers.reverse');
 
     Route::get('reports/inter-project-position', [InterProjectPositionController::class, 'index'])
         ->name('reports.inter-project-position');

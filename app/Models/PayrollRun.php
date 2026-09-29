@@ -57,7 +57,7 @@ class PayrollRun extends Model
             'period_end' => 'date:d-m-Y',
             'total_amount' => 'decimal:2',
             'status' => PayrollStatus::class,
-            'approved_at' => 'datetime:d-m-Y',
+            'approved_at' => 'datetime:d-m-Y h:i A',
         ];
     }
 
@@ -115,6 +115,18 @@ class PayrollRun extends Model
     public function scopeSubmitted(Builder $query): void
     {
         $query->where('status', PayrollStatus::Submitted);
+    }
+
+    /**
+     * Runs (other than rejected ones) whose period overlaps the given dates.
+     *
+     * @param  Builder<PayrollRun>  $query
+     */
+    public function scopeOverlapping(Builder $query, string $periodStart, string $periodEnd): void
+    {
+        $query->where('status', '!=', PayrollStatus::Rejected)
+            ->whereDate('period_start', '<=', $periodEnd)
+            ->whereDate('period_end', '>=', $periodStart);
     }
 
     public function isDraft(): bool

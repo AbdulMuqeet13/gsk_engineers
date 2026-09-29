@@ -16,6 +16,7 @@ use App\Http\Requests\Payroll\StorePayrollRunRequest;
 use App\Http\Requests\Payroll\SubmitPayrollRunRequest;
 use App\Http\Requests\Payroll\UpdatePayslipRequest;
 use App\Models\AccountHead;
+use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -74,6 +75,7 @@ class PayrollRunController extends Controller
 
         $payrollRun->load([
             'payslips.employee:id,name,designation,department',
+            'payslips.items.project:id,name,code',
             'creator:id,name',
             'approver:id,name',
             'paymentAccount:id,code,name',
@@ -87,9 +89,22 @@ class PayrollRunController extends Controller
 
     public function store(StorePayrollRunRequest $request, CreatePayrollRunAction $action): RedirectResponse
     {
-        $run = $action->execute($request->validated(), $request->user());
+        try {
+            $run = $action->execute($request->validated(), $request->user());
+        } catch (DomainException $e) {
+            $this->flashError($e->getMessage());
 
-        $this->flashSuccess('Payroll run created with '.$run->payslips->count().' payslips.');
+            return redirect()->route('payroll.index');
+        }
+
+        $skipped = Employee::where('is_active', true)->count() - $run->payslips->count();
+        $message = 'Payroll run created with '.$run->payslips->count().' payslips.';
+
+        if ($skipped > 0) {
+            $message .= " {$skipped} active employee(s) skipped: no salary effective by the period end.";
+        }
+
+        $this->flashSuccess($message);
 
         return redirect()->route('payroll.show', $run);
     }
@@ -170,7 +185,7 @@ class PayrollRunController extends Controller
 
         abort_unless($payslip->payroll_run_id === $payrollRun->id, 404);
 
-        $payslip->load('employee');
+        $payslip->load(['employee', 'items.project:id,name,code']);
 
         $pdf = Pdf::loadView('payroll.payslip', [
             'payrollRun' => $payrollRun,

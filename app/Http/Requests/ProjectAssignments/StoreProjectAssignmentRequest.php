@@ -27,6 +27,9 @@ class StoreProjectAssignmentRequest extends FormRequest
             'project_id' => ['required', 'integer', Rule::exists('projects', 'id')],
             'role' => ['required', 'string', 'max:255'],
             'allocation_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            'allowances' => ['nullable', 'array'],
+            'allowances.*.name' => ['required', 'string', 'max:100'],
+            'allowances.*.amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
         ];
     }
 }

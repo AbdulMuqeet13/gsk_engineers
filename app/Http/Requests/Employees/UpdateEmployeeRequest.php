@@ -27,7 +27,6 @@ class UpdateEmployeeRequest extends FormRequest
             'designation' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
             'date_of_joining' => ['required', 'date'],
-            'salary' => ['required', 'numeric', 'min:0'],
             'cnic' => ['required', 'string', 'max:20'],
             'address' => ['required', 'string', 'max:1000'],
             'is_active' => ['boolean'],

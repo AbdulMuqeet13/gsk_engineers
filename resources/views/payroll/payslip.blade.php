@@ -3,7 +3,7 @@
 @section('title', 'Salary Slip')
 
 @section('filters')
-    <strong>Period:</strong> {{ $payrollRun->period_start->format('d M Y') }} &ndash; {{ $payrollRun->period_end->format('d M Y') }}
+    <strong>Period:</strong> {{ $payrollRun->period_start->format('d-m-Y') }} &ndash; {{ $payrollRun->period_end->format('d-m-Y') }}
     &nbsp;|&nbsp;
     <strong>Ref:</strong> {{ $payrollRun->reference }}
 @endsection
@@ -33,11 +33,41 @@
         </thead>
         <tbody>
             <tr>
-                <td>Basic Salary</td>
-                <td class="text-right font-mono">{{ number_format((float) $payslip->basic_salary, 2) }}</td>
+                <td colspan="2"><strong>Earnings</strong></td>
+            </tr>
+            @forelse($payslip->items as $item)
+                <tr>
+                    <td>
+                        {{ $item->name }}
+                        @if($item->project)
+                            <span style="color: #666;">({{ $item->project->code }})</span>
+                        @endif
+                    </td>
+                    <td class="text-right font-mono">{{ number_format((float) $item->amount, 2) }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td>Salary</td>
+                    <td class="text-right font-mono">{{ number_format((float) $payslip->salary_amount, 2) }}</td>
+                </tr>
+            @endforelse
+            <tr>
+                <td><strong>Gross Salary</strong></td>
+                <td class="text-right font-mono"><strong>{{ number_format((float) $payslip->gross_salary, 2) }}</strong></td>
             </tr>
             <tr>
-                <td>Deductions</td>
+                <td colspan="2"><strong>Deductions</strong></td>
+            </tr>
+            <tr>
+                <td>Income Tax</td>
+                <td class="text-right font-mono text-red">{{ number_format((float) $payslip->tax_amount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Security Deposit</td>
+                <td class="text-right font-mono text-red">{{ number_format((float) $payslip->security_amount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Other Deductions</td>
                 <td class="text-right font-mono text-red">{{ number_format((float) $payslip->deductions, 2) }}</td>
             </tr>
         </tbody>

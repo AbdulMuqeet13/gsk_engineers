@@ -10,6 +10,8 @@ enum JournalEntryType: string
     case Transfer = 'transfer';
     case Opening = 'opening';
     case Expense = 'expense';
+    case Income = 'income';
+    case AccountTransfer = 'account_transfer';
 
     /**
      * @return string[]

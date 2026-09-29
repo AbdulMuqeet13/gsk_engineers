@@ -59,7 +59,7 @@ class Expense extends Model
             'date' => 'date:d-m-Y',
             'amount' => 'decimal:2',
             'status' => ExpenseStatus::class,
-            'approved_at' => 'datetime:d-m-Y',
+            'approved_at' => 'datetime:d-m-Y h:i A',
         ];
     }
 

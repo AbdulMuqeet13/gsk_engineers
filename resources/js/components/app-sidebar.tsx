@@ -4,6 +4,8 @@ import {
     BarChart3,
     BookOpen,
     FolderKanban,
+    HandCoins,
+    Landmark,
     LayoutGrid,
     Receipt,
     Settings,
@@ -13,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import AccountHeadController from '@/actions/App/Http/Controllers/AccountHeadController';
+import AccountTransferController from '@/actions/App/Http/Controllers/AccountTransferController';
 import BiometricDeviceController from '@/actions/App/Http/Controllers/BiometricDeviceController';
 import EmployeeController from '@/actions/App/Http/Controllers/EmployeeController';
 import AttendanceController from '@/actions/App/Http/Controllers/AttendanceController';
@@ -30,7 +33,9 @@ import PayrollRunController from '@/actions/App/Http/Controllers/PayrollRunContr
 import ProfitAndLossController from '@/actions/App/Http/Controllers/ProfitAndLossController';
 import ProjectCashbookController from '@/actions/App/Http/Controllers/ProjectCashbookController';
 import ProjectController from '@/actions/App/Http/Controllers/ProjectController';
+import ProjectIncomeController from '@/actions/App/Http/Controllers/ProjectIncomeController';
 import ProjectLedgerController from '@/actions/App/Http/Controllers/ProjectLedgerController';
+import SalaryComponentController from '@/actions/App/Http/Controllers/SalaryComponentController';
 import TrialBalanceController from '@/actions/App/Http/Controllers/TrialBalanceController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -125,6 +130,12 @@ const mainNavItems: NavItem[] = [
         ],
     },
     {
+        title: 'Incomes',
+        href: ProjectIncomeController.index().url,
+        icon: HandCoins,
+        permission: 'incomes.view',
+    },
+    {
         title: 'Expenses',
         href: ExpenseController.index().url,
         icon: Receipt,
@@ -137,10 +148,28 @@ const mainNavItems: NavItem[] = [
         permission: 'transfers.view',
     },
     {
+        title: 'Account Transfers',
+        href: AccountTransferController.index().url,
+        icon: Landmark,
+        permission: 'account-transfers.view',
+    },
+    {
         title: 'Payroll',
         href: PayrollRunController.index().url,
         icon: Wallet,
         permission: 'payroll.view',
+        children: [
+            {
+                title: 'Payroll Runs',
+                href: PayrollRunController.index().url,
+                permission: 'payroll.view',
+            },
+            {
+                title: 'Salary Components',
+                href: SalaryComponentController.index().url,
+                permission: 'payroll.view',
+            },
+        ],
     },
     {
         title: 'Biometric Devices',

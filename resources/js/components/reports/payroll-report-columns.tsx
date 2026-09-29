@@ -20,7 +20,11 @@ export type PayrollReportSlip = {
     employee_name: string;
     designation: string;
     department: string;
-    basic_salary: string;
+    salary_amount: string;
+    allowances_amount: string;
+    gross_salary: string;
+    tax_amount: string;
+    security_amount: string;
     deductions: string;
     net_salary: string;
     days_worked: number;
@@ -119,18 +123,38 @@ export function getSlipColumns(): SlipColumn[] {
             ),
         },
         {
-            key: 'basic_salary',
-            header: 'Basic Salary',
+            key: 'gross_salary',
+            header: 'Gross Salary',
             className: 'text-right',
             render: (row) => (
                 <span className="text-right font-mono text-sm">
-                    {formatAmount(row.basic_salary)}
+                    {formatAmount(row.gross_salary)}
+                </span>
+            ),
+        },
+        {
+            key: 'tax_amount',
+            header: 'Tax',
+            className: 'text-right',
+            render: (row) => (
+                <span className="text-right font-mono text-sm text-destructive">
+                    {formatAmount(row.tax_amount)}
+                </span>
+            ),
+        },
+        {
+            key: 'security_amount',
+            header: 'Security',
+            className: 'text-right',
+            render: (row) => (
+                <span className="text-right font-mono text-sm text-destructive">
+                    {formatAmount(row.security_amount)}
                 </span>
             ),
         },
         {
             key: 'deductions',
-            header: 'Deductions',
+            header: 'Other Ded.',
             className: 'text-right',
             render: (row) => (
                 <span className="text-right font-mono text-sm text-destructive">

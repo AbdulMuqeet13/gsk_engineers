@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PayrollRunController::update
-* @see app/Http/Controllers/PayrollRunController.php:153
+* @see app/Http/Controllers/PayrollRunController.php:168
 * @route '/payroll/{payroll_run}/payslips/{payslip}'
 */
 export const update = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::update
-* @see app/Http/Controllers/PayrollRunController.php:153
+* @see app/Http/Controllers/PayrollRunController.php:168
 * @route '/payroll/{payroll_run}/payslips/{payslip}'
 */
 update.url = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ update.url = (args: { payroll_run: number | { id: number }, payslip: number | { 
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::update
-* @see app/Http/Controllers/PayrollRunController.php:153
+* @see app/Http/Controllers/PayrollRunController.php:168
 * @route '/payroll/{payroll_run}/payslips/{payslip}'
 */
 update.put = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -56,7 +56,7 @@ update.put = (args: { payroll_run: number | { id: number }, payslip: number | { 
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::update
-* @see app/Http/Controllers/PayrollRunController.php:153
+* @see app/Http/Controllers/PayrollRunController.php:168
 * @route '/payroll/{payroll_run}/payslips/{payslip}'
 */
 const updateForm = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -71,7 +71,7 @@ const updateForm = (args: { payroll_run: number | { id: number }, payslip: numbe
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::update
-* @see app/Http/Controllers/PayrollRunController.php:153
+* @see app/Http/Controllers/PayrollRunController.php:168
 * @route '/payroll/{payroll_run}/payslips/{payslip}'
 */
 updateForm.put = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -88,7 +88,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 export const download = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,7 +103,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 download.url = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -133,7 +133,7 @@ download.url = (args: { payroll_run: number | { id: number }, payslip: number | 
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 download.get = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -143,7 +143,7 @@ download.get = (args: { payroll_run: number | { id: number }, payslip: number | 
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 download.head = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -153,7 +153,7 @@ download.head = (args: { payroll_run: number | { id: number }, payslip: number |
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 const downloadForm = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ const downloadForm = (args: { payroll_run: number | { id: number }, payslip: num
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 downloadForm.get = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -173,7 +173,7 @@ downloadForm.get = (args: { payroll_run: number | { id: number }, payslip: numbe
 
 /**
 * @see \App\Http\Controllers\PayrollRunController::download
-* @see app/Http/Controllers/PayrollRunController.php:167
+* @see app/Http/Controllers/PayrollRunController.php:182
 * @route '/payroll/{payroll_run}/payslips/{payslip}/download'
 */
 downloadForm.head = (args: { payroll_run: number | { id: number }, payslip: number | { id: number } } | [payroll_run: number | { id: number }, payslip: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

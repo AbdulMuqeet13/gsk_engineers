@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\RoleEnum;
+use App\Models\AssignmentAllowance;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectAssignment;
@@ -151,5 +152,70 @@ class ProjectAssignmentTest extends TestCase
                 'allocation_percent' => '150.00',
             ])
             ->assertSessionHasErrors('allocation_percent');
+    }
+
+    public function test_store_saves_assignment_allowances(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        $employee = Employee::factory()->create();
+        $project = Project::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('project-assignments.store'), [
+                'employee_id' => $employee->id,
+                'project_id' => $project->id,
+                'role' => 'Site Engineer',
+                'allocation_percent' => '100',
+                'allowances' => [
+                    ['name' => 'Site Allowance', 'amount' => '10000.00'],
+                    ['name' => 'Fuel Allowance', 'amount' => '5000.00'],
+                ],
+            ])
+            ->assertRedirect(route('project-assignments.index'));
+
+        $assignment = ProjectAssignment::sole();
+        $this->assertSame(
+            [['Site Allowance', '10000.00'], ['Fuel Allowance', '5000.00']],
+            $assignment->allowances()->orderBy('id')->get()->map(fn ($allowance) => [$allowance->name, $allowance->amount])->all(),
+        );
+    }
+
+    public function test_update_replaces_assignment_allowances(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        $assignment = ProjectAssignment::factory()->create();
+        AssignmentAllowance::factory()->for($assignment, 'assignment')->create(['name' => 'Old Allowance']);
+
+        $this->actingAs($user)
+            ->put(route('project-assignments.update', $assignment), [
+                'employee_id' => $assignment->employee_id,
+                'project_id' => $assignment->project_id,
+                'role' => $assignment->role,
+                'allocation_percent' => '100',
+                'allowances' => [['name' => 'Hardship Allowance', 'amount' => '7500.00']],
+            ])
+            ->assertRedirect(route('project-assignments.index'));
+
+        $this->assertSame(['Hardship Allowance'], $assignment->allowances()->pluck('name')->all());
+    }
+
+    public function test_store_rejects_allowance_without_positive_amount(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+
+        $this->actingAs($user)
+            ->post(route('project-assignments.store'), [
+                'employee_id' => Employee::factory()->create()->id,
+                'project_id' => Project::factory()->create()->id,
+                'role' => 'Site Engineer',
+                'allocation_percent' => '100',
+                'allowances' => [['name' => 'Site Allowance', 'amount' => '0']],
+            ])
+            ->assertSessionHasErrors('allowances.0.amount');
+
+        $this->assertDatabaseEmpty('project_assignments');
     }
 }

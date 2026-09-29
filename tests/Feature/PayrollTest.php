@@ -6,6 +6,7 @@ use App\Enums\RoleEnum;
 use App\Models\AccountHead;
 use App\Models\Employee;
 use App\Models\PayrollRun;
+use App\Models\Payslip;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,7 +105,7 @@ class PayrollTest extends TestCase
 
     public function test_store_creates_draft_with_payslips(): void
     {
-        Employee::factory()->count(3)->create(['is_active' => true]);
+        Employee::factory()->count(3)->withSalary()->create(['is_active' => true]);
 
         $data = [
             'period_start' => '2026-09-01',
@@ -159,17 +160,18 @@ class PayrollTest extends TestCase
             ->assertSessionHasErrors('period_end');
     }
 
-    public function test_update_payslip_adjusts_deductions(): void
+    public function test_update_payslip_recalculates_net_from_tax_security_and_deductions(): void
     {
         $run = PayrollRun::factory()->draft()->create([
             'payment_account_id' => $this->cashAccount->id,
             'created_by' => $this->user->id,
         ]);
 
-        $employee = Employee::factory()->create(['salary' => '50000.00']);
+        $employee = Employee::factory()->create();
         $payslip = $run->payslips()->create([
             'employee_id' => $employee->id,
-            'basic_salary' => '50000.00',
+            'salary_amount' => '50000.00',
+            'gross_salary' => '50000.00',
             'deductions' => '0.00',
             'net_salary' => '50000.00',
             'days_worked' => 26,
@@ -178,14 +180,41 @@ class PayrollTest extends TestCase
 
         $this->actingAs($this->user)
             ->put(route('payroll.payslips.update', [$run, $payslip]), [
+                'tax_amount' => '3000.00',
+                'security_amount' => '1000.00',
                 'deductions' => '5000.00',
-                'notes' => 'Tax deduction',
+                'notes' => 'Advance recovery',
             ])
             ->assertRedirect(route('payroll.show', $run));
 
         $payslip->refresh();
-        $this->assertEquals(0, bccomp($payslip->getRawOriginal('deductions'), '5000.00', 2));
-        $this->assertEquals(0, bccomp($payslip->getRawOriginal('net_salary'), '45000.00', 2));
+        $this->assertSame('3000.00', $payslip->tax_amount);
+        $this->assertSame('1000.00', $payslip->security_amount);
+        $this->assertSame('5000.00', $payslip->deductions);
+        $this->assertSame('41000.00', $payslip->net_salary);
+    }
+
+    public function test_update_payslip_rejects_deductions_above_gross(): void
+    {
+        $run = PayrollRun::factory()->draft()->create([
+            'payment_account_id' => $this->cashAccount->id,
+            'created_by' => $this->user->id,
+        ]);
+        $payslip = Payslip::factory()->for($run)->create([
+            'salary_amount' => '50000.00',
+            'gross_salary' => '50000.00',
+            'net_salary' => '50000.00',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->put(route('payroll.payslips.update', [$run, $payslip]), [
+                'tax_amount' => '30000.00',
+                'security_amount' => '10000.00',
+                'deductions' => '15000.00',
+            ]);
+
+        $response->assertSessionHasErrors(['deductions' => 'Total deductions cannot exceed the gross salary.']);
+        $this->assertSame('50000.00', $payslip->fresh()->net_salary);
     }
 
     public function test_destroy_deletes_draft(): void
@@ -243,7 +272,8 @@ class PayrollTest extends TestCase
         $employee = Employee::factory()->create();
         $run->payslips()->create([
             'employee_id' => $employee->id,
-            'basic_salary' => '100000.00',
+            'salary_amount' => '100000.00',
+            'gross_salary' => '100000.00',
             'deductions' => '0.00',
             'net_salary' => '100000.00',
             'days_worked' => 26,
@@ -285,5 +315,42 @@ class PayrollTest extends TestCase
         $this->actingAs($this->user)
             ->post(route('payroll.reject', $run), [])
             ->assertSessionHasErrors('reason');
+    }
+
+    public function test_store_rejects_period_overlapping_an_existing_run(): void
+    {
+        $existing = PayrollRun::factory()->approved()->create([
+            'period_start' => '2026-09-01',
+            'period_end' => '2026-09-30',
+            'payment_account_id' => $this->cashAccount->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        $response = $this->actingAs($this->user)->post(route('payroll.store'), [
+            'period_start' => '2026-09-15',
+            'period_end' => '2026-10-14',
+            'payment_account_id' => $this->cashAccount->id,
+        ]);
+
+        $response->assertSessionHasErrors(['period_start' => "Payroll run {$existing->reference} already covers part of this period."]);
+        $this->assertSame(1, PayrollRun::count());
+    }
+
+    public function test_store_allows_period_of_a_rejected_run(): void
+    {
+        PayrollRun::factory()->rejected()->create([
+            'period_start' => '2026-09-01',
+            'period_end' => '2026-09-30',
+            'payment_account_id' => $this->cashAccount->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)->post(route('payroll.store'), [
+            'period_start' => '2026-09-01',
+            'period_end' => '2026-09-30',
+            'payment_account_id' => $this->cashAccount->id,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(2, PayrollRun::count());
     }
 }

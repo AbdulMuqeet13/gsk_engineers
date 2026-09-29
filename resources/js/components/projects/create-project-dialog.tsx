@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import type React from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -182,12 +183,11 @@ export function CreateProjectDialog({
                             <Label htmlFor="create-start-date">
                                 Start Date
                             </Label>
-                            <Input
+                            <DatePicker
                                 id="create-start-date"
-                                type="date"
                                 value={data.start_date}
-                                onChange={(e) =>
-                                    setData('start_date', e.target.value)
+                                onChange={(value) =>
+                                    setData('start_date', value)
                                 }
                             />
                             {errors.start_date && (
@@ -199,12 +199,11 @@ export function CreateProjectDialog({
 
                         <div className="space-y-2">
                             <Label htmlFor="create-end-date">End Date</Label>
-                            <Input
+                            <DatePicker
                                 id="create-end-date"
-                                type="date"
                                 value={data.end_date}
-                                onChange={(e) =>
-                                    setData('end_date', e.target.value)
+                                onChange={(value) =>
+                                    setData('end_date', value)
                                 }
                             />
                             {errors.end_date && (

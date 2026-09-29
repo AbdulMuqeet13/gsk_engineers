@@ -1,5 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import ProjectAssignmentController from '@/actions/App/Http/Controllers/ProjectAssignmentController';
+import {
+    AllowancesField,
+    type AllowanceInput,
+} from '@/components/project-assignments/allowances-field';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -40,6 +44,10 @@ export function EditAssignmentDialog({
         project_id: String(assignment.project_id),
         role: assignment.role,
         allocation_percent: assignment.allocation_percent,
+        allowances: (assignment.allowances ?? []).map((allowance) => ({
+            name: allowance.name,
+            amount: allowance.amount,
+        })) as AllowanceInput[],
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -61,7 +69,7 @@ export function EditAssignmentDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Edit Assignment</DialogTitle>
                     <DialogDescription>
@@ -170,6 +178,15 @@ export function EditAssignmentDialog({
                             </p>
                         )}
                     </div>
+
+                    <AllowancesField
+                        idPrefix="edit-assignment"
+                        allowances={data.allowances}
+                        onChange={(allowances) =>
+                            setData('allowances', allowances)
+                        }
+                        errors={errors as Partial<Record<string, string>>}
+                    />
 
                     <DialogFooter>
                         <Button

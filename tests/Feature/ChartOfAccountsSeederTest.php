@@ -17,7 +17,7 @@ class ChartOfAccountsSeederTest extends TestCase
     {
         $this->seed(ChartOfAccountsSeeder::class);
 
-        $this->assertDatabaseCount('account_heads', 20);
+        $this->assertDatabaseCount('account_heads', 23);
     }
 
     public function test_seeder_is_idempotent(): void
@@ -25,7 +25,7 @@ class ChartOfAccountsSeederTest extends TestCase
         $this->seed(ChartOfAccountsSeeder::class);
         $this->seed(ChartOfAccountsSeeder::class);
 
-        $this->assertDatabaseCount('account_heads', 20);
+        $this->assertDatabaseCount('account_heads', 23);
     }
 
     public function test_seeder_creates_correct_hierarchy(): void
@@ -64,16 +64,16 @@ class ChartOfAccountsSeederTest extends TestCase
         $this->seed(ChartOfAccountsSeeder::class);
 
         $this->assertEquals(6, AccountHead::where('type', AccountType::Asset)->count());
-        $this->assertEquals(3, AccountHead::where('type', AccountType::Liability)->count());
+        $this->assertEquals(5, AccountHead::where('type', AccountType::Liability)->count());
         $this->assertEquals(3, AccountHead::where('type', AccountType::Equity)->count());
         $this->assertEquals(2, AccountHead::where('type', AccountType::Income)->count());
-        $this->assertEquals(6, AccountHead::where('type', AccountType::Expense)->count());
+        $this->assertEquals(7, AccountHead::where('type', AccountType::Expense)->count());
     }
 
     public function test_all_seeded_accounts_are_active(): void
     {
         $this->seed(ChartOfAccountsSeeder::class);
 
-        $this->assertEquals(20, AccountHead::where('is_active', true)->count());
+        $this->assertEquals(23, AccountHead::where('is_active', true)->count());
     }
 }

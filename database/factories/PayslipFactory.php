@@ -22,7 +22,12 @@ class PayslipFactory extends Factory
         return [
             'payroll_run_id' => PayrollRun::factory(),
             'employee_id' => Employee::factory(),
-            'basic_salary' => $basicSalary,
+            'employee_salary_id' => null,
+            'salary_amount' => $basicSalary,
+            'allowances_amount' => 0,
+            'gross_salary' => $basicSalary,
+            'tax_amount' => 0,
+            'security_amount' => 0,
             'deductions' => 0,
             'net_salary' => $basicSalary,
             'days_worked' => 26,
@@ -34,7 +39,7 @@ class PayslipFactory extends Factory
     public function withDeductions(float $deductions = 5000): static
     {
         return $this->state(function (array $attributes) use ($deductions) {
-            $basicSalary = $attributes['basic_salary'];
+            $basicSalary = $attributes['gross_salary'];
 
             return [
                 'deductions' => $deductions,

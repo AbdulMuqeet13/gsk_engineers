@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,9 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DataTableSortHeader } from '@/components/data-table/data-table-header';
+import { formatAmount } from '@/lib/utils';
 import type { Employee, SortState } from '@/types';
+import { show } from '@/actions/App/Http/Controllers/EmployeeController';
 
 type EmployeeColumnsOptions = {
     sort: SortState | null;
@@ -36,7 +39,12 @@ export function getEmployeeColumns({
                 />
             ),
             cell: ({ row }) => (
-                <span className="font-medium">{row.original.name}</span>
+                <Link
+                    href={show(row.original.id).url}
+                    className="font-medium hover:underline"
+                >
+                    {row.original.name}
+                </Link>
             ),
         },
         {
@@ -81,12 +89,12 @@ export function getEmployeeColumns({
                     : '—',
         },
         {
-            accessorKey: 'salary',
-            header: 'Salary',
+            id: 'salary',
+            header: 'Gross Salary',
             cell: ({ row }) =>
-                new Intl.NumberFormat('en-PK').format(
-                    Number(row.original.salary),
-                ),
+                row.original.current_salary
+                    ? formatAmount(row.original.current_salary.gross_salary)
+                    : '—',
         },
         {
             accessorKey: 'is_active',

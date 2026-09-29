@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { ChevronDown, ChevronRight, Users, Wallet } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { ExportButtons } from '@/components/reports/export-buttons';
 import {
     getRunColumns,
@@ -9,7 +10,6 @@ import {
 } from '@/components/reports/payroll-report-columns';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Table,
@@ -62,14 +62,12 @@ export default function PayrollReport({
         [dateFrom, dateTo],
     );
 
-    function handleDateFromChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateFromChange(value: string) {
         setDateFrom(value);
         reloadData({ date_from: value });
     }
 
-    function handleDateToChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateToChange(value: string) {
         setDateTo(value);
         reloadData({ date_to: value });
     }
@@ -144,20 +142,20 @@ export default function PayrollReport({
                 <div className="flex flex-wrap items-end gap-4">
                     <div className="w-40">
                         <Label htmlFor="date-from">Period From</Label>
-                        <Input
+                        <DatePicker
                             id="date-from"
-                            type="date"
                             value={dateFrom}
                             onChange={handleDateFromChange}
+                            clearable
                         />
                     </div>
                     <div className="w-40">
                         <Label htmlFor="date-to">Period To</Label>
-                        <Input
+                        <DatePicker
                             id="date-to"
-                            type="date"
                             value={dateTo}
                             onChange={handleDateToChange}
+                            clearable
                         />
                     </div>
                     <div className="ml-auto">
@@ -201,9 +199,8 @@ export default function PayrollReport({
                                 const isExpanded = expandedRuns.has(run.id);
 
                                 return (
-                                    <>
+                                    <Fragment key={run.id}>
                                         <TableRow
-                                            key={run.id}
                                             className="cursor-pointer"
                                             onClick={() => toggleRun(run.id)}
                                         >
@@ -224,7 +221,7 @@ export default function PayrollReport({
                                             ))}
                                         </TableRow>
                                         {isExpanded && (
-                                            <TableRow key={`${run.id}-detail`}>
+                                            <TableRow>
                                                 <TableCell
                                                     colSpan={
                                                         runColumns.length + 1
@@ -290,7 +287,7 @@ export default function PayrollReport({
                                                 </TableCell>
                                             </TableRow>
                                         )}
-                                    </>
+                                    </Fragment>
                                 );
                             })
                         )}

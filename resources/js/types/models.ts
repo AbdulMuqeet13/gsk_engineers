@@ -42,14 +42,69 @@ export type Employee = {
     designation: string;
     department: string;
     date_of_joining: string;
-    salary: string;
     cnic: string;
     address: string;
     is_active: boolean;
     attachments?: Attachment[];
     fingerprints?: EmployeeFingerprint[];
+    current_salary?: EmployeeSalary | null;
+    salaries?: EmployeeSalary[];
+    assignments?: ProjectAssignment[];
+    security_refunds?: SecurityRefund[];
     created_at: string;
     updated_at: string;
+};
+
+export type SalaryChangeType = 'initial' | 'increment' | 'decrement' | 'revision';
+
+export type SalaryComponent = {
+    id: number;
+    name: string;
+    sort_order: number;
+    is_active: boolean;
+};
+
+export type EmployeeSalaryComponent = {
+    id: number;
+    employee_salary_id: number;
+    salary_component_id: number;
+    amount: string;
+    salary_component?: Pick<SalaryComponent, 'id' | 'name'>;
+};
+
+export type EmployeeSalary = {
+    id: number;
+    employee_id: number;
+    effective_date: string;
+    change_type: SalaryChangeType;
+    gross_salary: string;
+    tax_amount: string;
+    security_amount: string;
+    remarks: string | null;
+    created_by: number | null;
+    components?: EmployeeSalaryComponent[];
+    creator?: { id: number; name: string } | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type AssignmentAllowance = {
+    id: number;
+    project_assignment_id: number;
+    name: string;
+    amount: string;
+};
+
+export type SecurityRefund = {
+    id: number;
+    employee_id: number;
+    amount: string;
+    date: string;
+    payment_account_id: number;
+    journal_entry_id: number | null;
+    remarks: string | null;
+    payment_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    created_at: string;
 };
 
 export type ProjectAssignment = {
@@ -60,11 +115,12 @@ export type ProjectAssignment = {
     project?: Pick<Project, 'id' | 'name' | 'code'>;
     role: string;
     allocation_percent: string;
+    allowances?: AssignmentAllowance[];
     created_at: string;
     updated_at: string;
 };
 
-export type JournalEntryType = 'standard' | 'simple' | 'payroll' | 'transfer' | 'opening' | 'expense';
+export type JournalEntryType = 'standard' | 'simple' | 'payroll' | 'transfer' | 'opening' | 'expense' | 'income' | 'account_transfer';
 export type JournalEntryStatus = 'draft' | 'posted';
 
 export type JournalEntry = {
@@ -205,15 +261,34 @@ export type Payslip = {
     id: number;
     payroll_run_id: number;
     employee_id: number;
-    basic_salary: string;
+    employee_salary_id: number | null;
+    salary_amount: string;
+    allowances_amount: string;
+    gross_salary: string;
+    tax_amount: string;
+    security_amount: string;
     deductions: string;
     net_salary: string;
     days_worked: number;
     days_absent: number;
     notes: string | null;
     employee?: Pick<Employee, 'id' | 'name'> & { designation?: string; department?: string };
+    items?: PayslipItem[];
+    payroll_run?: Pick<PayrollRun, 'id' | 'reference' | 'period_start' | 'period_end' | 'status'>;
     created_at: string;
     updated_at: string;
+};
+
+export type PayslipItemType = 'component' | 'allowance';
+
+export type PayslipItem = {
+    id: number;
+    payslip_id: number;
+    type: PayslipItemType;
+    name: string;
+    amount: string;
+    project_id: number | null;
+    project?: Pick<Project, 'id' | 'name' | 'code'> | null;
 };
 
 export type InterProjectTransfer = {
@@ -233,6 +308,49 @@ export type InterProjectTransfer = {
     to_project?: Pick<Project, 'id' | 'name' | 'code'>;
     from_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
     to_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    journal_entry?: Pick<JournalEntry, 'id' | 'reference'> & { reversed_by_id?: number | null } | null;
+    creator?: { id: number; name: string };
+    created_at: string;
+    updated_at: string;
+};
+
+export type ProjectIncome = {
+    id: number;
+    reference: string;
+    project_id: number;
+    income_account_id: number;
+    deposit_account_id: number;
+    amount: string;
+    date: string;
+    received_from: string | null;
+    description: string;
+    cheque_number: string | null;
+    journal_entry_id: number | null;
+    created_by: number;
+    project?: Pick<Project, 'id' | 'name' | 'code'>;
+    income_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    deposit_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    journal_entry?: Pick<JournalEntry, 'id' | 'reference'> & { reversed_by_id?: number | null } | null;
+    creator?: { id: number; name: string };
+    created_at: string;
+    updated_at: string;
+};
+
+export type AccountTransfer = {
+    id: number;
+    reference: string;
+    from_account_id: number;
+    to_account_id: number;
+    project_id: number | null;
+    amount: string;
+    date: string;
+    description: string;
+    cheque_number: string | null;
+    journal_entry_id: number | null;
+    created_by: number;
+    from_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    to_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    project?: Pick<Project, 'id' | 'name' | 'code'> | null;
     journal_entry?: Pick<JournalEntry, 'id' | 'reference'> & { reversed_by_id?: number | null } | null;
     creator?: { id: number; name: string };
     created_at: string;

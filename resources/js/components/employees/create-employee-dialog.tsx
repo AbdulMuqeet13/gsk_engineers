@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import EmployeeController from '@/actions/App/Http/Controllers/EmployeeController';
+import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -20,13 +21,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { EmployeeType } from '@/types';
+import {
+    buildComponentAmounts,
+    SalaryBreakdownFields,
+} from '@/components/employees/salary-breakdown-fields';
+import type { EmployeeType, SalaryComponent } from '@/types';
 
 type CreateEmployeeDialogProps = {
     open: boolean;
     onClose: () => void;
     employeeTypes: string[];
     projects: Array<{ id: number; name: string; code: string }>;
+    salaryComponents: Pick<SalaryComponent, 'id' | 'name'>[];
 };
 
 export function CreateEmployeeDialog({
@@ -34,6 +40,7 @@ export function CreateEmployeeDialog({
     onClose,
     employeeTypes,
     projects,
+    salaryComponents,
 }: CreateEmployeeDialogProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -44,7 +51,9 @@ export function CreateEmployeeDialog({
         designation: '',
         department: '',
         date_of_joining: '',
-        salary: '',
+        components: buildComponentAmounts(salaryComponents),
+        tax_amount: '',
+        security_amount: '',
         cnic: '',
         address: '',
         is_active: true,
@@ -69,7 +78,7 @@ export function CreateEmployeeDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Add Employee</DialogTitle>
                     <DialogDescription>
@@ -235,36 +244,16 @@ export function CreateEmployeeDialog({
 
                         <div className="space-y-2">
                             <Label htmlFor="create-doj">Date of Joining</Label>
-                            <Input
+                            <DatePicker
                                 id="create-doj"
-                                type="date"
                                 value={data.date_of_joining}
-                                onChange={(e) =>
-                                    setData('date_of_joining', e.target.value)
+                                onChange={(value) =>
+                                    setData('date_of_joining', value)
                                 }
                             />
                             {errors.date_of_joining && (
                                 <p className="text-destructive text-sm">
                                     {errors.date_of_joining}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="create-salary">Salary</Label>
-                            <Input
-                                id="create-salary"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={data.salary}
-                                onChange={(e) =>
-                                    setData('salary', e.target.value)
-                                }
-                            />
-                            {errors.salary && (
-                                <p className="text-destructive text-sm">
-                                    {errors.salary}
                                 </p>
                             )}
                         </div>
@@ -301,6 +290,29 @@ export function CreateEmployeeDialog({
                             </p>
                         )}
                     </div>
+
+                    <SalaryBreakdownFields
+                        idPrefix="create-employee"
+                        salaryComponents={salaryComponents}
+                        components={data.components}
+                        taxAmount={data.tax_amount}
+                        securityAmount={data.security_amount}
+                        onComponentChange={(index, amount) =>
+                            setData(
+                                'components',
+                                data.components.map((component, i) =>
+                                    i === index
+                                        ? { ...component, amount }
+                                        : component,
+                                ),
+                            )
+                        }
+                        onTaxChange={(amount) => setData('tax_amount', amount)}
+                        onSecurityChange={(amount) =>
+                            setData('security_amount', amount)
+                        }
+                        errors={errors as Partial<Record<string, string>>}
+                    />
 
                     <div className="flex items-center gap-2">
                         <Checkbox

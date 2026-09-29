@@ -25,7 +25,7 @@ class ProjectAssignmentController extends Controller
         $this->authorize('viewAny', ProjectAssignment::class);
 
         $assignments = ProjectAssignment::query()
-            ->with(['employee:id,name,type', 'project:id,name,code'])
+            ->with(['employee:id,name,type', 'project:id,name,code', 'allowances'])
             ->when($request->input('project_id'), function ($query, string $projectId) {
                 $query->where('project_id', $projectId);
             })

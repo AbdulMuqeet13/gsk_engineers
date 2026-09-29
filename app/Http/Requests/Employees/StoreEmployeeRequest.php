@@ -2,12 +2,16 @@
 
 namespace App\Http\Requests\Employees;
 
+use App\Concerns\SalaryValidationRules;
 use App\Enums\EmployeeType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreEmployeeRequest extends FormRequest
 {
+    use SalaryValidationRules;
+
     public function authorize(): bool
     {
         return $this->user()->can('employees.create');
@@ -27,10 +31,32 @@ class StoreEmployeeRequest extends FormRequest
             'designation' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
             'date_of_joining' => ['required', 'date'],
-            'salary' => ['required', 'numeric', 'min:0'],
             'cnic' => ['required', 'string', 'max:20'],
             'address' => ['required', 'string', 'max:1000'],
             'is_active' => ['boolean'],
+            ...$this->salaryBreakdownRules(),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return $this->salaryBreakdownAttributes();
+    }
+
+    /**
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if (! $validator->errors()->has('components') && ! $this->componentsTotalIsPositive()) {
+                    $validator->errors()->add('components', 'Enter an amount for at least one salary component.');
+                }
+            },
         ];
     }
 }

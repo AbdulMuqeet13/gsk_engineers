@@ -31,7 +31,7 @@ class BiometricDevice extends Model
     protected function casts(): array
     {
         return [
-            'last_heartbeat_at' => 'datetime',
+            'last_heartbeat_at' => 'datetime:d-m-Y h:i A',
             'is_active' => 'boolean',
         ];
     }

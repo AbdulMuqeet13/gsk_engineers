@@ -79,16 +79,13 @@ export function useDataTable({
 
     const reload = useCallback(
         (data: Record<string, unknown>) => {
+            // Empty values are kept as `undefined` (not dropped) so Inertia removes
+            // them from the current query string instead of keeping the old value.
             const cleanData: Record<string, unknown> = {};
 
             for (const [key, value] of Object.entries(data)) {
-                if (
-                    value !== undefined &&
-                    value !== null &&
-                    value !== ''
-                ) {
-                    cleanData[key] = value;
-                }
+                cleanData[key] =
+                    value === null || value === '' ? undefined : value;
             }
 
             router.reload({

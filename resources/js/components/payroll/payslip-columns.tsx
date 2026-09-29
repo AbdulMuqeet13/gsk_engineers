@@ -1,24 +1,21 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { Download, Pencil } from 'lucide-react';
+import { Download, Eye, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatAmount } from '@/lib/utils';
 import type { Payslip } from '@/types';
 import { downloadPayslip } from '@/actions/App/Http/Controllers/PayrollRunController';
 
 type PayslipColumnsOptions = {
     onEdit?: (payslip: Payslip) => void;
+    onViewBreakdown?: (payslip: Payslip) => void;
     canRun: boolean;
     isDraft: boolean;
     payrollRunId: number;
 };
 
-function formatAmount(amount: string): string {
-    return parseFloat(amount).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-    });
-}
-
 export function getPayslipColumns({
     onEdit,
+    onViewBreakdown,
     canRun,
     isDraft,
     payrollRunId,
@@ -52,17 +49,53 @@ export function getPayslipColumns({
             ),
         },
         {
-            accessorKey: 'basic_salary',
-            header: () => <span className="text-right">Basic Salary</span>,
+            accessorKey: 'salary_amount',
+            header: () => <span className="block text-right">Salary</span>,
             cell: ({ row }) => (
                 <span className="block text-right font-mono text-sm">
-                    {formatAmount(row.original.basic_salary)}
+                    {formatAmount(row.original.salary_amount)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'allowances_amount',
+            header: () => <span className="block text-right">Allowances</span>,
+            cell: ({ row }) => (
+                <span className="block text-right font-mono text-sm">
+                    {formatAmount(row.original.allowances_amount)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'gross_salary',
+            header: () => <span className="block text-right">Gross</span>,
+            cell: ({ row }) => (
+                <span className="block text-right font-mono text-sm">
+                    {formatAmount(row.original.gross_salary)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'tax_amount',
+            header: () => <span className="block text-right">Tax</span>,
+            cell: ({ row }) => (
+                <span className="block text-right font-mono text-sm">
+                    {formatAmount(row.original.tax_amount)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'security_amount',
+            header: () => <span className="block text-right">Security</span>,
+            cell: ({ row }) => (
+                <span className="block text-right font-mono text-sm">
+                    {formatAmount(row.original.security_amount)}
                 </span>
             ),
         },
         {
             accessorKey: 'deductions',
-            header: () => <span className="text-right">Deductions</span>,
+            header: () => <span className="block text-right">Other Ded.</span>,
             cell: ({ row }) => (
                 <span className="block text-right font-mono text-sm">
                     {formatAmount(row.original.deductions)}
@@ -111,6 +144,15 @@ export function getPayslipColumns({
         header: () => <span className="sr-only">Actions</span>,
         cell: ({ row }) => (
             <div className="flex items-center gap-1">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    onClick={() => onViewBreakdown?.(row.original)}
+                >
+                    <Eye className="size-4" />
+                    <span className="sr-only">View breakdown</span>
+                </Button>
                 <Button
                     variant="ghost"
                     size="icon"

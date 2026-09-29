@@ -66,6 +66,14 @@ class RolesAndPermissionsSeeder extends Seeder
             PermissionEnum::TransfersView->value,
             PermissionEnum::TransfersCreate->value,
 
+            // Incomes
+            PermissionEnum::IncomesView->value,
+            PermissionEnum::IncomesCreate->value,
+
+            // Account Transfers
+            PermissionEnum::AccountTransfersView->value,
+            PermissionEnum::AccountTransfersCreate->value,
+
             // Reports
             PermissionEnum::ReportsView->value,
             PermissionEnum::ReportsFinancial->value,
@@ -161,6 +169,8 @@ class RolesAndPermissionsSeeder extends Seeder
             PermissionEnum::ExpensesView->value,
             PermissionEnum::PayrollView->value,
             PermissionEnum::TransfersView->value,
+            PermissionEnum::IncomesView->value,
+            PermissionEnum::AccountTransfersView->value,
             PermissionEnum::ReportsView->value,
         ]);
     }

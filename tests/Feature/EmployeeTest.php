@@ -7,6 +7,7 @@ use App\Enums\RoleEnum;
 use App\Models\Employee;
 use App\Models\Payslip;
 use App\Models\Project;
+use App\Models\SalaryComponent;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,6 +23,11 @@ class EmployeeTest extends TestCase
 
         $this->seed(RolesAndPermissionsSeeder::class);
         $this->withoutVite();
+    }
+
+    private function basicComponentId(): int
+    {
+        return SalaryComponent::where('name', 'Basic Salary')->value('id');
     }
 
     public function test_index_requires_authentication(): void
@@ -59,7 +65,7 @@ class EmployeeTest extends TestCase
             'designation' => 'Engineer',
             'department' => 'Engineering',
             'date_of_joining' => '2026-01-15',
-            'salary' => '75000.00',
+            'components' => [['salary_component_id' => $this->basicComponentId(), 'amount' => '75000.00']],
             'cnic' => '12345-6789012-3',
             'address' => '123 Main Street',
         ];
@@ -68,11 +74,10 @@ class EmployeeTest extends TestCase
             ->post(route('employees.store'), $data)
             ->assertRedirect(route('employees.index'));
 
-        $this->assertDatabaseHas('employees', [
-            'name' => 'John Doe',
-            'type' => 'internal',
-            'project_id' => null,
-        ]);
+        $employee = Employee::where('name', 'John Doe')->sole();
+        $this->assertSame(EmployeeType::Internal, $employee->type);
+        $this->assertNull($employee->project_id);
+        $this->assertSame('75000.00', $employee->currentSalary->gross_salary);
     }
 
     public function test_store_creates_project_employee(): void
@@ -89,7 +94,7 @@ class EmployeeTest extends TestCase
             'designation' => 'Site Engineer',
             'department' => 'Operations',
             'date_of_joining' => '2026-03-01',
-            'salary' => '50000.00',
+            'components' => [['salary_component_id' => $this->basicComponentId(), 'amount' => '50000.00']],
             'cnic' => '12345-6789012-4',
             'address' => '456 Site Road',
         ];
@@ -117,7 +122,7 @@ class EmployeeTest extends TestCase
                 'designation' => 'Engineer',
                 'department' => 'Ops',
                 'date_of_joining' => '2026-01-01',
-                'salary' => '50000',
+                'components' => [['salary_component_id' => $this->basicComponentId(), 'amount' => '50000']],
                 'cnic' => '12345-6789012-5',
                 'address' => 'Test Address',
             ])
@@ -139,7 +144,7 @@ class EmployeeTest extends TestCase
                 'designation' => 'Engineer',
                 'department' => 'Ops',
                 'date_of_joining' => '2026-01-01',
-                'salary' => '50000',
+                'components' => [['salary_component_id' => $this->basicComponentId(), 'amount' => '50000']],
                 'cnic' => '12345-6789012-6',
                 'address' => 'Test Address',
             ])
@@ -161,7 +166,7 @@ class EmployeeTest extends TestCase
                 'designation' => 'Engineer',
                 'department' => 'Ops',
                 'date_of_joining' => '2026-01-01',
-                'salary' => '50000',
+                'components' => [['salary_component_id' => $this->basicComponentId(), 'amount' => '50000']],
                 'cnic' => '12345-6789012-7',
                 'address' => 'Test Address',
             ])
@@ -182,7 +187,6 @@ class EmployeeTest extends TestCase
                 'designation' => $employee->designation,
                 'department' => $employee->department,
                 'date_of_joining' => $employee->date_of_joining->format('Y-m-d'),
-                'salary' => $employee->salary,
                 'cnic' => $employee->cnic,
                 'address' => $employee->address,
             ])

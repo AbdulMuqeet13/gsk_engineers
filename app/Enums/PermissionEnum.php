@@ -52,6 +52,14 @@ enum PermissionEnum: string
     case TransfersView = 'transfers.view';
     case TransfersCreate = 'transfers.create';
 
+    // Incomes
+    case IncomesView = 'incomes.view';
+    case IncomesCreate = 'incomes.create';
+
+    // Account Transfers
+    case AccountTransfersView = 'account-transfers.view';
+    case AccountTransfersCreate = 'account-transfers.create';
+
     // Reports
     case ReportsView = 'reports.view';
     case ReportsFinancial = 'reports.financial';

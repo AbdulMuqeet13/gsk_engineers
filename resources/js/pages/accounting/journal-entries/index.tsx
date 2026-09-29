@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { getJournalEntryColumns } from '@/components/journal-entries/journal-entry-columns';
 import { CreateJournalEntryDialog } from '@/components/journal-entries/create-journal-entry-dialog';
 import { EditJournalEntryDialog } from '@/components/journal-entries/edit-journal-entry-dialog';
@@ -15,7 +16,6 @@ import {
 } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCan } from '@/hooks/use-can';
 import { useDataTable } from '@/hooks/use-data-table';
@@ -170,19 +170,17 @@ export default function JournalEntries({
                                     >
                                         From
                                     </Label>
-                                    <Input
+                                    <DatePicker
                                         id="date-from"
-                                        type="date"
                                         value={
                                             (filters.date_from as string) ?? ''
                                         }
-                                        onChange={(e) =>
-                                            setFilter(
-                                                'date_from',
-                                                e.target.value || undefined,
-                                            )
+                                        onChange={(value) =>
+                                            setFilter('date_from', value || undefined)
                                         }
-                                        className="h-8 w-auto"
+                                        clearable
+                                        size="sm"
+                                        className="w-[150px]"
                                     />
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -192,19 +190,17 @@ export default function JournalEntries({
                                     >
                                         To
                                     </Label>
-                                    <Input
+                                    <DatePicker
                                         id="date-to"
-                                        type="date"
                                         value={
                                             (filters.date_to as string) ?? ''
                                         }
-                                        onChange={(e) =>
-                                            setFilter(
-                                                'date_to',
-                                                e.target.value || undefined,
-                                            )
+                                        onChange={(value) =>
+                                            setFilter('date_to', value || undefined)
                                         }
-                                        className="h-8 w-auto"
+                                        clearable
+                                        size="sm"
+                                        className="w-[150px]"
                                     />
                                 </div>
                             </div>

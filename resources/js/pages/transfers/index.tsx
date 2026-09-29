@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { getTransferColumns } from '@/components/transfers/transfer-columns';
 import { CreateTransferDialog } from '@/components/transfers/create-transfer-dialog';
 import { ReverseTransferDialog } from '@/components/transfers/reverse-transfer-dialog';
@@ -11,7 +12,6 @@ import {
 } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -184,19 +184,17 @@ export default function Transfers({
                                     >
                                         From
                                     </Label>
-                                    <Input
+                                    <DatePicker
                                         id="date-from"
-                                        type="date"
                                         value={
                                             (filters.date_from as string) ?? ''
                                         }
-                                        onChange={(e) =>
-                                            setFilter(
-                                                'date_from',
-                                                e.target.value || undefined,
-                                            )
+                                        onChange={(value) =>
+                                            setFilter('date_from', value || undefined)
                                         }
-                                        className="h-8 w-auto"
+                                        clearable
+                                        size="sm"
+                                        className="w-[150px]"
                                     />
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -206,19 +204,17 @@ export default function Transfers({
                                     >
                                         To
                                     </Label>
-                                    <Input
+                                    <DatePicker
                                         id="date-to"
-                                        type="date"
                                         value={
                                             (filters.date_to as string) ?? ''
                                         }
-                                        onChange={(e) =>
-                                            setFilter(
-                                                'date_to',
-                                                e.target.value || undefined,
-                                            )
+                                        onChange={(value) =>
+                                            setFilter('date_to', value || undefined)
                                         }
-                                        className="h-8 w-auto"
+                                        clearable
+                                        size="sm"
+                                        className="w-[150px]"
                                     />
                                 </div>
                             </div>

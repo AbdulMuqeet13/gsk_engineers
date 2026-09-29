@@ -3,6 +3,7 @@ import { Fingerprint, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import EmployeeController from '@/actions/App/Http/Controllers/EmployeeController';
 import BiometricEnrollmentController from '@/actions/App/Http/Controllers/BiometricEnrollmentController';
+import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -54,7 +55,6 @@ export function EditEmployeeDialog({
         designation: employee.designation,
         department: employee.department,
         date_of_joining: toInputDate(employee.date_of_joining),
-        salary: employee.salary,
         cnic: employee.cnic,
         address: employee.address,
         is_active: employee.is_active,
@@ -243,36 +243,16 @@ export function EditEmployeeDialog({
 
                         <div className="space-y-2">
                             <Label htmlFor="edit-doj">Date of Joining</Label>
-                            <Input
+                            <DatePicker
                                 id="edit-doj"
-                                type="date"
                                 value={data.date_of_joining}
-                                onChange={(e) =>
-                                    setData('date_of_joining', e.target.value)
+                                onChange={(value) =>
+                                    setData('date_of_joining', value)
                                 }
                             />
                             {errors.date_of_joining && (
                                 <p className="text-destructive text-sm">
                                     {errors.date_of_joining}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-salary">Salary</Label>
-                            <Input
-                                id="edit-salary"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={data.salary}
-                                onChange={(e) =>
-                                    setData('salary', e.target.value)
-                                }
-                            />
-                            {errors.salary && (
-                                <p className="text-destructive text-sm">
-                                    {errors.salary}
                                 </p>
                             )}
                         </div>

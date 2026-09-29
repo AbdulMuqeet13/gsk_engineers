@@ -8,7 +8,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ProjectAssignment, SortState } from '@/types';
+import { formatAmount } from '@/lib/utils';
+import type {
+    AssignmentAllowance,
+    ProjectAssignment,
+    SortState,
+} from '@/types';
 
 type AssignmentColumnsOptions = {
     sort?: SortState | null;
@@ -86,6 +91,38 @@ export function getAssignmentColumns({
                 />
             ),
             cell: ({ row }) => `${row.original.allocation_percent}%`,
+        },
+        {
+            id: 'allowances',
+            header: () => <span className="block text-right">Allowances</span>,
+            cell: ({ row }) => {
+                const allowances: AssignmentAllowance[] =
+                    row.original.allowances ?? [];
+
+                if (allowances.length === 0) {
+                    return <span className="block text-right">—</span>;
+                }
+
+                return (
+                    <span
+                        className="block text-right font-mono"
+                        title={allowances
+                            .map(
+                                (allowance: AssignmentAllowance) =>
+                                    `${allowance.name}: ${formatAmount(allowance.amount)}`,
+                            )
+                            .join('\n')}
+                    >
+                        {formatAmount(
+                            allowances.reduce(
+                                (total: number, allowance: AssignmentAllowance) =>
+                                    total + Number(allowance.amount),
+                                0,
+                            ),
+                        )}
+                    </span>
+                );
+            },
         },
         {
             id: 'actions',

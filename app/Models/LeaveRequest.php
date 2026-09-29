@@ -52,7 +52,7 @@ class LeaveRequest extends Model
             'end_date' => 'date:d-m-Y',
             'leave_type' => LeaveType::class,
             'status' => LeaveStatus::class,
-            'approved_at' => 'datetime:d-m-Y',
+            'approved_at' => 'datetime:d-m-Y h:i A',
         ];
     }
 

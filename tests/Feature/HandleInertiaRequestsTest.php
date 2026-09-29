@@ -63,18 +63,19 @@ class HandleInertiaRequestsTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_flash_toast_is_shared_when_present(): void
+    public function test_controller_toast_reaches_the_next_page_as_inertia_flash_data(): void
     {
+        $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
 
         $response = $this->actingAs($user)
-            ->withSession(['toast' => ['type' => 'success', 'message' => 'Test message']])
-            ->get('/dashboard');
+            ->followingRedirects()
+            ->post(route('salary-components.store'), ['name' => 'Bonus', 'sort_order' => 9]);
 
-        $response->assertStatus(200);
-
-        $page = $response->viewData('page');
-
-        $this->assertArrayHasKey('flash', $page['props']);
+        $response->assertInertia(fn ($page) => $page
+            ->component('payroll/salary-components/index')
+            ->hasFlash('toast', ['type' => 'success', 'message' => 'Salary component created.'])
+        );
     }
 }

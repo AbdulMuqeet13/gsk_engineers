@@ -7,16 +7,20 @@ use App\Enums\EmployeeType;
 use App\Enums\JournalEntryType;
 use App\Enums\LeaveType;
 use App\Enums\RoleEnum;
+use App\Enums\SalaryChangeType;
 use App\Models\AccountHead;
+use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Project;
-use App\Models\Attendance;
 use App\Models\ProjectAssignment;
+use App\Models\SalaryComponent;
 use App\Models\User;
 use App\Services\ExpenseService;
 use App\Services\JournalService;
 use App\Services\LeaveService;
 use App\Services\PayrollService;
+use App\Services\ProjectAssignmentService;
+use App\Services\SalaryService;
 use App\Services\TransferService;
 use Illuminate\Database\Seeder;
 
@@ -28,6 +32,8 @@ class DemoDataSeeder extends Seeder
         private PayrollService $payrollService,
         private TransferService $transferService,
         private LeaveService $leaveService,
+        private SalaryService $salaryService,
+        private ProjectAssignmentService $projectAssignmentService,
     ) {}
 
     public function run(): void
@@ -149,13 +155,12 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($internalData as $data) {
-            $employees[] = Employee::factory()->internal()->create([
+            $employees[] = $this->recordSalary(Employee::factory()->internal()->create([
                 'name' => $data['name'],
                 'designation' => $data['designation'],
                 'department' => $data['department'],
-                'salary' => $data['salary'],
                 'date_of_joining' => fake()->dateTimeBetween('2024-01-01', '2025-12-31')->format('Y-m-d'),
-            ]);
+            ]), $data['salary']);
         }
 
         // Project-based employees — highway
@@ -167,13 +172,12 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($highwayStaff as $data) {
-            $employees[] = Employee::factory()->projectBased($projects['highway'])->create([
+            $employees[] = $this->recordSalary(Employee::factory()->projectBased($projects['highway'])->create([
                 'name' => $data['name'],
                 'designation' => $data['designation'],
                 'department' => 'Engineering',
-                'salary' => $data['salary'],
                 'date_of_joining' => '2026-01-20',
-            ]);
+            ]), $data['salary']);
         }
 
         // Project-based employees — bridge
@@ -184,26 +188,65 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($bridgeStaff as $data) {
-            $employees[] = Employee::factory()->projectBased($projects['bridge'])->create([
+            $employees[] = $this->recordSalary(Employee::factory()->projectBased($projects['bridge'])->create([
                 'name' => $data['name'],
                 'designation' => $data['designation'],
                 'department' => 'Engineering',
-                'salary' => $data['salary'],
                 'date_of_joining' => '2026-03-05',
-            ]);
+            ]), $data['salary']);
         }
 
         // One inactive employee
-        $employees[] = Employee::factory()->inactive()->create([
+        $employees[] = $this->recordSalary(Employee::factory()->inactive()->create([
             'name' => 'Shahid Mehmood',
             'designation' => 'Junior Engineer',
             'department' => 'Engineering',
-            'salary' => 45000,
             'type' => EmployeeType::Internal,
             'date_of_joining' => '2024-06-01',
-        ]);
+        ]), 45000);
+
+        // A mid-year increment for the chief engineer
+        $this->salaryService->record($employees[0], [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Increment->value,
+            'components' => $this->salaryComponents(200000),
+            'tax_amount' => '15000.00',
+            'security_amount' => '4000.00',
+            'remarks' => 'Annual increment',
+        ], null);
 
         return $employees;
+    }
+
+    /**
+     * Record an initial salary split into Basic (70%) and House Rent (30%),
+     * with tax on higher salaries and a 2% security deduction.
+     */
+    private function recordSalary(Employee $employee, int $grossSalary): Employee
+    {
+        $this->salaryService->record($employee, [
+            'effective_date' => $employee->date_of_joining->format('Y-m-d'),
+            'change_type' => SalaryChangeType::Initial->value,
+            'components' => $this->salaryComponents($grossSalary),
+            'tax_amount' => $grossSalary >= 100000 ? bcmul((string) $grossSalary, '0.05', 2) : '0.00',
+            'security_amount' => bcmul((string) $grossSalary, '0.02', 2),
+            'remarks' => null,
+        ], null);
+
+        return $employee;
+    }
+
+    /**
+     * @return array<int, array{salary_component_id: int, amount: string}>
+     */
+    private function salaryComponents(int $grossSalary): array
+    {
+        $basic = bcmul((string) $grossSalary, '0.70', 2);
+
+        return [
+            ['salary_component_id' => SalaryComponent::where('name', 'Basic Salary')->value('id'), 'amount' => $basic],
+            ['salary_component_id' => SalaryComponent::where('name', 'House Rent')->value('id'), 'amount' => bcsub((string) $grossSalary, $basic, 2)],
+        ];
     }
 
     /**
@@ -213,18 +256,25 @@ class DemoDataSeeder extends Seeder
     private function seedProjectAssignments(array $employees, array $projects): void
     {
         // Assign chief engineer to both active projects
-        ProjectAssignment::create([
+        $this->projectAssignmentService->create([
             'employee_id' => $employees[0]->id,
             'project_id' => $projects['highway']->id,
             'role' => 'Lead Engineer',
             'allocation_percent' => 60.00,
+            'allowances' => [
+                ['name' => 'Site Allowance', 'amount' => '15000.00'],
+                ['name' => 'Fuel Allowance', 'amount' => '8000.00'],
+            ],
         ]);
 
-        ProjectAssignment::create([
+        $this->projectAssignmentService->create([
             'employee_id' => $employees[0]->id,
             'project_id' => $projects['bridge']->id,
             'role' => 'Technical Advisor',
             'allocation_percent' => 40.00,
+            'allowances' => [
+                ['name' => 'Travel Allowance', 'amount' => '5000.00'],
+            ],
         ]);
 
         // Assign accountant to highway

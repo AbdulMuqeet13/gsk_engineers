@@ -1,10 +1,10 @@
 import { Head, router } from '@inertiajs/react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { ExportButtons } from '@/components/reports/export-buttons';
 import { getBalanceSheetColumns } from '@/components/reports/balance-sheet-columns';
 import Heading from '@/components/heading';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -83,8 +83,7 @@ export default function BalanceSheet({
         [asAtDate, projectId],
     );
 
-    function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateChange(value: string) {
         setAsAtDate(value);
         reloadData({ as_at_date: value });
     }
@@ -112,11 +111,11 @@ export default function BalanceSheet({
                 <div className="flex flex-wrap items-end gap-4">
                     <div className="w-40">
                         <Label htmlFor="as-at-date">As At Date</Label>
-                        <Input
+                        <DatePicker
                             id="as-at-date"
-                            type="date"
                             value={asAtDate}
                             onChange={handleDateChange}
+                            clearable
                         />
                     </div>
 

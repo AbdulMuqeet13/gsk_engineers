@@ -45,6 +45,12 @@ export type Permission =
     // Transfers
     | 'transfers.view'
     | 'transfers.create'
+    // Incomes
+    | 'incomes.view'
+    | 'incomes.create'
+    // Account Transfers
+    | 'account-transfers.view'
+    | 'account-transfers.create'
     // Reports
     | 'reports.view'
     | 'reports.financial'

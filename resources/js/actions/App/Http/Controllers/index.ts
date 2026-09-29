@@ -3,6 +3,8 @@ import DashboardController from './DashboardController'
 import AccountHeadController from './AccountHeadController'
 import ProjectController from './ProjectController'
 import EmployeeController from './EmployeeController'
+import EmployeeSalaryController from './EmployeeSalaryController'
+import SecurityRefundController from './SecurityRefundController'
 import ProjectAssignmentController from './ProjectAssignmentController'
 import JournalEntryController from './JournalEntryController'
 import GeneralLedgerController from './GeneralLedgerController'
@@ -12,8 +14,11 @@ import AttendanceController from './AttendanceController'
 import BiometricDeviceController from './BiometricDeviceController'
 import BiometricEnrollmentController from './BiometricEnrollmentController'
 import LeaveRequestController from './LeaveRequestController'
+import SalaryComponentController from './SalaryComponentController'
 import PayrollRunController from './PayrollRunController'
 import InterProjectTransferController from './InterProjectTransferController'
+import ProjectIncomeController from './ProjectIncomeController'
+import AccountTransferController from './AccountTransferController'
 import InterProjectPositionController from './InterProjectPositionController'
 import IncomeExpenseSummaryController from './IncomeExpenseSummaryController'
 import PayrollReportController from './PayrollReportController'
@@ -30,6 +35,8 @@ const Controllers = {
     AccountHeadController: Object.assign(AccountHeadController, AccountHeadController),
     ProjectController: Object.assign(ProjectController, ProjectController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
+    EmployeeSalaryController: Object.assign(EmployeeSalaryController, EmployeeSalaryController),
+    SecurityRefundController: Object.assign(SecurityRefundController, SecurityRefundController),
     ProjectAssignmentController: Object.assign(ProjectAssignmentController, ProjectAssignmentController),
     JournalEntryController: Object.assign(JournalEntryController, JournalEntryController),
     GeneralLedgerController: Object.assign(GeneralLedgerController, GeneralLedgerController),
@@ -39,8 +46,11 @@ const Controllers = {
     BiometricDeviceController: Object.assign(BiometricDeviceController, BiometricDeviceController),
     BiometricEnrollmentController: Object.assign(BiometricEnrollmentController, BiometricEnrollmentController),
     LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),
+    SalaryComponentController: Object.assign(SalaryComponentController, SalaryComponentController),
     PayrollRunController: Object.assign(PayrollRunController, PayrollRunController),
     InterProjectTransferController: Object.assign(InterProjectTransferController, InterProjectTransferController),
+    ProjectIncomeController: Object.assign(ProjectIncomeController, ProjectIncomeController),
+    AccountTransferController: Object.assign(AccountTransferController, AccountTransferController),
     InterProjectPositionController: Object.assign(InterProjectPositionController, InterProjectPositionController),
     IncomeExpenseSummaryController: Object.assign(IncomeExpenseSummaryController, IncomeExpenseSummaryController),
     PayrollReportController: Object.assign(PayrollReportController, PayrollReportController),

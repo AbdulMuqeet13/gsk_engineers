@@ -22,6 +22,8 @@ class ChartOfAccountsSeeder extends Seeder
             ['code' => '2000', 'name' => 'Liabilities', 'type' => AccountType::Liability, 'parent_code' => null],
             ['code' => '2010', 'name' => 'Accounts Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
             ['code' => '2020', 'name' => 'Inter-Project Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
+            ['code' => '2030', 'name' => 'Salary Tax Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
+            ['code' => '2040', 'name' => 'Employee Security Deposits', 'type' => AccountType::Liability, 'parent_code' => '2000'],
 
             ['code' => '3000', 'name' => 'Equity', 'type' => AccountType::Equity, 'parent_code' => null],
             ['code' => '3001', 'name' => 'Owner Equity', 'type' => AccountType::Equity, 'parent_code' => '3000'],
@@ -36,6 +38,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['code' => '5003', 'name' => 'Fuel', 'type' => AccountType::Expense, 'parent_code' => '5000'],
             ['code' => '5004', 'name' => 'Food', 'type' => AccountType::Expense, 'parent_code' => '5000'],
             ['code' => '5005', 'name' => 'General Expenses', 'type' => AccountType::Expense, 'parent_code' => '5000'],
+            ['code' => '5006', 'name' => 'Project Allowances', 'type' => AccountType::Expense, 'parent_code' => '5000'],
         ];
 
         foreach ($accounts as $account) {

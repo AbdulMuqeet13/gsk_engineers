@@ -48,13 +48,15 @@ class PayrollReportTest extends TestCase
         $run = PayrollRun::factory()->approved()->create(['total_amount' => '150000.00']);
         Payslip::factory()->create([
             'payroll_run_id' => $run->id,
-            'basic_salary' => '80000.00',
+            'salary_amount' => '80000.00',
+            'gross_salary' => '80000.00',
             'deductions' => '5000.00',
             'net_salary' => '75000.00',
         ]);
         Payslip::factory()->create([
             'payroll_run_id' => $run->id,
-            'basic_salary' => '80000.00',
+            'salary_amount' => '80000.00',
+            'gross_salary' => '80000.00',
             'deductions' => '5000.00',
             'net_salary' => '75000.00',
         ]);
@@ -78,7 +80,8 @@ class PayrollReportTest extends TestCase
         Payslip::factory()->create([
             'payroll_run_id' => $run->id,
             'employee_id' => $employee->id,
-            'basic_salary' => '80000.00',
+            'salary_amount' => '80000.00',
+            'gross_salary' => '80000.00',
             'deductions' => '5000.00',
             'net_salary' => '75000.00',
         ]);
@@ -89,7 +92,7 @@ class PayrollReportTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->has('runs.0.payslips', 1)
             ->where('runs.0.payslips.0.employee_name', 'John Doe')
-            ->where('runs.0.payslips.0.basic_salary', '80000.00')
+            ->where('runs.0.payslips.0.gross_salary', '80000.00')
             ->where('runs.0.payslips.0.net_salary', '75000.00')
         );
     }
@@ -131,6 +134,18 @@ class PayrollReportTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->where('totalRuns', 1)
             ->where('totalDisbursed', '50000.00')
+        );
+    }
+
+    public function test_formats_run_periods_as_day_month_year(): void
+    {
+        PayrollRun::factory()->approved()->create(['period_start' => '2026-09-01', 'period_end' => '2026-09-30']);
+
+        $response = $this->actingAs($this->user)->get(route('reports.payroll'));
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('runs.0.period_start', '01-09-2026')
+            ->where('runs.0.period_end', '30-09-2026')
         );
     }
 }

@@ -1,11 +1,11 @@
 import { Head, router } from '@inertiajs/react';
 import { BookOpen } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { ExportButtons } from '@/components/reports/export-buttons';
 import { getProjectCashbookColumns } from '@/components/reports/project-cashbook-columns';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -74,16 +74,14 @@ export default function ProjectCashbook({
         reloadData({ project_id: value });
     }
 
-    function handleDateFromChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateFromChange(value: string) {
         setDateFrom(value);
         if (projectId) {
             reloadData({ date_from: value });
         }
     }
 
-    function handleDateToChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateToChange(value: string) {
         setDateTo(value);
         if (projectId) {
             reloadData({ date_to: value });
@@ -133,21 +131,21 @@ export default function ProjectCashbook({
 
                     <div className="w-40">
                         <Label htmlFor="date-from">Date From</Label>
-                        <Input
+                        <DatePicker
                             id="date-from"
-                            type="date"
                             value={dateFrom}
                             onChange={handleDateFromChange}
+                            clearable
                         />
                     </div>
 
                     <div className="w-40">
                         <Label htmlFor="date-to">Date To</Label>
-                        <Input
+                        <DatePicker
                             id="date-to"
-                            type="date"
                             value={dateTo}
                             onChange={handleDateToChange}
+                            clearable
                         />
                     </div>
 

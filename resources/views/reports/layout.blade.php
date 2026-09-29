@@ -30,7 +30,7 @@
     <div class="header">
         <h1>{{ config('app.name') }}</h1>
         <h2>@yield('title')</h2>
-        <div class="date">Generated on {{ now()->format('d M Y, h:i A') }}</div>
+        <div class="date">Generated on {{ now()->format('d-m-Y h:i A') }}</div>
     </div>
 
     @hasSection('filters')

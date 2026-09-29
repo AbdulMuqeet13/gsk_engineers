@@ -1,10 +1,10 @@
 import { Head, router } from '@inertiajs/react';
 import { BookOpen } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { getGeneralLedgerColumns } from '@/components/general-ledger/general-ledger-columns';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -83,16 +83,14 @@ export default function GeneralLedger({
         reloadData({ account_head_id: value });
     }
 
-    function handleDateFromChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateFromChange(value: string) {
         setDateFrom(value);
         if (accountHeadId) {
             reloadData({ date_from: value });
         }
     }
 
-    function handleDateToChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value;
+    function handleDateToChange(value: string) {
         setDateTo(value);
         if (accountHeadId) {
             reloadData({ date_to: value });
@@ -142,21 +140,21 @@ export default function GeneralLedger({
 
                     <div className="w-40">
                         <Label htmlFor="date-from">Date From</Label>
-                        <Input
+                        <DatePicker
                             id="date-from"
-                            type="date"
                             value={dateFrom}
                             onChange={handleDateFromChange}
+                            clearable
                         />
                     </div>
 
                     <div className="w-40">
                         <Label htmlFor="date-to">Date To</Label>
-                        <Input
+                        <DatePicker
                             id="date-to"
-                            type="date"
                             value={dateTo}
                             onChange={handleDateToChange}
+                            clearable
                         />
                     </div>
 

@@ -7,6 +7,7 @@ import { ApprovePayrollDialog } from '@/components/payroll/approve-payroll-dialo
 import { RejectPayrollDialog } from '@/components/payroll/reject-payroll-dialog';
 import { DeletePayrollDialog } from '@/components/payroll/delete-payroll-dialog';
 import { EditPayslipDialog } from '@/components/payroll/edit-payslip-dialog';
+import { PayslipBreakdownDialog } from '@/components/payroll/payslip-breakdown-dialog';
 import { DataTable } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -46,11 +47,13 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
     const [rejectingRun, setRejectingRun] = useState(false);
     const [deletingRun, setDeletingRun] = useState(false);
     const [editingPayslip, setEditingPayslip] = useState<Payslip | null>(null);
+    const [viewingPayslip, setViewingPayslip] = useState<Payslip | null>(null);
 
     const payslipColumns = useMemo(
         () =>
             getPayslipColumns({
                 onEdit: setEditingPayslip,
+                onViewBreakdown: setViewingPayslip,
                 canRun,
                 isDraft,
                 payrollRunId: payrollRun.id,
@@ -240,6 +243,14 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                     open={!!editingPayslip}
                     onClose={() => setEditingPayslip(null)}
                     payslip={editingPayslip}
+                />
+            )}
+
+            {viewingPayslip && (
+                <PayslipBreakdownDialog
+                    open={!!viewingPayslip}
+                    onClose={() => setViewingPayslip(null)}
+                    payslip={viewingPayslip}
                 />
             )}
         </>

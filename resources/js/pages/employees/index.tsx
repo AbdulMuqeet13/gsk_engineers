@@ -16,18 +16,20 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { useCan } from '@/hooks/use-can';
 import { useDataTable } from '@/hooks/use-data-table';
-import type { Employee, PaginatedResponse } from '@/types';
+import type { Employee, PaginatedResponse, SalaryComponent } from '@/types';
 
 type IndexProps = {
     employees: PaginatedResponse<Employee>;
     employeeTypes: string[];
     projects?: Array<{ id: number; name: string; code: string }>;
+    salaryComponents?: Pick<SalaryComponent, 'id' | 'name'>[];
 };
 
 export default function Index({
     employees,
     employeeTypes,
     projects = [],
+    salaryComponents = [],
 }: IndexProps) {
     const { can } = useCan();
     const { search, sort, filters, setSearch, setSort, setFilter, setPage, setPerPage } =
@@ -149,6 +151,7 @@ export default function Index({
                 onClose={() => setIsCreateOpen(false)}
                 employeeTypes={employeeTypes}
                 projects={projects}
+                salaryComponents={salaryComponents}
             />
 
             {editingEmployee && (

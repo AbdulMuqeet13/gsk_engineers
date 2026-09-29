@@ -25,7 +25,7 @@ class EmployeeFingerprint extends Model
     protected function casts(): array
     {
         return [
-            'enrolled_at' => 'datetime',
+            'enrolled_at' => 'datetime:d-m-Y h:i A',
         ];
     }
 

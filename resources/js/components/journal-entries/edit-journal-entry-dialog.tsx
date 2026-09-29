@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
+import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -119,12 +120,11 @@ export function EditJournalEntryDialog({
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="space-y-2">
                                 <Label htmlFor="edit-date">Date</Label>
-                                <Input
+                                <DatePicker
                                     id="edit-date"
-                                    type="date"
                                     value={data.date}
-                                    onChange={(e) =>
-                                        setData('date', e.target.value)
+                                    onChange={(value) =>
+                                        setData('date', value)
                                     }
                                 />
                                 {errors.date && (

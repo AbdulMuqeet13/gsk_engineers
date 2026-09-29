@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Enums\JournalEntryType;
 use App\Exceptions\Payroll\EmptyPayrollException;
+use App\Exceptions\Payroll\OverlappingPayrollException;
 use App\Exceptions\Payroll\PayrollNotDraftException;
 use App\Exceptions\Payroll\PayrollNotSubmittedException;
 use App\Models\AccountHead;
@@ -39,8 +40,8 @@ class PayrollServiceTest extends TestCase
 
     public function test_create_generates_payslips_from_active_employees(): void
     {
-        Employee::factory()->count(3)->create(['is_active' => true, 'salary' => '50000.00']);
-        Employee::factory()->create(['is_active' => false, 'salary' => '30000.00']);
+        Employee::factory()->count(3)->withSalary('50000.00')->create(['is_active' => true]);
+        Employee::factory()->withSalary('30000.00')->create(['is_active' => false]);
 
         $run = $this->service->create([
             'period_start' => '2026-09-01',
@@ -77,7 +78,7 @@ class PayrollServiceTest extends TestCase
 
     public function test_create_calculates_days_from_attendance(): void
     {
-        $employee = Employee::factory()->create(['is_active' => true, 'salary' => '50000.00']);
+        $employee = Employee::factory()->withSalary('50000.00')->create(['is_active' => true]);
 
         Attendance::factory()->present()->create([
             'employee_id' => $employee->id,
@@ -109,7 +110,7 @@ class PayrollServiceTest extends TestCase
 
     public function test_create_calculates_net_salary(): void
     {
-        $employee = Employee::factory()->create(['is_active' => true, 'salary' => '75000.00']);
+        $employee = Employee::factory()->withSalary('75000.00')->create(['is_active' => true]);
 
         $run = $this->service->create([
             'period_start' => '2026-09-01',
@@ -119,14 +120,14 @@ class PayrollServiceTest extends TestCase
         ], $this->user);
 
         $payslip = $run->payslips->firstWhere('employee_id', $employee->id);
-        $this->assertEquals(0, bccomp($payslip->getRawOriginal('basic_salary'), '75000.00', 2));
+        $this->assertEquals(0, bccomp($payslip->getRawOriginal('salary_amount'), '75000.00', 2));
         $this->assertEquals(0, bccomp($payslip->getRawOriginal('net_salary'), '75000.00', 2));
     }
 
     public function test_update_payslip_recalculates_total(): void
     {
-        $employee1 = Employee::factory()->create(['is_active' => true, 'salary' => '50000.00']);
-        $employee2 = Employee::factory()->create(['is_active' => true, 'salary' => '30000.00']);
+        $employee1 = Employee::factory()->withSalary('50000.00')->create(['is_active' => true]);
+        $employee2 = Employee::factory()->withSalary('30000.00')->create(['is_active' => true]);
 
         $run = $this->service->create([
             'period_start' => '2026-09-01',
@@ -137,6 +138,8 @@ class PayrollServiceTest extends TestCase
 
         $payslip1 = $run->payslips->firstWhere('employee_id', $employee1->id);
         $this->service->updatePayslip($payslip1, [
+            'tax_amount' => '0.00',
+            'security_amount' => '0.00',
             'deductions' => '5000.00',
             'notes' => null,
         ]);
@@ -156,7 +159,8 @@ class PayrollServiceTest extends TestCase
         $employee = Employee::factory()->create();
         $payslip = $run->payslips()->create([
             'employee_id' => $employee->id,
-            'basic_salary' => '50000.00',
+            'salary_amount' => '50000.00',
+            'gross_salary' => '50000.00',
             'deductions' => '0.00',
             'net_salary' => '50000.00',
             'days_worked' => 26,
@@ -165,6 +169,8 @@ class PayrollServiceTest extends TestCase
 
         $this->expectException(PayrollNotDraftException::class);
         $this->service->updatePayslip($payslip, [
+            'tax_amount' => '0.00',
+            'security_amount' => '0.00',
             'deductions' => '5000.00',
             'notes' => null,
         ]);
@@ -205,7 +211,8 @@ class PayrollServiceTest extends TestCase
         $employee = Employee::factory()->create();
         $run->payslips()->create([
             'employee_id' => $employee->id,
-            'basic_salary' => '100000.00',
+            'salary_amount' => '100000.00',
+            'gross_salary' => '100000.00',
             'deductions' => '0.00',
             'net_salary' => '100000.00',
             'days_worked' => 26,
@@ -233,7 +240,8 @@ class PayrollServiceTest extends TestCase
         $employee = Employee::factory()->create();
         $run->payslips()->create([
             'employee_id' => $employee->id,
-            'basic_salary' => '80000.00',
+            'salary_amount' => '80000.00',
+            'gross_salary' => '80000.00',
             'deductions' => '0.00',
             'net_salary' => '80000.00',
             'days_worked' => 26,
@@ -324,5 +332,24 @@ class PayrollServiceTest extends TestCase
 
         $this->expectException(PayrollNotDraftException::class);
         $this->service->delete($run);
+    }
+
+    public function test_create_throws_when_period_overlaps_existing_run(): void
+    {
+        PayrollRun::factory()->draft()->create([
+            'period_start' => '2026-09-01',
+            'period_end' => '2026-09-30',
+            'payment_account_id' => $this->cashAccount->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        $this->expectException(OverlappingPayrollException::class);
+
+        $this->service->create([
+            'period_start' => '2026-09-30',
+            'period_end' => '2026-10-30',
+            'payment_account_id' => $this->cashAccount->id,
+            'description' => null,
+        ], $this->user);
     }
 }

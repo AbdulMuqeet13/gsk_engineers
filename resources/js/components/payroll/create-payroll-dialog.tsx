@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -8,7 +9,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -73,14 +73,12 @@ export function CreatePayrollDialog({
                             <Label htmlFor="create-period-start">
                                 Period Start
                             </Label>
-                            <Input
+                            <DatePicker
                                 id="create-period-start"
-                                type="date"
                                 value={data.period_start}
-                                onChange={(e) =>
-                                    setData('period_start', e.target.value)
+                                onChange={(value) =>
+                                    setData('period_start', value)
                                 }
-                                required
                             />
                             {errors.period_start && (
                                 <p className="text-destructive text-sm">
@@ -93,14 +91,12 @@ export function CreatePayrollDialog({
                             <Label htmlFor="create-period-end">
                                 Period End
                             </Label>
-                            <Input
+                            <DatePicker
                                 id="create-period-end"
-                                type="date"
                                 value={data.period_end}
-                                onChange={(e) =>
-                                    setData('period_end', e.target.value)
+                                onChange={(value) =>
+                                    setData('period_end', value)
                                 }
-                                required
                             />
                             {errors.period_end && (
                                 <p className="text-destructive text-sm">
