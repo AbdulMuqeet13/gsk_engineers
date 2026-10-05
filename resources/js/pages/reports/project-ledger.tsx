@@ -22,7 +22,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { AccountHead, Project, ProjectLedgerRow } from '@/types';
+import type {
+    AccountHead,
+    Employee,
+    Project,
+    ProjectLedgerRow,
+} from '@/types';
 import { index } from '@/actions/App/Http/Controllers/ProjectLedgerController';
 import { dashboard } from '@/routes';
 
@@ -35,6 +40,7 @@ type ProjectLedgerPageProps = {
         'id' | 'code' | 'name' | 'type' | 'normal_balance'
     >[];
     projects: Pick<Project, 'id' | 'name' | 'code'>[];
+    employees: Pick<Employee, 'id' | 'name' | 'designation'>[];
 };
 
 function formatAmount(value: string): string {
@@ -50,32 +56,36 @@ export default function ProjectLedger({
     totalCredit,
     accountHeads,
     projects = [],
+    employees = [],
 }: ProjectLedgerPageProps) {
     const [projectId, setProjectId] = useState<string>('');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [accountHeadId, setAccountHeadId] = useState<string>('');
+    const [employeeId, setEmployeeId] = useState<string>('');
 
     const columns = getProjectLedgerColumns();
 
     const reloadData = useCallback(
         (params: Record<string, string>) => {
             router.reload({
-                only: ['rows', 'totalDebit', 'totalCredit'],
+                only: ['rows', 'totalDebit', 'totalCredit', 'employees'],
                 data: {
                     project_id: params.project_id ?? projectId,
                     date_from: params.date_from ?? dateFrom,
                     date_to: params.date_to ?? dateTo,
                     account_head_id: params.account_head_id ?? accountHeadId,
+                    employee_id: params.employee_id ?? employeeId,
                 },
             });
         },
-        [projectId, dateFrom, dateTo, accountHeadId],
+        [projectId, dateFrom, dateTo, accountHeadId, employeeId],
     );
 
     function handleProjectChange(value: string) {
         setProjectId(value);
-        reloadData({ project_id: value });
+        setEmployeeId('');
+        reloadData({ project_id: value, employee_id: '' });
     }
 
     function handleDateFromChange(value: string) {
@@ -98,6 +108,12 @@ export default function ProjectLedger({
         if (projectId) {
             reloadData({ account_head_id: resolvedValue });
         }
+    }
+
+    function handleEmployeeChange(value: string) {
+        const resolvedValue = value === 'all' ? '' : value;
+        setEmployeeId(resolvedValue);
+        reloadData({ employee_id: resolvedValue });
     }
 
     return (
@@ -178,6 +194,30 @@ export default function ProjectLedger({
                         </Select>
                     </div>
 
+                    <div className="w-56">
+                        <Label htmlFor="employee">Employee</Label>
+                        <Select
+                            value={employeeId || 'all'}
+                            onValueChange={handleEmployeeChange}
+                            disabled={!projectId}
+                        >
+                            <SelectTrigger id="employee" className="w-full">
+                                <SelectValue placeholder="All Employees" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Employees</SelectItem>
+                                {employees.map((employee) => (
+                                    <SelectItem
+                                        key={employee.id}
+                                        value={employee.id.toString()}
+                                    >
+                                        {employee.name} — {employee.designation}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {projectId && (
                         <div className="ml-auto">
                             <ExportButtons
@@ -187,11 +227,19 @@ export default function ProjectLedger({
                                     date_from: dateFrom,
                                     date_to: dateTo,
                                     account_head_id: accountHeadId,
+                                    employee_id: employeeId,
                                 }}
                             />
                         </div>
                     )}
                 </div>
+
+                {employeeId && (
+                    <p className="text-muted-foreground text-sm">
+                        Showing this employee's project allowances from
+                        approved payroll runs.
+                    </p>
+                )}
 
                 {!projectId ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-12">

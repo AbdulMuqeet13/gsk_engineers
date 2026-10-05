@@ -4,6 +4,9 @@
 
 @section('filters')
     <strong>Project:</strong> {{ $project->code }} — {{ $project->name }}
+    @if($employee)
+        &nbsp; <strong>Employee:</strong> {{ $employee->name }}
+    @endif
 @endsection
 
 @section('content')

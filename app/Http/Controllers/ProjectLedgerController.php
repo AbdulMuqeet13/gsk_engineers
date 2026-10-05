@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\NormalBalance;
+use App\Enums\PayrollStatus;
+use App\Enums\PayslipItemType;
 use App\Models\AccountHead;
+use App\Models\Employee;
 use App\Models\JournalLine;
+use App\Models\PayslipItem;
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -42,6 +46,13 @@ class ProjectLedgerController extends Controller
             'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
                 ->get(),
+            'employees' => fn () => $projectId
+                ? Employee::select('id', 'name', 'designation')
+                    ->whereHas('payslips.items', fn ($q) => $q->where('type', PayslipItemType::Allowance)
+                        ->where('project_id', $projectId))
+                    ->orderBy('name')
+                    ->get()
+                : [],
         ]);
     }
 
@@ -56,6 +67,8 @@ class ProjectLedgerController extends Controller
         $data = $this->getReportData($request, $projectId, $accountHeadId);
         $project = Project::findOrFail($projectId);
         $format = $request->input('format', 'pdf');
+
+        $employee = $request->input('employee_id') ? Employee::find($request->input('employee_id')) : null;
 
         if ($format === 'excel') {
             $path = tempnam(sys_get_temp_dir(), 'ledger').'.xlsx';
@@ -86,12 +99,13 @@ class ProjectLedgerController extends Controller
             ]);
             $writer->close();
 
-            return response()->download($path, 'project-ledger-'.$project->code.'.xlsx')->deleteFileAfterSend(true);
+            return response()->download($path, 'project-ledger-'.$project->code.($employee ? '-employee-'.$employee->id : '').'.xlsx')->deleteFileAfterSend(true);
         }
 
         $pdf = Pdf::loadView('reports.project-ledger', array_merge($data, [
             'project' => $project,
-            'hasAccountFilter' => (bool) $accountHeadId,
+            'employee' => $employee,
+            'hasAccountFilter' => (bool) $accountHeadId || (bool) $employee,
         ]));
 
         return $pdf->download('project-ledger-'.$project->code.'.pdf');
@@ -102,6 +116,10 @@ class ProjectLedgerController extends Controller
      */
     private function getReportData(Request $request, int|string $projectId, ?string $accountHeadId): array
     {
+        if ($request->input('employee_id')) {
+            return $this->getEmployeeReportData($request, $projectId, $request->input('employee_id'), $accountHeadId);
+        }
+
         $lines = JournalLine::query()
             ->whereHas('journalEntry', fn ($q) => $q->posted()
                 ->when($request->input('date_from'), fn ($q2, $d) => $q2->where('date', '>=', $d))
@@ -164,6 +182,65 @@ class ProjectLedgerController extends Controller
             'rows' => $rows,
             'totalDebit' => $totalDebit,
             'totalCredit' => $totalCredit,
+        ];
+    }
+
+    /**
+     * Build ledger rows for one employee from the project allowances on their
+     * approved payslips. Payroll posts allowances to the journal aggregated per
+     * project, so payslip items are the only per-employee source.
+     *
+     * @return array{rows: array<int, array<string, mixed>>, totalDebit: string, totalCredit: string}
+     */
+    private function getEmployeeReportData(Request $request, int|string $projectId, int|string $employeeId, ?string $accountHeadId): array
+    {
+        $allowanceAccount = AccountHead::where('code', '5006')->first();
+
+        if (! $allowanceAccount || ($accountHeadId && (int) $accountHeadId !== $allowanceAccount->id)) {
+            return ['rows' => [], 'totalDebit' => '0.00', 'totalCredit' => '0.00'];
+        }
+
+        $items = PayslipItem::query()
+            ->where('type', PayslipItemType::Allowance)
+            ->where('project_id', $projectId)
+            ->whereHas('payslip', fn ($q) => $q->where('employee_id', $employeeId)
+                ->whereHas('payrollRun', fn ($q2) => $q2->where('status', PayrollStatus::Approved)
+                    ->when($request->input('date_from'), fn ($q3, $d) => $q3->whereDate('approved_at', '>=', $d))
+                    ->when($request->input('date_to'), fn ($q3, $d) => $q3->whereDate('approved_at', '<=', $d))))
+            ->with(['payslip:id,payroll_run_id,employee_id', 'payslip.employee:id,name', 'payslip.payrollRun:id,reference,period_start,approved_at'])
+            ->get()
+            ->sortBy(fn (PayslipItem $item) => [$item->payslip->payrollRun->approved_at, $item->id])
+            ->values();
+
+        $total = '0.00';
+        $rows = [];
+
+        foreach ($items as $item) {
+            $amount = $item->getRawOriginal('amount') ?? $item->amount;
+            $total = bcadd($total, $amount, 2);
+            $run = $item->payslip->payrollRun;
+
+            $rows[] = [
+                'id' => $item->id,
+                'date' => $run->approved_at->format('d-m-Y'),
+                'reference' => $run->reference,
+                'description' => "{$item->name} — {$item->payslip->employee->name} ({$run->period_start->format('M Y')})",
+                'account' => [
+                    'id' => $allowanceAccount->id,
+                    'code' => $allowanceAccount->code,
+                    'name' => $allowanceAccount->name,
+                    'type' => $allowanceAccount->type->value,
+                ],
+                'debit' => number_format((float) $amount, 2, '.', ''),
+                'credit' => '0.00',
+                'balance' => $total,
+            ];
+        }
+
+        return [
+            'rows' => $rows,
+            'totalDebit' => $total,
+            'totalCredit' => '0.00',
         ];
     }
 }
