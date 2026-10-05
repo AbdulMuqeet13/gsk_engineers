@@ -57,6 +57,7 @@ All posted transactions for a specific project across all account types:
 - Running balance when single account selected, hidden for multi-account view
 - Balance direction follows account's normal balance
 - Filterable by project (required), date range, and specific account
+- Employee filter (added later): shows the employee's project allowances from approved payslips
 
 Architecture:
 - Controller: `ProjectLedgerController` (index + export)

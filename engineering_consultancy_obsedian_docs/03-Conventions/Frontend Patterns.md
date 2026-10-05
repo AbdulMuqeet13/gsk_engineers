@@ -136,9 +136,11 @@ export type Employee = {
 
 Use `formatAmount()` from `@/lib/utils` in new code (older columns files still define local helpers).
 
-## Select Triggers in Grids
+## Select Triggers and Dialog Sizing
 
-Radix `SelectTrigger` is `w-fit` by default; in two-column dialog grids give it `className="w-full min-w-0"` (and `min-w-0` on the grid cell) so long values truncate instead of overflowing.
+The `SelectTrigger` primitive defaults to `w-full min-w-0` and truncates long values with an ellipsis, so selects in dialog grids no longer need a width class. Filter-toolbar selects pass an explicit width (e.g. `h-8 w-[160px]`). `SelectContent` is capped to the viewport width and long options wrap.
+
+`DialogContent` is capped to `100dvh - 2rem` and scrolls (`overflow-y-auto`), so tall forms are scrollable on mobile without per-dialog `max-h` classes.
 
 ## Toasts
 

@@ -110,10 +110,19 @@ Shows all posted transactions for a specific project across all account types.
 - **Project** (required) -- Select the project to view
 - **Date From / Date To** -- Optional date range
 - **Account** -- All accounts or filter to a specific one
+- **Employee** -- All employees or a single employee (enabled once a project is selected; lists only employees with project allowances on that project)
 
 **Columns:** Date, Reference, Description, Account (Code - Name), Type, Debit, Credit, Balance
 
 **Note:** The **Balance** column only shows a running balance when a single account is selected. When viewing all accounts, it shows "--" because a running balance across different account types is not meaningful.
+
+**Employee filter:** Payroll posts project allowances to the journal summed per project, so the ledger itself has no per-employee lines. When an employee is selected, the rows instead come from that employee's **project allowances on approved payroll runs** for the project:
+- Date = payroll approval date, Reference = payroll run reference
+- Description = allowance name, employee and month (e.g. "Site Allowance -- Ali Khan (Jan 2026)")
+- Shown as a debit to **5006 Project Allowances** with a running balance
+- Date filters apply to the approval date; choosing any account other than 5006 returns no rows
+- Salaries (posted without a project), expenses and manual journal entries are not included
+- Exports include the filter and the PDF header shows the employee name
 
 **Footer:** Total Debits, Total Credits
 
