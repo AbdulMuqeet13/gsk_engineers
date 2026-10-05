@@ -145,3 +145,6 @@ There is no Prettier config or dependency; `npx prettier` downloads defaults (do
 
 ### Payroll run overlap
 A new run cannot overlap a non-rejected run. Demo data already has July-September 2026 runs.
+
+### Project ledger employee filter needs payslip items
+The employee filter reads allowance `payslip_items`, not journal lines (payroll posts allowances summed per project). Payslips created before itemised allowances have no items, so those runs never appear and the Employee dropdown can be empty. Only approved runs count.

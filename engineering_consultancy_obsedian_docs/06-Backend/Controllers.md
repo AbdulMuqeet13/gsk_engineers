@@ -206,7 +206,7 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 | GET | `/reports/project-ledger` | `reports.project-ledger` | ProjectLedgerController@index |
 | GET | `/reports/project-ledger/export` | `reports.project-ledger.export` | ProjectLedgerController@export |
 
-**Index Props:** rows (ProjectLedgerRow[]), totals (totalDebit, totalCredit), accountHeads, projects, employees (employees with allowance payslip items on the selected project)
+**Index Props:** rows (ProjectLedgerRow[]), totals (totalDebit, totalCredit), accountHeads, projects, employees (employees, including soft-deleted, with allowance payslip items on the selected project in approved runs)
 **Filters:** project_id (required), date_from, date_to, account_head_id, employee_id
 **Employee mode:** with `employee_id`, rows are built from `PayslipItem` allowances (approved runs, matching project/employee, dated by `approved_at`) against account 5006 instead of journal lines
 **Permission:** `reports.project`

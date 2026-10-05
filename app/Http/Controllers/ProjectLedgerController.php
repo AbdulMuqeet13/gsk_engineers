@@ -47,9 +47,12 @@ class ProjectLedgerController extends Controller
                 ->orderBy('name')
                 ->get(),
             'employees' => fn () => $projectId
-                ? Employee::select('id', 'name', 'designation')
-                    ->whereHas('payslips.items', fn ($q) => $q->where('type', PayslipItemType::Allowance)
-                        ->where('project_id', $projectId))
+                ? Employee::withTrashed()
+                    ->select('id', 'name', 'designation')
+                    ->whereHas('payslips', fn ($q) => $q
+                        ->whereHas('payrollRun', fn ($q2) => $q2->where('status', PayrollStatus::Approved))
+                        ->whereHas('items', fn ($q2) => $q2->where('type', PayslipItemType::Allowance)
+                            ->where('project_id', $projectId)))
                     ->orderBy('name')
                     ->get()
                 : [],
@@ -68,7 +71,7 @@ class ProjectLedgerController extends Controller
         $project = Project::findOrFail($projectId);
         $format = $request->input('format', 'pdf');
 
-        $employee = $request->input('employee_id') ? Employee::find($request->input('employee_id')) : null;
+        $employee = $request->input('employee_id') ? Employee::withTrashed()->find($request->input('employee_id')) : null;
 
         if ($format === 'excel') {
             $path = tempnam(sys_get_temp_dir(), 'ledger').'.xlsx';
@@ -207,7 +210,11 @@ class ProjectLedgerController extends Controller
                 ->whereHas('payrollRun', fn ($q2) => $q2->where('status', PayrollStatus::Approved)
                     ->when($request->input('date_from'), fn ($q3, $d) => $q3->whereDate('approved_at', '>=', $d))
                     ->when($request->input('date_to'), fn ($q3, $d) => $q3->whereDate('approved_at', '<=', $d))))
-            ->with(['payslip:id,payroll_run_id,employee_id', 'payslip.employee:id,name', 'payslip.payrollRun:id,reference,period_start,approved_at'])
+            ->with([
+                'payslip:id,payroll_run_id,employee_id',
+                'payslip.employee' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'payslip.payrollRun:id,reference,period_start,approved_at',
+            ])
             ->get()
             ->sortBy(fn (PayslipItem $item) => [$item->payslip->payrollRun->approved_at, $item->id])
             ->values();

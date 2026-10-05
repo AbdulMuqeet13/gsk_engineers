@@ -254,7 +254,7 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 | totals | object | { totalDebit, totalCredit } |
 | accountHeads | AccountHead[] | Active accounts for filter |
 | projects | Project[] | For project selector |
-| employees | Pick<Employee, 'id' \| 'name' \| 'designation'>[] | Employees with allowances on the selected project (reloaded with rows) |
+| employees | Pick<Employee, 'id' \| 'name' \| 'designation'>[] | Employees (incl. deleted) with allowances on the selected project in approved runs (reloaded with rows) |
 
 **Features:** Project selector (required), date range, account and employee filters, running balance (single account or employee), PDF/Excel export. Changing project resets the employee filter.
 

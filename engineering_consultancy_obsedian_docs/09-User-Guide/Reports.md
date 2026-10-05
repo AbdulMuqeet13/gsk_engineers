@@ -110,7 +110,7 @@ Shows all posted transactions for a specific project across all account types.
 - **Project** (required) -- Select the project to view
 - **Date From / Date To** -- Optional date range
 - **Account** -- All accounts or filter to a specific one
-- **Employee** -- All employees or a single employee (enabled once a project is selected; lists only employees with project allowances on that project)
+- **Employee** -- All employees or a single employee (enabled once a project is selected; lists only employees with project allowances on an approved payroll run for that project, including deleted employees)
 
 **Columns:** Date, Reference, Description, Account (Code - Name), Type, Debit, Credit, Balance
 

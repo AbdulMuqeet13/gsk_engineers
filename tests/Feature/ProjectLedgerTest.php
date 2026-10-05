@@ -418,16 +418,40 @@ class ProjectLedgerTest extends TestCase
 
     public function test_lists_only_employees_with_allowances_on_the_project(): void
     {
-        $employee = Employee::factory()->create();
+        $employee = Employee::factory()->create(['name' => 'Ali Khan']);
         $this->createAllowance(PayrollRun::factory()->approved()->create(), $employee, $this->project, '2000.00');
         $this->createAllowance(PayrollRun::factory()->approved()->create(), Employee::factory()->create(), Project::factory()->create(), '2000.00');
+        $this->createAllowance(PayrollRun::factory()->submitted()->create(), Employee::factory()->create(), $this->project, '2000.00');
+        $formerEmployee = Employee::factory()->create(['name' => 'Bilal Ahmed']);
+        $this->createAllowance(PayrollRun::factory()->approved()->create(), $formerEmployee, $this->project, '2000.00');
+        $formerEmployee->delete();
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger', ['project_id' => $this->project->id]));
 
         $response->assertInertia(fn ($page) => $page
-            ->has('employees', 1)
+            ->has('employees', 2)
             ->where('employees.0.id', $employee->id)
+            ->where('employees.1.id', $formerEmployee->id)
+        );
+    }
+
+    public function test_employee_filter_shows_allowances_of_a_deleted_employee(): void
+    {
+        AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
+        $employee = Employee::factory()->create(['name' => 'Bilal Ahmed']);
+        $this->createAllowance(PayrollRun::factory()->approved()->create(['period_start' => '2026-01-01']), $employee, $this->project, '2000.00', 'Site Allowance');
+        $employee->delete();
+
+        $response = $this->actingAs($this->user)
+            ->get(route('reports.project-ledger', [
+                'project_id' => $this->project->id,
+                'employee_id' => $employee->id,
+            ]));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('rows', 1)
+            ->where('rows.0.description', 'Site Allowance — Bilal Ahmed (Jan 2026)')
         );
     }
 
