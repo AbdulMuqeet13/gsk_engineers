@@ -25,7 +25,7 @@ type IndexProps = {
 
 export default function Index({ projects, statuses }: IndexProps) {
     const { can } = useCan();
-    const { search, sort, filters, setSearch, setSort, setFilter, setPage, setPerPage } =
+    const { search, sort, filters, setSearch, setSort, setFilter, setPage, setPerPage, getFilterValues } =
         useDataTable({ only: ['projects'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -58,15 +58,7 @@ export default function Index({ projects, statuses }: IndexProps) {
         [statuses],
     );
 
-    const activeStatusFilter = useMemo(() => {
-        const value = filters.status;
-
-        if (!value) {
-            return [];
-        }
-
-        return Array.isArray(value) ? value : value.split(',');
-    }, [filters.status]);
+    const activeStatusFilter = getFilterValues('status');
 
     return (
         <>

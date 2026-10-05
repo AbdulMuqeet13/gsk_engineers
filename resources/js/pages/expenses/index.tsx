@@ -60,6 +60,7 @@ export default function Expenses({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['expenses'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -100,11 +101,7 @@ export default function Expenses({
         value: status,
     }));
 
-    const currentStatusFilter = filters.status
-        ? Array.isArray(filters.status)
-            ? filters.status
-            : [filters.status]
-        : [];
+    const currentStatusFilter = getFilterValues('status');
 
     return (
         <>

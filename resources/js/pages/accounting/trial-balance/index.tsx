@@ -22,6 +22,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { Project, TrialBalanceRow } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/TrialBalanceController';
 import { dashboard } from '@/routes';
@@ -48,9 +49,16 @@ export default function TrialBalance({
     isBalanced,
     projects = [],
 }: TrialBalancePageProps) {
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [projectId, setProjectId] = useState<string>('');
+    const queryParams = useQueryParams();
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
 
     const columns = getTrialBalanceColumns();
 

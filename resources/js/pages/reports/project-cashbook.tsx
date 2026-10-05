@@ -23,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { AccountHead, CashbookRow, CashbookSummary, Project } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/ProjectCashbookController';
 import { dashboard } from '@/routes';
@@ -47,10 +48,19 @@ export default function ProjectCashbook({
     cashAccounts,
     projects = [],
 }: ProjectCashbookPageProps) {
-    const [projectId, setProjectId] = useState<string>('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [accountId, setAccountId] = useState<string>('');
+    const queryParams = useQueryParams();
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
+    const [accountId, setAccountId] = useState<string>(
+        queryParams.get('account_id') ?? '',
+    );
 
     const columns = getProjectCashbookColumns();
 

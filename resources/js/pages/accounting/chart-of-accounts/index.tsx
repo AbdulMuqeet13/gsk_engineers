@@ -48,6 +48,7 @@ export default function ChartOfAccounts({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['accountHeads'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -75,11 +76,7 @@ export default function ChartOfAccounts({
         value: type,
     }));
 
-    const currentTypeFilter = filters.type
-        ? Array.isArray(filters.type)
-            ? filters.type
-            : [filters.type]
-        : [];
+    const currentTypeFilter = getFilterValues('type');
 
     return (
         <>

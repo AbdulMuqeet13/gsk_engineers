@@ -27,10 +27,10 @@ class ProjectAssignmentController extends Controller
         $assignments = ProjectAssignment::query()
             ->with(['employee:id,name,type', 'project:id,name,code', 'allowances'])
             ->when($request->input('project_id'), function ($query, string $projectId) {
-                $query->where('project_id', $projectId);
+                $query->whereIn('project_id', explode(',', $projectId));
             })
             ->when($request->input('employee_id'), function ($query, string $employeeId) {
-                $query->where('employee_id', $employeeId);
+                $query->whereIn('employee_id', explode(',', $employeeId));
             })
             ->orderBy(
                 $request->input('sort', 'created_at'),

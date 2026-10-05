@@ -34,7 +34,7 @@ class ProjectController extends Controller
                 });
             })
             ->when($request->input('status'), function ($query, string $status) {
-                $query->where('status', $status);
+                $query->whereIn('status', explode(',', $status));
             })
             ->orderBy(
                 $request->input('sort', 'created_at'),

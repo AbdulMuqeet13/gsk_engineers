@@ -38,6 +38,7 @@ export default function Index({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['assignments'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -75,17 +76,9 @@ export default function Index({
         [sort, setSort],
     );
 
-    const projectFilterValue = filters.project_id
-        ? Array.isArray(filters.project_id)
-            ? filters.project_id
-            : [filters.project_id]
-        : [];
+    const projectFilterValue = getFilterValues('project_id');
 
-    const employeeFilterValue = filters.employee_id
-        ? Array.isArray(filters.employee_id)
-            ? filters.employee_id
-            : [filters.employee_id]
-        : [];
+    const employeeFilterValue = getFilterValues('employee_id');
 
     return (
         <>
@@ -131,7 +124,7 @@ export default function Index({
                                         setFilter(
                                             'project_id',
                                             value.length > 0
-                                                ? value
+                                                ? value.join(',')
                                                 : undefined,
                                         )
                                     }
@@ -144,7 +137,7 @@ export default function Index({
                                         setFilter(
                                             'employee_id',
                                             value.length > 0
-                                                ? value
+                                                ? value.join(',')
                                                 : undefined,
                                         )
                                     }

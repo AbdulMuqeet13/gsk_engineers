@@ -32,7 +32,7 @@ export default function Index({
     salaryComponents = [],
 }: IndexProps) {
     const { can } = useCan();
-    const { search, sort, filters, setSearch, setSort, setFilter, setPage, setPerPage } =
+    const { search, sort, filters, setSearch, setSort, setFilter, setPage, setPerPage, getFilterValues } =
         useDataTable({ only: ['employees'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -64,17 +64,9 @@ export default function Index({
         value: String(project.id),
     }));
 
-    const typeFilterValue = filters.type
-        ? Array.isArray(filters.type)
-            ? filters.type
-            : [filters.type]
-        : [];
+    const typeFilterValue = getFilterValues('type');
 
-    const projectFilterValue = filters.project_id
-        ? Array.isArray(filters.project_id)
-            ? filters.project_id
-            : [filters.project_id]
-        : [];
+    const projectFilterValue = getFilterValues('project_id');
 
     return (
         <>

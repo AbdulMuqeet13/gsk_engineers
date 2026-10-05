@@ -397,4 +397,22 @@ class ExpenseTest extends TestCase
             ->post(route('expenses.store'), $data)
             ->assertSessionHasErrors('project_id');
     }
+
+    public function test_index_filters_by_multiple_statuses(): void
+    {
+        $accounts = [
+            'account_head_id' => $this->expenseAccount->id,
+            'payment_account_id' => $this->cashAccount->id,
+        ];
+        Expense::factory()->draft()->create($accounts);
+        Expense::factory()->submitted()->create($accounts);
+        Expense::factory()->rejected()->create($accounts);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('expenses.index', ['status' => 'draft,submitted']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('expenses.data', 2)
+        );
+    }
 }

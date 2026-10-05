@@ -19,6 +19,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import { index } from '@/actions/App/Http/Controllers/PayrollReportController';
 import { dashboard } from '@/routes';
 
@@ -42,8 +43,13 @@ export default function PayrollReport({
     totalEmployees,
     totalDisbursed,
 }: PayrollReportPageProps) {
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
+    const queryParams = useQueryParams();
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
     const [expandedRuns, setExpandedRuns] = useState<Set<number>>(new Set());
 
     const runColumns = getRunColumns();

@@ -35,7 +35,7 @@ class AccountHeadController extends Controller
                 });
             })
             ->when($request->input('type'), function ($query, string $type) {
-                $query->where('type', $type);
+                $query->whereIn('type', explode(',', $type));
             })
             ->orderBy(
                 $request->input('sort', 'code'),

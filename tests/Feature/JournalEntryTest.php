@@ -356,4 +356,20 @@ class JournalEntryTest extends TestCase
             ->post(route('journal-entries.store'), $data)
             ->assertSessionHasErrors('lines.0.account_head_id');
     }
+
+    public function test_index_filters_by_multiple_types(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        JournalEntry::factory()->draft()->standard()->create();
+        JournalEntry::factory()->draft()->simple()->create();
+        JournalEntry::factory()->draft()->opening()->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('journal-entries.index', ['type' => 'standard,simple']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('journalEntries.data', 2)
+        );
+    }
 }

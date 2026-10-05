@@ -33,7 +33,7 @@ class AttendanceController extends Controller
             ->when($request->input('search'), function ($query, string $search) {
                 $query->whereHas('employee', fn ($q) => $q->where('name', 'like', "%{$search}%"));
             })
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)))
             ->when($request->input('employee_id'), fn ($q, $id) => $q->where('employee_id', $id))
             ->when($request->input('project_id'), fn ($q, $id) => $q->whereHas('employee', fn ($eq) => $eq->where('project_id', $id)))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('date', '>=', $d))

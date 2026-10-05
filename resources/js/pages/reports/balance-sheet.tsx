@@ -22,6 +22,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { FinancialStatementRow, Project } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/BalanceSheetController';
 import { dashboard } from '@/routes';
@@ -56,8 +57,13 @@ export default function BalanceSheet({
     netProfit,
     projects = [],
 }: BalanceSheetPageProps) {
-    const [asAtDate, setAsAtDate] = useState('');
-    const [projectId, setProjectId] = useState<string>('');
+    const queryParams = useQueryParams();
+    const [asAtDate, setAsAtDate] = useState<string>(
+        queryParams.get('as_at_date') ?? '',
+    );
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
 
     const columns = getBalanceSheetColumns();
 

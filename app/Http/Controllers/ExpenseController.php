@@ -47,7 +47,7 @@ class ExpenseController extends Controller
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)))
             ->when($request->input('account_head_id'), fn ($q, $id) => $q->where('account_head_id', $id))
             ->when($request->input('project_id'), fn ($q, $id) => $q->where('project_id', $id))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('date', '>=', $d))

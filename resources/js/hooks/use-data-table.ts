@@ -1,5 +1,6 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useCallback, useMemo, useRef } from 'react';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { FilterState, SortState } from '@/types';
 
 type UseDataTableOptions = {
@@ -17,30 +18,17 @@ type UseDataTableReturn = {
     setSort: (column: string, direction?: 'asc' | 'desc') => void;
     setFilter: (key: string, value: string | string[] | undefined) => void;
     setFilters: (filters: FilterState) => void;
+    getFilterValues: (key: string) => string[];
     setPage: (page: number) => void;
     setPerPage: (perPage: number) => void;
     resetFilters: () => void;
 };
 
-function getQueryParams(): URLSearchParams {
-    if (typeof window === 'undefined') {
-        return new URLSearchParams();
-    }
-
-    const url = usePage().url;
-
-    try {
-        return new URL(url, window.location.origin).searchParams;
-    } catch {
-        return new URLSearchParams();
-    }
-}
-
 export function useDataTable({
     only,
     defaultPerPage = 10,
 }: UseDataTableOptions): UseDataTableReturn {
-    const params = getQueryParams();
+    const params = useQueryParams();
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const search = params.get('search') ?? '';
@@ -160,6 +148,22 @@ export function useDataTable({
         [reload, buildData],
     );
 
+    /** Values of a multi-select filter, stored comma-separated in the URL. */
+    const getFilterValues = useCallback(
+        (key: string): string[] => {
+            const value = filters[key];
+
+            if (!value) {
+                return [];
+            }
+
+            return (Array.isArray(value) ? value : value.split(',')).filter(
+                Boolean,
+            );
+        },
+        [filters],
+    );
+
     const setPage = useCallback(
         (newPage: number) => {
             reload(buildData({ page: newPage }));
@@ -188,6 +192,7 @@ export function useDataTable({
         setSort,
         setFilter,
         setFilters,
+        getFilterValues,
         setPage,
         setPerPage,
         resetFilters,

@@ -59,6 +59,7 @@ export default function JournalEntries({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['journalEntries'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -97,17 +98,9 @@ export default function JournalEntries({
         value: status,
     }));
 
-    const currentTypeFilter = filters.type
-        ? Array.isArray(filters.type)
-            ? filters.type
-            : [filters.type]
-        : [];
+    const currentTypeFilter = getFilterValues('type');
 
-    const currentStatusFilter = filters.status
-        ? Array.isArray(filters.status)
-            ? filters.status
-            : [filters.status]
-        : [];
+    const currentStatusFilter = getFilterValues('status');
 
     return (
         <>

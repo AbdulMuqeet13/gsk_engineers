@@ -353,4 +353,22 @@ class PayrollTest extends TestCase
 
         $this->assertSame(2, PayrollRun::count());
     }
+
+    public function test_index_filters_by_multiple_statuses(): void
+    {
+        $attributes = [
+            'payment_account_id' => $this->cashAccount->id,
+            'created_by' => $this->user->id,
+        ];
+        PayrollRun::factory()->draft()->create($attributes);
+        PayrollRun::factory()->submitted()->create($attributes);
+        PayrollRun::factory()->rejected()->create($attributes);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('payroll.index', ['status' => 'draft,submitted']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('payrollRuns.data', 2)
+        );
+    }
 }

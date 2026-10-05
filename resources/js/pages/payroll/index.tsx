@@ -50,6 +50,7 @@ export default function PayrollIndex({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['payrollRuns'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -78,11 +79,7 @@ export default function PayrollIndex({
         value: status,
     }));
 
-    const currentStatusFilter = filters.status
-        ? Array.isArray(filters.status)
-            ? filters.status
-            : [filters.status]
-        : [];
+    const currentStatusFilter = getFilterValues('status');
 
     return (
         <>

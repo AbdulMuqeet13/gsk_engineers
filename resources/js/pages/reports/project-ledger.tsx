@@ -22,6 +22,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type {
     AccountHead,
     Employee,
@@ -58,11 +59,22 @@ export default function ProjectLedger({
     projects = [],
     employees = [],
 }: ProjectLedgerPageProps) {
-    const [projectId, setProjectId] = useState<string>('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [accountHeadId, setAccountHeadId] = useState<string>('');
-    const [employeeId, setEmployeeId] = useState<string>('');
+    const queryParams = useQueryParams();
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
+    const [accountHeadId, setAccountHeadId] = useState<string>(
+        queryParams.get('account_head_id') ?? '',
+    );
+    const [employeeId, setEmployeeId] = useState<string>(
+        queryParams.get('employee_id') ?? '',
+    );
 
     const columns = getProjectLedgerColumns();
 

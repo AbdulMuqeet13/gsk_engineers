@@ -240,4 +240,21 @@ class EmployeeTest extends TestCase
 
         $this->assertSoftDeleted('employees', ['id' => $employee->id]);
     }
+
+    public function test_index_filters_by_multiple_projects(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        [$first, $second, $third] = Project::factory()->count(3)->create();
+        Employee::factory()->projectBased($first)->create();
+        Employee::factory()->projectBased($second)->create();
+        Employee::factory()->projectBased($third)->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('employees.index', ['project_id' => "{$first->id},{$second->id}"]));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('employees.data', 2)
+        );
+    }
 }

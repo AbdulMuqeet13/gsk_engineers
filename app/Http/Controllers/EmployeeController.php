@@ -38,10 +38,10 @@ class EmployeeController extends Controller
                 });
             })
             ->when($request->input('type'), function ($query, string $type) {
-                $query->where('type', $type);
+                $query->whereIn('type', explode(',', $type));
             })
             ->when($request->input('project_id'), function ($query, string $projectId) {
-                $query->where('project_id', $projectId);
+                $query->whereIn('project_id', explode(',', $projectId));
             })
             ->orderBy(
                 $request->input('sort', 'created_at'),

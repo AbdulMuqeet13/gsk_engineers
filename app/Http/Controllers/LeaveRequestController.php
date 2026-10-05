@@ -38,9 +38,9 @@ class LeaveRequestController extends Controller
                 $query->whereHas('employee', fn ($q) => $q->where('name', 'like', "%{$search}%"))
                     ->orWhere('reason', 'like', "%{$search}%");
             })
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)))
             ->when($request->input('employee_id'), fn ($q, $id) => $q->where('employee_id', $id))
-            ->when($request->input('leave_type'), fn ($q, $t) => $q->where('leave_type', $t))
+            ->when($request->input('leave_type'), fn ($q, $t) => $q->whereIn('leave_type', explode(',', $t)))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('start_date', '>=', $d))
             ->when($request->input('date_to'), fn ($q, $d) => $q->where('end_date', '<=', $d))
             ->orderBy(

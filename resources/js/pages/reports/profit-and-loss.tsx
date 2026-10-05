@@ -21,6 +21,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { FinancialStatementRow, Project } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/ProfitAndLossController';
 import { dashboard } from '@/routes';
@@ -49,9 +50,16 @@ export default function ProfitAndLoss({
     netProfit,
     projects = [],
 }: ProfitAndLossPageProps) {
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [projectId, setProjectId] = useState<string>('');
+    const queryParams = useQueryParams();
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
 
     const columns = getProfitAndLossColumns();
 

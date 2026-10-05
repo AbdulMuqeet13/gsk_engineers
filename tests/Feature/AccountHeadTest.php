@@ -207,4 +207,20 @@ class AccountHeadTest extends TestCase
 
         $this->assertDatabaseHas('account_heads', ['id' => $parent->id, 'deleted_at' => null]);
     }
+
+    public function test_index_filters_by_multiple_types(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        AccountHead::factory()->asset()->create();
+        AccountHead::factory()->expense()->create();
+        AccountHead::factory()->create(['type' => 'income', 'normal_balance' => 'credit']);
+
+        $response = $this->actingAs($user)
+            ->get(route('account-heads.index', ['type' => 'asset,expense']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('accountHeads.data', 2)
+        );
+    }
 }

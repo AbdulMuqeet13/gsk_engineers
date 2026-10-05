@@ -48,7 +48,7 @@ class PayrollRunController extends Controller
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('period_start', '>=', $d))
             ->when($request->input('date_to'), fn ($q, $d) => $q->where('period_end', '<=', $d))
             ->orderBy(

@@ -21,6 +21,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useQueryParams } from '@/hooks/use-query-params';
 import type { AccountHead, JournalLine, Project } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/GeneralLedgerController';
 import { dashboard } from '@/routes';
@@ -54,12 +55,21 @@ export default function GeneralLedger({
     accountHeads,
     projects = [],
 }: GeneralLedgerPageProps) {
+    const queryParams = useQueryParams();
     const [accountHeadId, setAccountHeadId] = useState<string>(
-        selectedAccountHead?.id?.toString() ?? '',
+        queryParams.get('account_head_id') ??
+            selectedAccountHead?.id?.toString() ??
+            '',
     );
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [projectId, setProjectId] = useState<string>('');
+    const [dateFrom, setDateFrom] = useState<string>(
+        queryParams.get('date_from') ?? '',
+    );
+    const [dateTo, setDateTo] = useState<string>(
+        queryParams.get('date_to') ?? '',
+    );
+    const [projectId, setProjectId] = useState<string>(
+        queryParams.get('project_id') ?? '',
+    );
 
     const columns = getGeneralLedgerColumns();
 

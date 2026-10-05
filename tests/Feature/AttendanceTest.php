@@ -216,4 +216,19 @@ class AttendanceTest extends TestCase
 
         $this->assertDatabaseMissing('attendances', ['id' => $attendance->id]);
     }
+
+    public function test_index_filters_by_multiple_statuses(): void
+    {
+        $attributes = ['employee_id' => $this->employee->id, 'marked_by' => $this->user->id];
+        Attendance::factory()->present()->create([...$attributes, 'date' => '2026-09-01']);
+        Attendance::factory()->absent()->create([...$attributes, 'date' => '2026-09-02']);
+        Attendance::factory()->onLeave()->create([...$attributes, 'date' => '2026-09-03']);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('attendance.index', ['status' => 'present,absent']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('attendances.data', 2)
+        );
+    }
 }

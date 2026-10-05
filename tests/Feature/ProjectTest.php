@@ -211,4 +211,20 @@ class ProjectTest extends TestCase
             ])
             ->assertForbidden();
     }
+
+    public function test_index_filters_by_multiple_statuses(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        Project::factory()->active()->create();
+        Project::factory()->planning()->create();
+        Project::factory()->completed()->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('projects.index', ['status' => 'active,planning']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('projects.data', 2)
+        );
+    }
 }

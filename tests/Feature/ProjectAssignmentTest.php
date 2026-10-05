@@ -218,4 +218,18 @@ class ProjectAssignmentTest extends TestCase
 
         $this->assertDatabaseEmpty('project_assignments');
     }
+
+    public function test_index_filters_by_multiple_projects(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(RoleEnum::SuperAdmin);
+        [$first, $second, $third] = ProjectAssignment::factory()->count(3)->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('project-assignments.index', ['project_id' => "{$first->project_id},{$second->project_id}"]));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('assignments.data', 2)
+        );
+    }
 }

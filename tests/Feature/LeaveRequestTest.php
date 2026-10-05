@@ -255,4 +255,18 @@ class LeaveRequestTest extends TestCase
             ->delete(route('leave.destroy', $leave))
             ->assertForbidden();
     }
+
+    public function test_index_filters_by_multiple_types(): void
+    {
+        LeaveRequest::factory()->sick()->create(['employee_id' => $this->employee->id, 'created_by' => $this->user->id]);
+        LeaveRequest::factory()->casual()->create(['employee_id' => $this->employee->id, 'created_by' => $this->user->id]);
+        LeaveRequest::factory()->unpaid()->create(['employee_id' => $this->employee->id, 'created_by' => $this->user->id]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('leave.index', ['leave_type' => 'sick,casual']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('leaveRequests.data', 2)
+        );
+    }
 }

@@ -39,8 +39,8 @@ class JournalEntryController extends Controller
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
-            ->when($request->input('type'), fn ($q, $t) => $q->where('type', $t))
+            ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)))
+            ->when($request->input('type'), fn ($q, $t) => $q->whereIn('type', explode(',', $t)))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('date', '>=', $d))
             ->when($request->input('date_to'), fn ($q, $d) => $q->where('date', '<=', $d))
             ->orderBy(

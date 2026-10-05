@@ -52,6 +52,7 @@ export default function Leave({
         setFilter,
         setPage,
         setPerPage,
+        getFilterValues,
     } = useDataTable({ only: ['leaveRequests'] });
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -89,17 +90,9 @@ export default function Leave({
         value: type,
     }));
 
-    const currentStatusFilter = filters.status
-        ? Array.isArray(filters.status)
-            ? filters.status
-            : [filters.status]
-        : [];
+    const currentStatusFilter = getFilterValues('status');
 
-    const currentTypeFilter = filters.leave_type
-        ? Array.isArray(filters.leave_type)
-            ? filters.leave_type
-            : [filters.leave_type]
-        : [];
+    const currentTypeFilter = getFilterValues('leave_type');
 
     return (
         <>
