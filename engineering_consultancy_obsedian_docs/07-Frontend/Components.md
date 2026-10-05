@@ -6,7 +6,8 @@
 |-----------|------|---------|
 | DataTable | `components/data-table/data-table.tsx` | Reusable table with TanStack v9 |
 | AppSidebar | `components/app-sidebar.tsx` | Main navigation sidebar |
-| useDataTable | `hooks/use-data-table.ts` | Partial reloading, search, filters (cleared filters sent as `undefined` so they leave the URL) |
+| useDataTable | `hooks/use-data-table.ts` | Partial reloading, search, filters (cleared filters sent as `undefined` so they leave the URL), `getFilterValues()` for comma-separated multi-select |
+| useQueryParams | `hooks/use-query-params.ts` | Current page query string; seeds report filter state so it survives a refresh |
 | DatePicker | `components/date-picker.tsx` | shadcn Calendar in a Popover; shows dd-mm-yyyy, emits ISO `YYYY-MM-DD`; props `value`, `onChange`, `clearable`, `size`, `placeholder` |
 
 ## Module Components

@@ -128,6 +128,9 @@ Display format is `dd-mm-yyyy`, but always submit `YYYY-MM-DD`. PHP's `strtotime
 ### Clearing Inertia GET filters
 `router.reload({ data })` merges `data` into the **current** query string. Omitting a key keeps its old value; pass the key as `undefined` to remove it (fixed in `useDataTable`).
 
+### Filters lost on refresh / multi-select returned nothing
+Report pages initialised filters to `''`, so after a refresh the server (reading the URL) showed filtered data while the controls were blank -- they now seed from `useQueryParams()`. Multi-select filters were sent as `a,b` but controllers used `where('col', 'a,b')` (no rows) and pages didn't split the value back; controllers now use `whereIn` + `explode` and pages use `getFilterValues()`.
+
 ### Toasts need `Inertia::flash`
 `session()->flash('toast', ...)` does not fire the frontend `flash` event. Use `FlashesToast` (which calls `Inertia::flash`).
 

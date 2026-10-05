@@ -37,8 +37,15 @@ const table = useTable({
 Located at `resources/js/hooks/use-data-table.ts`. Provides:
 - Partial reloading via `router.reload({ only: ['mainProp'] })`
 - Search debouncing
-- Filter state management
+- Filter state management (read from the URL, so filters survive a refresh)
 - Pagination integration
+- `getFilterValues(key)` for multi-select filters
+
+### Multi-Select Filters
+`DataTableFilter` values are sent comma-separated: `setFilter('status', value.join(','))`, read back with `getFilterValues('status')`. Controllers filter with `whereIn('status', explode(',', $status))`.
+
+### Report Page Filters
+Report pages keep filters in `useState` and reload with `router.reload({ data })`, which writes them to the URL. Seed each filter from the URL with `useQueryParams()` (`hooks/use-query-params.ts`) -- e.g. `useState(queryParams.get('project_id') ?? '')` -- or a browser refresh shows filtered data with empty filter controls.
 
 ### Key Rule: Partial Reloading
 **Always** use `router.reload({ only: [...] })` for same-page data refreshes. **Never** use `router.get()` to reload the current route.
