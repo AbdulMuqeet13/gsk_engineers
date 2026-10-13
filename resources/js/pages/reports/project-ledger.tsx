@@ -248,8 +248,8 @@ export default function ProjectLedger({
 
                 {employeeId && (
                     <p className="text-muted-foreground text-sm">
-                        Showing this employee's project allowances from
-                        approved payroll runs.
+                        Showing salary payments made to this employee for the
+                        project. Balance is the running total paid.
                     </p>
                 )}
 

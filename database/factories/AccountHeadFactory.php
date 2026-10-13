@@ -46,6 +46,14 @@ class AccountHeadFactory extends Factory
         ]);
     }
 
+    public function liability(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AccountType::Liability,
+            'normal_balance' => NormalBalance::Credit,
+        ]);
+    }
+
     public function expense(): static
     {
         return $this->state(fn (array $attributes) => [

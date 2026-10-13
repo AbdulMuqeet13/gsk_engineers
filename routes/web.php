@@ -133,6 +133,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('payroll/{payroll_run}/payslips/{payslip}', [PayrollRunController::class, 'updatePayslip'])
         ->name('payroll.payslips.update');
 
+    Route::post('payroll/{payroll_run}/payments', [PayrollRunController::class, 'pay'])
+        ->name('payroll.pay');
+
     Route::resource('transfers', InterProjectTransferController::class)
         ->only(['index', 'store'])
         ->parameter('transfers', 'transfer');

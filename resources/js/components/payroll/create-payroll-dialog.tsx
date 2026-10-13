@@ -1,5 +1,7 @@
 import { useForm } from '@inertiajs/react';
+import { useMemo } from 'react';
 import { DatePicker } from '@/components/date-picker';
+import { EmployeeMultiSelect } from '@/components/payroll/employee-multi-select';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -18,26 +20,65 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { AccountHead } from '@/types';
+import type { AccountHead, Employee, Project } from '@/types';
 import { store } from '@/actions/App/Http/Controllers/PayrollRunController';
 
 type CreatePayrollDialogProps = {
     open: boolean;
     onClose: () => void;
     paymentAccounts: Pick<AccountHead, 'id' | 'code' | 'name'>[];
+    projects: Pick<Project, 'id' | 'name' | 'code'>[];
+    employees: (Pick<Employee, 'id' | 'name' | 'designation' | 'project_id'> & {
+        assignments?: { project_id: number }[];
+    })[];
 };
+
+const ALL_EMPLOYEES = 'all';
 
 export function CreatePayrollDialog({
     open,
     onClose,
     paymentAccounts,
+    projects,
+    employees,
 }: CreatePayrollDialogProps) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, transform, post, processing, errors, reset } = useForm({
         period_start: '',
         period_end: '',
         payment_account_id: '',
         description: '',
+        project_id: '',
+        employee_ids: [] as string[],
     });
+
+    const employeesInScope = useMemo(() => {
+        if (!data.project_id) {
+            return employees;
+        }
+
+        const projectId = Number(data.project_id);
+
+        return employees.filter(
+            (employee) =>
+                employee.project_id === projectId ||
+                employee.assignments?.some(
+                    (assignment) => assignment.project_id === projectId,
+                ),
+        );
+    }, [employees, data.project_id]);
+
+    transform((formData) => ({
+        ...formData,
+        project_id: formData.project_id || null,
+    }));
+
+    function handleProjectChange(value: string) {
+        setData((previous) => ({
+            ...previous,
+            project_id: value === ALL_EMPLOYEES ? '' : value,
+            employee_ids: [],
+        }));
+    }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -63,7 +104,8 @@ export function CreatePayrollDialog({
                 <DialogHeader>
                     <DialogTitle>Create Payroll Run</DialogTitle>
                     <DialogDescription>
-                        Create a new payroll run for a pay period.
+                        Create a payroll run for a pay period, for everyone or
+                        for one project or selected employees.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -133,6 +175,67 @@ export function CreatePayrollDialog({
                         {errors.payment_account_id && (
                             <p className="text-destructive text-sm">
                                 {errors.payment_account_id}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="create-project">Project</Label>
+                        <Select
+                            value={data.project_id || ALL_EMPLOYEES}
+                            onValueChange={handleProjectChange}
+                        >
+                            <SelectTrigger id="create-project">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={ALL_EMPLOYEES}>
+                                    All projects
+                                </SelectItem>
+                                {projects.map((project) => (
+                                    <SelectItem
+                                        key={project.id}
+                                        value={String(project.id)}
+                                    >
+                                        {project.code} - {project.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.project_id && (
+                            <p className="text-destructive text-sm">
+                                {errors.project_id}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="create-employees">
+                            Employees (optional)
+                        </Label>
+                        <EmployeeMultiSelect
+                            id="create-employees"
+                            employees={employeesInScope}
+                            value={data.employee_ids}
+                            onChange={(value) => setData('employee_ids', value)}
+                            placeholder={
+                                data.project_id
+                                    ? 'All employees of the project'
+                                    : 'All active employees'
+                            }
+                        />
+                        <p className="text-muted-foreground text-xs">
+                            Leave empty to include everyone in scope. Employees
+                            already in another payroll run for this period are
+                            skipped.
+                        </p>
+                        {(errors.employee_ids ||
+                            Object.entries(errors).find(([key]) =>
+                                key.startsWith('employee_ids.'),
+                            )) && (
+                            <p className="text-destructive text-sm">
+                                {errors.employee_ids ??
+                                    'One of the selected employees is not active.'}
                             </p>
                         )}
                     </div>

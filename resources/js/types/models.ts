@@ -239,6 +239,7 @@ export type PayrollRun = {
     period_start: string;
     period_end: string;
     description: string | null;
+    project_id: number | null;
     total_amount: string;
     status: PayrollStatus;
     payment_account_id: number;
@@ -249,7 +250,9 @@ export type PayrollRun = {
     rejection_reason: string | null;
     payslips?: Payslip[];
     payslips_count?: number;
+    paid_payslips_count?: number;
     payment_account?: Pick<AccountHead, 'id' | 'code' | 'name'>;
+    project?: Pick<Project, 'id' | 'name' | 'code'> | null;
     journal_entry?: Pick<JournalEntry, 'id' | 'reference'> | null;
     creator?: { id: number; name: string };
     approver?: { id: number; name: string } | null;
@@ -261,6 +264,7 @@ export type Payslip = {
     id: number;
     payroll_run_id: number;
     employee_id: number;
+    project_id: number | null;
     employee_salary_id: number | null;
     salary_amount: string;
     allowances_amount: string;
@@ -272,7 +276,13 @@ export type Payslip = {
     days_worked: number;
     days_absent: number;
     notes: string | null;
+    paid_at: string | null;
+    payment_account_id: number | null;
+    payment_journal_entry_id: number | null;
+    paid_by: number | null;
     employee?: Pick<Employee, 'id' | 'name'> & { designation?: string; department?: string };
+    payment_account?: Pick<AccountHead, 'id' | 'code' | 'name'> | null;
+    payment_journal_entry?: Pick<JournalEntry, 'id' | 'reference'> | null;
     items?: PayslipItem[];
     payroll_run?: Pick<PayrollRun, 'id' | 'reference' | 'period_start' | 'period_end' | 'status'>;
     created_at: string;

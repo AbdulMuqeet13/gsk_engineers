@@ -21,6 +21,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon $period_start
  * @property Carbon $period_end
  * @property string|null $description
+ * @property int|null $project_id
  * @property string $total_amount
  * @property PayrollStatus $status
  * @property int $payment_account_id
@@ -33,12 +34,13 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Payslip> $payslips
  * @property-read AccountHead $paymentAccount
+ * @property-read Project|null $project
  * @property-read JournalEntry|null $journalEntry
  * @property-read User $creator
  * @property-read User|null $approver
  */
 #[Fillable([
-    'reference', 'period_start', 'period_end', 'description', 'total_amount',
+    'reference', 'period_start', 'period_end', 'description', 'project_id', 'total_amount',
     'status', 'payment_account_id', 'journal_entry_id',
     'created_by', 'approved_by', 'approved_at', 'rejection_reason',
 ])]
@@ -75,6 +77,14 @@ class PayrollRun extends Model
     public function paymentAccount(): BelongsTo
     {
         return $this->belongsTo(AccountHead::class, 'payment_account_id');
+    }
+
+    /**
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     /**

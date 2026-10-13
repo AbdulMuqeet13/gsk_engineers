@@ -19,9 +19,11 @@ import { useCan } from '@/hooks/use-can';
 import { useDataTable } from '@/hooks/use-data-table';
 import type {
     AccountHead,
+    Employee,
     PayrollRun,
     PayrollStatus,
     PaginatedResponse,
+    Project,
 } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/PayrollRunController';
 import { dashboard } from '@/routes';
@@ -30,12 +32,18 @@ type PayrollIndexPageProps = {
     payrollRuns: PaginatedResponse<PayrollRun>;
     payrollStatuses: string[];
     paymentAccounts: Pick<AccountHead, 'id' | 'code' | 'name'>[];
+    projects: Pick<Project, 'id' | 'name' | 'code'>[];
+    employees: (Pick<Employee, 'id' | 'name' | 'designation' | 'project_id'> & {
+        assignments?: { project_id: number }[];
+    })[];
 };
 
 export default function PayrollIndex({
     payrollRuns,
     payrollStatuses,
     paymentAccounts = [],
+    projects = [],
+    employees = [],
 }: PayrollIndexPageProps) {
     const { can } = useCan();
     const canRun = can('payroll.run');
@@ -143,6 +151,8 @@ export default function PayrollIndex({
                     open={isCreateOpen}
                     onClose={() => setIsCreateOpen(false)}
                     paymentAccounts={paymentAccounts}
+                    projects={projects}
+                    employees={employees}
                 />
             )}
 

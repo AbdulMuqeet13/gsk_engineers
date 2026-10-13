@@ -24,6 +24,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['code' => '2020', 'name' => 'Inter-Project Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
             ['code' => '2030', 'name' => 'Salary Tax Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
             ['code' => '2040', 'name' => 'Employee Security Deposits', 'type' => AccountType::Liability, 'parent_code' => '2000'],
+            ['code' => '2050', 'name' => 'Salaries Payable', 'type' => AccountType::Liability, 'parent_code' => '2000'],
 
             ['code' => '3000', 'name' => 'Equity', 'type' => AccountType::Equity, 'parent_code' => null],
             ['code' => '3001', 'name' => 'Owner Equity', 'type' => AccountType::Equity, 'parent_code' => '3000'],

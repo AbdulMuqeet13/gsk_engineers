@@ -31,6 +31,7 @@ class PayrollTest extends TestCase
 
         $this->salariesAccount = AccountHead::factory()->expense()->create(['code' => '5001', 'name' => 'Salaries']);
         $this->cashAccount = AccountHead::factory()->asset()->create(['code' => '1001', 'name' => 'Cash']);
+        AccountHead::factory()->liability()->create(['code' => '2050', 'name' => 'Salaries Payable']);
         $this->user = User::factory()->create();
         $this->user->assignRole(RoleEnum::SuperAdmin);
     }
@@ -319,12 +320,14 @@ class PayrollTest extends TestCase
 
     public function test_store_rejects_period_overlapping_an_existing_run(): void
     {
+        $employee = Employee::factory()->withSalary()->create();
         $existing = PayrollRun::factory()->approved()->create([
             'period_start' => '2026-09-01',
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'created_by' => $this->user->id,
         ]);
+        Payslip::factory()->for($existing, 'payrollRun')->for($employee)->create();
 
         $response = $this->actingAs($this->user)->post(route('payroll.store'), [
             'period_start' => '2026-09-15',

@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Actions\Payroll\ApprovePayrollRunAction;
 use App\Actions\Payroll\CreatePayrollRunAction;
 use App\Actions\Payroll\DeletePayrollRunAction;
+use App\Actions\Payroll\PayPayslipsAction;
 use App\Actions\Payroll\RejectPayrollRunAction;
 use App\Actions\Payroll\SubmitPayrollRunAction;
 use App\Actions\Payroll\UpdatePayslipAction;
 use App\Concerns\FlashesToast;
 use App\Enums\PayrollStatus;
+use App\Exceptions\Payroll\OverlappingPayrollException;
 use App\Http\Requests\Payroll\ApprovePayrollRunRequest;
+use App\Http\Requests\Payroll\PayPayslipsRequest;
 use App\Http\Requests\Payroll\RejectPayrollRunRequest;
 use App\Http\Requests\Payroll\StorePayrollRunRequest;
 use App\Http\Requests\Payroll\SubmitPayrollRunRequest;
@@ -19,10 +22,12 @@ use App\Models\AccountHead;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -36,11 +41,15 @@ class PayrollRunController extends Controller
         $this->authorize('viewAny', PayrollRun::class);
 
         $payrollRuns = PayrollRun::query()
-            ->withCount('payslips')
+            ->withCount([
+                'payslips',
+                'payslips as paid_payslips_count' => fn ($q) => $q->whereNotNull('paid_at'),
+            ])
             ->with([
                 'creator:id,name',
                 'approver:id,name',
                 'paymentAccount:id,code,name',
+                'project:id,name,code',
             ])
             ->when($request->input('search'), function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -66,6 +75,14 @@ class PayrollRunController extends Controller
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
                 ->get(),
+            'projects' => fn () => Project::select('id', 'name', 'code')
+                ->orderBy('name')
+                ->get(),
+            'employees' => fn () => Employee::where('is_active', true)
+                ->select('id', 'name', 'designation', 'project_id')
+                ->with('assignments:id,employee_id,project_id')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -74,34 +91,48 @@ class PayrollRunController extends Controller
         $this->authorize('view', $payrollRun);
 
         $payrollRun->load([
-            'payslips.employee:id,name,designation,department',
+            'payslips.employee' => fn ($q) => $q->withTrashed()->select('id', 'name', 'designation', 'department'),
             'payslips.items.project:id,name,code',
+            'payslips.paymentAccount:id,code,name',
+            'payslips.paymentJournalEntry:id,reference',
             'creator:id,name',
             'approver:id,name',
             'paymentAccount:id,code,name',
+            'project:id,name,code',
             'journalEntry:id,reference',
         ]);
 
         return Inertia::render('payroll/show', [
             'payrollRun' => $payrollRun,
+            'paymentAccounts' => fn () => AccountHead::where('is_active', true)
+                ->where('type', 'asset')
+                ->select('id', 'code', 'name')
+                ->orderBy('code')
+                ->get(),
         ]);
     }
 
     public function store(StorePayrollRunRequest $request, CreatePayrollRunAction $action): RedirectResponse
     {
         try {
-            $run = $action->execute($request->validated(), $request->user());
+            $result = $action->execute($request->validated(), $request->user());
+        } catch (OverlappingPayrollException $e) {
+            throw ValidationException::withMessages(['period_start' => $e->getMessage()]);
         } catch (DomainException $e) {
             $this->flashError($e->getMessage());
 
             return redirect()->route('payroll.index');
         }
 
-        $skipped = Employee::where('is_active', true)->count() - $run->payslips->count();
+        $run = $result['run'];
         $message = 'Payroll run created with '.$run->payslips->count().' payslips.';
 
-        if ($skipped > 0) {
-            $message .= " {$skipped} active employee(s) skipped: no salary effective by the period end.";
+        if ($result['skipped_without_salary'] > 0) {
+            $message .= " {$result['skipped_without_salary']} active employee(s) skipped: no salary effective by the period end.";
+        }
+
+        if ($result['skipped_already_in_payroll'] > 0) {
+            $message .= " {$result['skipped_already_in_payroll']} employee(s) skipped: already in another payroll run for this period.";
         }
 
         $this->flashSuccess($message);
@@ -143,7 +174,7 @@ class PayrollRunController extends Controller
 
         try {
             $action->execute($payrollRun, $request->user());
-            $this->flashSuccess('Payroll approved and journal entry posted.');
+            $this->flashSuccess('Payroll approved. Salaries are now payable and can be paid per employee.');
         } catch (DomainException $e) {
             $this->flashError($e->getMessage());
         }
@@ -172,6 +203,22 @@ class PayrollRunController extends Controller
         try {
             $action->execute($payslip, $request->validated());
             $this->flashSuccess('Payslip updated successfully.');
+        } catch (DomainException $e) {
+            $this->flashError($e->getMessage());
+        }
+
+        return redirect()->route('payroll.show', $payrollRun);
+    }
+
+    public function pay(PayPayslipsRequest $request, PayrollRun $payrollRun, PayPayslipsAction $action): RedirectResponse
+    {
+        $this->authorize('pay', $payrollRun);
+
+        try {
+            $payslips = $action->execute($payrollRun, $request->validated(), $request->user());
+            $this->flashSuccess($payslips->count() === 1
+                ? "Salary of {$payslips->first()->employee->name} paid."
+                : "Salaries of {$payslips->count()} employees paid.");
         } catch (DomainException $e) {
             $this->flashError($e->getMessage());
         }

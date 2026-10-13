@@ -12,8 +12,9 @@ class CreatePayrollRunAction
 
     /**
      * @param  array<string, mixed>  $data
+     * @return array{run: PayrollRun, skipped_without_salary: int, skipped_already_in_payroll: int}
      */
-    public function execute(array $data, User $user): PayrollRun
+    public function execute(array $data, User $user): array
     {
         return $this->payrollService->create($data, $user);
     }

@@ -11,6 +11,7 @@ use App\Models\AccountHead;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\PayrollRun;
+use App\Models\Payslip;
 use App\Models\User;
 use App\Services\PayrollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,8 @@ class PayrollServiceTest extends TestCase
 
     private AccountHead $salariesAccount;
 
+    private AccountHead $payableAccount;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -36,6 +39,7 @@ class PayrollServiceTest extends TestCase
         $this->user = User::factory()->create();
         $this->salariesAccount = AccountHead::factory()->expense()->create(['code' => '5001', 'name' => 'Salaries']);
         $this->cashAccount = AccountHead::factory()->asset()->create(['code' => '1001', 'name' => 'Cash']);
+        $this->payableAccount = AccountHead::factory()->liability()->create(['code' => '2050', 'name' => 'Salaries Payable']);
     }
 
     public function test_create_generates_payslips_from_active_employees(): void
@@ -48,7 +52,7 @@ class PayrollServiceTest extends TestCase
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $this->assertEquals(3, $run->payslips->count());
         $this->assertTrue($run->isDraft());
@@ -63,14 +67,14 @@ class PayrollServiceTest extends TestCase
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $run2 = $this->service->create([
             'period_start' => '2026-10-01',
             'period_end' => '2026-10-31',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $this->assertNotEquals($run1->reference, $run2->reference);
         $this->assertMatchesRegularExpression('/^PR-\d{4}-\d{6}$/', $run1->reference);
@@ -101,7 +105,7 @@ class PayrollServiceTest extends TestCase
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $payslip = $run->payslips->firstWhere('employee_id', $employee->id);
         $this->assertEquals(2, $payslip->days_worked);
@@ -117,7 +121,7 @@ class PayrollServiceTest extends TestCase
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $payslip = $run->payslips->firstWhere('employee_id', $employee->id);
         $this->assertEquals(0, bccomp($payslip->getRawOriginal('salary_amount'), '75000.00', 2));
@@ -134,7 +138,7 @@ class PayrollServiceTest extends TestCase
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'description' => null,
-        ], $this->user);
+        ], $this->user)['run'];
 
         $payslip1 = $run->payslips->firstWhere('employee_id', $employee1->id);
         $this->service->updatePayslip($payslip1, [
@@ -256,7 +260,7 @@ class PayrollServiceTest extends TestCase
         $journalEntry->load('lines');
 
         $debitLine = $journalEntry->lines->firstWhere('account_head_id', $this->salariesAccount->id);
-        $creditLine = $journalEntry->lines->firstWhere('account_head_id', $this->cashAccount->id);
+        $creditLine = $journalEntry->lines->firstWhere('account_head_id', $this->payableAccount->id);
 
         $this->assertEquals(0, bccomp($debitLine->getRawOriginal('debit'), '80000.00', 2));
         $this->assertEquals(0, bccomp($creditLine->getRawOriginal('credit'), '80000.00', 2));
@@ -336,12 +340,13 @@ class PayrollServiceTest extends TestCase
 
     public function test_create_throws_when_period_overlaps_existing_run(): void
     {
-        PayrollRun::factory()->draft()->create([
+        $existing = PayrollRun::factory()->draft()->create([
             'period_start' => '2026-09-01',
             'period_end' => '2026-09-30',
             'payment_account_id' => $this->cashAccount->id,
             'created_by' => $this->user->id,
         ]);
+        Payslip::factory()->for($existing, 'payrollRun')->for(Employee::factory()->withSalary())->create();
 
         $this->expectException(OverlappingPayrollException::class);
 

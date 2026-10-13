@@ -72,7 +72,7 @@ export function ApprovePayrollDialog({
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">
-                            Payment Account
+                            Default Payment Account
                         </span>
                         <span className="font-medium">
                             {payrollRun.payment_account?.name ?? '--'}
@@ -87,9 +87,11 @@ export function ApprovePayrollDialog({
                 </div>
 
                 <p className="text-muted-foreground text-sm">
-                    Approving will create a journal entry and process payroll
-                    totaling <strong>{formatAmount(payrollRun.total_amount)}</strong>{' '}
-                    from <strong>{payrollRun.payment_account?.name}</strong>.
+                    Approving will post the payroll expense and record net
+                    salaries of{' '}
+                    <strong>{formatAmount(payrollRun.total_amount)}</strong> as
+                    payable. Salaries are then paid per employee, or all at
+                    once, from the payroll run page.
                 </p>
 
                 <DialogFooter>

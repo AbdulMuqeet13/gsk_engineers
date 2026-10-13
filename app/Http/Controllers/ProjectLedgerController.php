@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\NormalBalance;
-use App\Enums\PayrollStatus;
-use App\Enums\PayslipItemType;
 use App\Models\AccountHead;
 use App\Models\Employee;
 use App\Models\JournalLine;
-use App\Models\PayslipItem;
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -49,10 +46,17 @@ class ProjectLedgerController extends Controller
             'employees' => fn () => $projectId
                 ? Employee::withTrashed()
                     ->select('id', 'name', 'designation')
-                    ->whereHas('payslips', fn ($q) => $q
-                        ->whereHas('payrollRun', fn ($q2) => $q2->where('status', PayrollStatus::Approved))
-                        ->whereHas('items', fn ($q2) => $q2->where('type', PayslipItemType::Allowance)
-                            ->where('project_id', $projectId)))
+                    ->where(fn ($q) => $q
+                        ->where(fn ($q2) => $q2
+                            ->whereNull('deleted_at')
+                            ->where(fn ($q3) => $q3
+                                ->where('project_id', $projectId)
+                                ->orWhereHas('assignments', fn ($q4) => $q4->where('project_id', $projectId))))
+                        ->orWhereIn('id', JournalLine::query()
+                            ->select('employee_id')
+                            ->where('project_id', $projectId)
+                            ->whereNotNull('employee_id')
+                            ->whereHas('journalEntry', fn ($q2) => $q2->posted())))
                     ->orderBy('name')
                     ->get()
                 : [],
@@ -119,15 +123,14 @@ class ProjectLedgerController extends Controller
      */
     private function getReportData(Request $request, int|string $projectId, ?string $accountHeadId): array
     {
-        if ($request->input('employee_id')) {
-            return $this->getEmployeeReportData($request, $projectId, $request->input('employee_id'), $accountHeadId);
-        }
+        $employeeId = $request->input('employee_id');
 
         $lines = JournalLine::query()
             ->whereHas('journalEntry', fn ($q) => $q->posted()
                 ->when($request->input('date_from'), fn ($q2, $d) => $q2->where('date', '>=', $d))
                 ->when($request->input('date_to'), fn ($q2, $d) => $q2->where('date', '<=', $d)))
             ->where('project_id', $projectId)
+            ->when($employeeId, fn ($q, $id) => $q->where('employee_id', $id))
             ->when($accountHeadId, fn ($q, $id) => $q->where('account_head_id', $id))
             ->with(['journalEntry:id,date,reference,description', 'accountHead:id,code,name,type,normal_balance'])
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
@@ -155,7 +158,10 @@ class ProjectLedgerController extends Controller
             $totalCredit = bcadd($totalCredit, $credit, 2);
 
             $lineBalance = null;
-            if ($hasAccountFilter) {
+            if ($employeeId && ! $hasAccountFilter) {
+                $balance = bcadd($balance, bcsub($credit, $debit, 2), 2);
+                $lineBalance = $balance;
+            } elseif ($hasAccountFilter) {
                 if ($isDebitNormal) {
                     $balance = bcadd($balance, bcsub($debit, $credit, 2), 2);
                 } else {
@@ -168,7 +174,7 @@ class ProjectLedgerController extends Controller
                 'id' => $line->id,
                 'date' => $line->journalEntry->date->format('d-m-Y'),
                 'reference' => $line->journalEntry->reference,
-                'description' => $line->journalEntry->description,
+                'description' => $employeeId && $line->memo ? $line->memo : $line->journalEntry->description,
                 'account' => [
                     'id' => $line->accountHead->id,
                     'code' => $line->accountHead->code,
@@ -185,69 +191,6 @@ class ProjectLedgerController extends Controller
             'rows' => $rows,
             'totalDebit' => $totalDebit,
             'totalCredit' => $totalCredit,
-        ];
-    }
-
-    /**
-     * Build ledger rows for one employee from the project allowances on their
-     * approved payslips. Payroll posts allowances to the journal aggregated per
-     * project, so payslip items are the only per-employee source.
-     *
-     * @return array{rows: array<int, array<string, mixed>>, totalDebit: string, totalCredit: string}
-     */
-    private function getEmployeeReportData(Request $request, int|string $projectId, int|string $employeeId, ?string $accountHeadId): array
-    {
-        $allowanceAccount = AccountHead::where('code', '5006')->first();
-
-        if (! $allowanceAccount || ($accountHeadId && (int) $accountHeadId !== $allowanceAccount->id)) {
-            return ['rows' => [], 'totalDebit' => '0.00', 'totalCredit' => '0.00'];
-        }
-
-        $items = PayslipItem::query()
-            ->where('type', PayslipItemType::Allowance)
-            ->where('project_id', $projectId)
-            ->whereHas('payslip', fn ($q) => $q->where('employee_id', $employeeId)
-                ->whereHas('payrollRun', fn ($q2) => $q2->where('status', PayrollStatus::Approved)
-                    ->when($request->input('date_from'), fn ($q3, $d) => $q3->whereDate('approved_at', '>=', $d))
-                    ->when($request->input('date_to'), fn ($q3, $d) => $q3->whereDate('approved_at', '<=', $d))))
-            ->with([
-                'payslip:id,payroll_run_id,employee_id',
-                'payslip.employee' => fn ($q) => $q->withTrashed()->select('id', 'name'),
-                'payslip.payrollRun:id,reference,period_start,approved_at',
-            ])
-            ->get()
-            ->sortBy(fn (PayslipItem $item) => [$item->payslip->payrollRun->approved_at, $item->id])
-            ->values();
-
-        $total = '0.00';
-        $rows = [];
-
-        foreach ($items as $item) {
-            $amount = $item->getRawOriginal('amount') ?? $item->amount;
-            $total = bcadd($total, $amount, 2);
-            $run = $item->payslip->payrollRun;
-
-            $rows[] = [
-                'id' => $item->id,
-                'date' => $run->approved_at->format('d-m-Y'),
-                'reference' => $run->reference,
-                'description' => "{$item->name} — {$item->payslip->employee->name} ({$run->period_start->format('M Y')})",
-                'account' => [
-                    'id' => $allowanceAccount->id,
-                    'code' => $allowanceAccount->code,
-                    'name' => $allowanceAccount->name,
-                    'type' => $allowanceAccount->type->value,
-                ],
-                'debit' => number_format((float) $amount, 2, '.', ''),
-                'credit' => '0.00',
-                'balance' => $total,
-            ];
-        }
-
-        return [
-            'rows' => $rows,
-            'totalDebit' => $total,
-            'totalCredit' => '0.00',
         ];
     }
 }

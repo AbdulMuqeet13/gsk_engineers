@@ -3,13 +3,17 @@
 namespace App\Services;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\EmployeeType;
 use App\Enums\JournalEntryType;
 use App\Enums\PayrollStatus;
 use App\Enums\PayslipItemType;
 use App\Exceptions\Payroll\EmptyPayrollException;
+use App\Exceptions\Payroll\NoUnpaidPayslipsException;
 use App\Exceptions\Payroll\OverlappingPayrollException;
+use App\Exceptions\Payroll\PayrollNotApprovedException;
 use App\Exceptions\Payroll\PayrollNotDraftException;
 use App\Exceptions\Payroll\PayrollNotSubmittedException;
+use App\Exceptions\Payroll\PayslipAlreadyPaidException;
 use App\Models\AccountHead;
 use App\Models\Attendance;
 use App\Models\Employee;
@@ -17,6 +21,8 @@ use App\Models\EmployeeSalary;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 
 class PayrollService
@@ -44,43 +50,64 @@ class PayrollService
     }
 
     /**
-     * Create a draft payroll run with auto-generated payslips.
+     * Create a draft payroll run with auto-generated payslips for the active
+     * employees in scope. Employees already on another non-rejected run for an
+     * overlapping period are skipped.
      *
      * @param array{
      *     period_start: string,
      *     period_end: string,
      *     payment_account_id: int,
      *     description: string|null,
+     *     project_id?: int|null,
+     *     employee_ids?: array<int, int>|null,
      * } $data
+     * @return array{run: PayrollRun, skipped_without_salary: int, skipped_already_in_payroll: int}
      *
      * @throws OverlappingPayrollException
      */
-    public function create(array $data, User $user): PayrollRun
+    public function create(array $data, User $user): array
     {
         return DB::transaction(function () use ($data, $user) {
-            $existing = PayrollRun::overlapping($data['period_start'], $data['period_end'])->lockForUpdate()->first();
+            $employees = $this->employeesInScope($data['project_id'] ?? null, $data['employee_ids'] ?? [])
+                ->with('assignments.allowances')
+                ->get();
 
-            if ($existing !== null) {
-                throw new OverlappingPayrollException($existing);
+            $existingPayslips = Payslip::query()
+                ->whereIn('employee_id', $employees->modelKeys())
+                ->whereHas('payrollRun', fn ($q) => $q->overlapping($data['period_start'], $data['period_end']))
+                ->with('payrollRun:id,reference')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('employee_id');
+
+            $employees = $employees->reject(fn (Employee $employee) => $existingPayslips->has($employee->id));
+
+            if ($employees->isEmpty() && $existingPayslips->isNotEmpty()) {
+                throw new OverlappingPayrollException($existingPayslips->first()->payrollRun);
             }
 
             $run = PayrollRun::create([
-                ...$data,
+                'period_start' => $data['period_start'],
+                'period_end' => $data['period_end'],
+                'payment_account_id' => $data['payment_account_id'],
+                'description' => $data['description'] ?? null,
+                'project_id' => $data['project_id'] ?? null,
                 'reference' => $this->generateReference(),
                 'status' => PayrollStatus::Draft,
                 'total_amount' => '0.00',
                 'created_by' => $user->id,
             ]);
 
-            $employees = Employee::where('is_active', true)
-                ->with('assignments.allowances')
-                ->get();
             $totalAmount = '0.00';
+            $skippedWithoutSalary = 0;
 
             foreach ($employees as $employee) {
                 $salary = $employee->salaryEffectiveOn($data['period_end']);
 
                 if ($salary === null) {
+                    $skippedWithoutSalary++;
+
                     continue;
                 }
 
@@ -107,6 +134,7 @@ class PayrollService
 
                 $payslip = $run->payslips()->create([
                     'employee_id' => $employee->id,
+                    'project_id' => $employee->type === EmployeeType::Project ? $employee->project_id : null,
                     'employee_salary_id' => $salary->id,
                     'salary_amount' => $salaryAmount,
                     'allowances_amount' => $allowancesAmount,
@@ -126,8 +154,29 @@ class PayrollService
 
             $run->update(['total_amount' => $totalAmount]);
 
-            return $run->load('payslips.employee');
+            return [
+                'run' => $run->load('payslips.employee'),
+                'skipped_without_salary' => $skippedWithoutSalary,
+                'skipped_already_in_payroll' => $existingPayslips->count(),
+            ];
         });
+    }
+
+    /**
+     * Active employees a payroll run covers: everyone, or only those of a
+     * project (project-based or assigned) and/or the chosen employees.
+     *
+     * @param  array<int, int>  $employeeIds
+     * @return Builder<Employee>
+     */
+    private function employeesInScope(?int $projectId, array $employeeIds): Builder
+    {
+        return Employee::query()
+            ->where('is_active', true)
+            ->when($projectId, fn (Builder $q) => $q->where(fn (Builder $q2) => $q2
+                ->where('project_id', $projectId)
+                ->orWhereHas('assignments', fn (Builder $q3) => $q3->where('project_id', $projectId))))
+            ->when($employeeIds !== [], fn (Builder $q) => $q->whereIn('id', $employeeIds));
     }
 
     /**
@@ -286,9 +335,10 @@ class PayrollService
      * Build the balanced journal lines for an approved payroll run.
      *
      * Dr Salaries (salary − other deductions), Dr Project Allowances per project,
-     * Cr Salary Tax Payable, Cr Employee Security Deposits, Cr payment account (net).
+     * Cr Salary Tax Payable, Cr Employee Security Deposits, Cr Salaries Payable (net).
+     * The net salaries are paid later per payslip through pay().
      *
-     * @return array<int, array{account_head_id: int, project_id: int|null, debit: string, credit: string, memo: string|null}>
+     * @return array<int, array{account_head_id: int, project_id: int|null, employee_id: int|null, debit: string, credit: string, memo: string|null}>
      */
     private function buildApprovalLines(PayrollRun $run): array
     {
@@ -335,7 +385,7 @@ class PayrollService
 
         $lines[] = $this->journalLine('2030', null, '0.00', $taxTotal, "Tax withheld for {$run->reference}");
         $lines[] = $this->journalLine('2040', null, '0.00', $securityTotal, "Security withheld for {$run->reference}");
-        $lines[] = $this->journalLine($run->payment_account_id, null, '0.00', $netTotal, "Payment for payroll {$run->reference}");
+        $lines[] = $this->journalLine('2050', null, '0.00', $netTotal, "Salaries payable for {$run->reference}");
 
         return array_values(array_filter(
             $lines,
@@ -344,12 +394,93 @@ class PayrollService
     }
 
     /**
+     * Pay the net salaries of unpaid payslips on an approved run in one posted
+     * entry: Dr Salaries Payable and Cr the payment account per payslip. Both
+     * lines carry the employee; the payment line also carries the payslip's
+     * project so the project ledger shows what was paid to its employees.
+     *
+     * @param  array<int, int>  $payslipIds
+     * @return EloquentCollection<int, Payslip>
+     *
+     * @throws PayrollNotApprovedException
+     * @throws NoUnpaidPayslipsException
+     * @throws PayslipAlreadyPaidException
+     */
+    public function pay(PayrollRun $run, array $payslipIds, int $paymentAccountId, string $date, User $payer): EloquentCollection
+    {
+        if (! $run->isApproved()) {
+            throw new PayrollNotApprovedException($run->status);
+        }
+
+        return DB::transaction(function () use ($run, $payslipIds, $paymentAccountId, $date, $payer) {
+            $payslips = $run->payslips()
+                ->whereIn('id', $payslipIds)
+                ->with(['employee' => fn ($q) => $q->withTrashed()->select('id', 'name')])
+                ->lockForUpdate()
+                ->get();
+
+            if ($payslips->isEmpty()) {
+                throw new NoUnpaidPayslipsException;
+            }
+
+            $paidPayslip = $payslips->first(fn (Payslip $payslip) => $payslip->isPaid());
+
+            if ($paidPayslip !== null) {
+                throw new PayslipAlreadyPaidException($paidPayslip);
+            }
+
+            $lines = [];
+
+            foreach ($payslips as $payslip) {
+                $netSalary = $payslip->getRawOriginal('net_salary') ?? $payslip->net_salary;
+                $memo = "Salary of {$payslip->employee->name} ({$run->period_start->format('M Y')})";
+                $lines[] = $this->journalLine('2050', null, $netSalary, '0.00', $memo, $payslip->employee_id);
+                $lines[] = $this->journalLine($paymentAccountId, $payslip->project_id, '0.00', $netSalary, $memo, $payslip->employee_id);
+            }
+
+            $lines = array_values(array_filter(
+                $lines,
+                fn (array $line) => bccomp($line['debit'], '0', 2) !== 0 || bccomp($line['credit'], '0', 2) !== 0,
+            ));
+
+            $journalEntryId = null;
+
+            if ($lines !== []) {
+                $description = $payslips->count() === 1
+                    ? "Salary payment: {$run->reference} — {$payslips->first()->employee->name}"
+                    : "Salary payment: {$run->reference} ({$payslips->count()} employees)";
+
+                $journalEntry = $this->journalService->create([
+                    'date' => $date,
+                    'description' => $description,
+                    'type' => JournalEntryType::Payroll->value,
+                    'lines' => $lines,
+                ], $payer);
+
+                $this->journalService->post($journalEntry);
+                $journalEntryId = $journalEntry->id;
+            }
+
+            foreach ($payslips as $payslip) {
+                $payslip->update([
+                    'paid_at' => $date,
+                    'payment_account_id' => $paymentAccountId,
+                    'payment_journal_entry_id' => $journalEntryId,
+                    'paid_by' => $payer->id,
+                ]);
+            }
+
+            return $payslips;
+        });
+    }
+
+    /**
      * Build a journal line. A string account is treated as an account code and
      * resolved only when the line carries an amount.
      *
-     * @return array{account_head_id: int|null, project_id: int|null, debit: string, credit: string, memo: string|null}
+     * @return array{account_head_id: int|null, project_id: int|null, employee_id: int|null, debit: string, credit: string, memo: string|null}
      */
-    private function journalLine(int|string $account, ?int $projectId, string $debit, string $credit, ?string $memo): array
+    private function journalLine(int|string $account, ?int $projectId, string $debit, string $credit, ?string $memo, ?int $employeeId = null): array
     {
         $hasAmount = bccomp($debit, '0', 2) !== 0 || bccomp($credit, '0', 2) !== 0;
 
@@ -360,6 +491,7 @@ class PayrollService
         return [
             'account_head_id' => $account,
             'project_id' => $projectId,
+            'employee_id' => $employeeId,
             'debit' => $debit,
             'credit' => $credit,
             'memo' => $memo,

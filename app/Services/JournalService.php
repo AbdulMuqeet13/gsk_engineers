@@ -184,6 +184,7 @@ class JournalService
                 $reversal->lines()->create([
                     'account_head_id' => $line->account_head_id,
                     'project_id' => $line->project_id,
+                    'employee_id' => $line->employee_id,
                     'debit' => $line->getRawOriginal('credit') ?? $line->credit,
                     'credit' => $line->getRawOriginal('debit') ?? $line->debit,
                     'memo' => $line->memo,

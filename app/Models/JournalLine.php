@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $journal_entry_id
  * @property int $account_head_id
  * @property int|null $project_id
+ * @property int|null $employee_id
  * @property string $debit
  * @property string $credit
  * @property string|null $memo
@@ -22,8 +23,9 @@ use Illuminate\Support\Carbon;
  * @property-read JournalEntry $journalEntry
  * @property-read AccountHead $accountHead
  * @property-read Project|null $project
+ * @property-read Employee|null $employee
  */
-#[Fillable(['journal_entry_id', 'account_head_id', 'project_id', 'debit', 'credit', 'memo'])]
+#[Fillable(['journal_entry_id', 'account_head_id', 'project_id', 'employee_id', 'debit', 'credit', 'memo'])]
 class JournalLine extends Model
 {
     /** @use HasFactory<JournalLineFactory> */
@@ -62,5 +64,13 @@ class JournalLine extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Employee, $this>
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

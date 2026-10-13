@@ -52,4 +52,10 @@ class PayrollRunPolicy
         return $user->can(PermissionEnum::PayrollApprove->value)
             && $payrollRun->isSubmitted();
     }
+
+    public function pay(User $user, PayrollRun $payrollRun): bool
+    {
+        return $user->can(PermissionEnum::PayrollApprove->value)
+            && $payrollRun->isApproved();
+    }
 }

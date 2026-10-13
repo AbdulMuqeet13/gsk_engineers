@@ -85,6 +85,17 @@ export function getPayrollColumns({
             ),
         },
         {
+            id: 'project',
+            header: () => <span>Project</span>,
+            cell: ({ row }) => (
+                <span className="text-muted-foreground text-sm">
+                    {row.original.project
+                        ? `${row.original.project.code} - ${row.original.project.name}`
+                        : 'All projects'}
+                </span>
+            ),
+        },
+        {
             accessorKey: 'total_amount',
             header: () => <span className="text-right">Total Amount</span>,
             cell: ({ row }) => (
@@ -98,7 +109,9 @@ export function getPayrollColumns({
             header: () => <span>Payslips</span>,
             cell: ({ row }) => (
                 <span className="text-muted-foreground text-sm">
-                    {row.original.payslips_count ?? 0}
+                    {row.original.status === 'approved'
+                        ? `${row.original.paid_payslips_count ?? 0} / ${row.original.payslips_count ?? 0} paid`
+                        : (row.original.payslips_count ?? 0)}
                 </span>
             ),
         },

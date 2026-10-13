@@ -1,5 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { Download, Eye, Pencil } from 'lucide-react';
+import { Banknote, Download, Eye, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatAmount } from '@/lib/utils';
 import type { Payslip } from '@/types';
@@ -8,16 +9,22 @@ import { downloadPayslip } from '@/actions/App/Http/Controllers/PayrollRunContro
 type PayslipColumnsOptions = {
     onEdit?: (payslip: Payslip) => void;
     onViewBreakdown?: (payslip: Payslip) => void;
+    onPay?: (payslip: Payslip) => void;
     canRun: boolean;
+    canPay: boolean;
     isDraft: boolean;
+    isApproved: boolean;
     payrollRunId: number;
 };
 
 export function getPayslipColumns({
     onEdit,
     onViewBreakdown,
+    onPay,
     canRun,
+    canPay,
     isDraft,
+    isApproved,
     payrollRunId,
 }: PayslipColumnsOptions): ColumnDef<Payslip>[] {
     const columns: ColumnDef<Payslip>[] = [
@@ -126,6 +133,30 @@ export function getPayslipColumns({
             ),
         },
         {
+            id: 'payment',
+            header: () => <span>Payment</span>,
+            cell: ({ row }) => {
+                if (!isApproved) {
+                    return <span className="text-muted-foreground text-sm">--</span>;
+                }
+
+                const payslip = row.original;
+
+                return payslip.paid_at ? (
+                    <div className="space-y-0.5">
+                        <Badge variant="success-soft">Paid</Badge>
+                        <p className="text-muted-foreground text-xs">
+                            {payslip.paid_at}
+                            {payslip.payment_account &&
+                                ` · ${payslip.payment_account.name}`}
+                        </p>
+                    </div>
+                ) : (
+                    <Badge variant="secondary">Unpaid</Badge>
+                );
+            },
+        },
+        {
             accessorKey: 'notes',
             header: () => <span>Notes</span>,
             cell: ({ row }) => (
@@ -169,6 +200,17 @@ export function getPayslipColumns({
                         <span className="sr-only">Download payslip</span>
                     </a>
                 </Button>
+                {isApproved && canPay && !row.original.paid_at && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => onPay?.(row.original)}
+                    >
+                        <Banknote className="size-4" />
+                        <span className="sr-only">Pay salary</span>
+                    </Button>
+                )}
                 {isDraft && canRun && (
                     <Button
                         variant="ghost"

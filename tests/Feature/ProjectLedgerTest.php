@@ -2,14 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Enums\PayslipItemType;
 use App\Enums\RoleEnum;
 use App\Models\AccountHead;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
-use App\Models\PayslipItem;
 use App\Models\Project;
+use App\Models\ProjectAssignment;
 use App\Models\User;
 use App\Services\JournalService;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -45,6 +44,7 @@ class ProjectLedgerTest extends TestCase
             'type' => 'income',
             'normal_balance' => 'credit',
         ]);
+        AccountHead::factory()->liability()->create(['code' => '2050', 'name' => 'Salaries Payable']);
         $this->project = Project::factory()->active()->create();
         $this->user = User::factory()->create();
         $this->user->assignRole(RoleEnum::SuperAdmin);
@@ -343,17 +343,13 @@ class ProjectLedgerTest extends TestCase
         $response->assertDownload();
     }
 
-    public function test_employee_filter_shows_only_their_approved_project_allowances(): void
+    public function test_employee_filter_shows_salary_payments_for_the_project(): void
     {
-        $allowanceAccount = AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
-        $employee = Employee::factory()->create(['name' => 'Ali Khan']);
-        $janRun = PayrollRun::factory()->approved()->create(['reference' => 'PR-JAN', 'period_start' => '2026-01-01', 'approved_at' => '2026-01-31 10:00:00']);
-        $febRun = PayrollRun::factory()->approved()->create(['reference' => 'PR-FEB', 'period_start' => '2026-02-01', 'approved_at' => '2026-02-28 10:00:00']);
-        $this->createAllowance($febRun, $employee, $this->project, '3000.00', 'Site Allowance');
-        $this->createAllowance($janRun, $employee, $this->project, '2000.00', 'Site Allowance');
-        $this->createAllowance($janRun, Employee::factory()->create(), $this->project, '9000.00');
-        $this->createAllowance($janRun, $employee, Project::factory()->create(), '7000.00');
-        $this->createAllowance(PayrollRun::factory()->submitted()->create(), $employee, $this->project, '5000.00');
+        $employee = Employee::factory()->projectBased($this->project)->create(['name' => 'Ali Khan']);
+        $this->paySalary($employee, $this->project, '30000.00', '2026-02-01', '2026-03-05');
+        $this->paySalary($employee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
+        $this->paySalary(Employee::factory()->projectBased($this->project)->create(), $this->project, '9000.00', '2026-01-01', '2026-02-05');
+        $this->paySalary($employee, Project::factory()->create(), '7000.00', '2025-12-01', '2026-01-05');
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger', [
@@ -363,25 +359,23 @@ class ProjectLedgerTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->has('rows', 2)
-            ->where('rows.0.date', '31-01-2026')
-            ->where('rows.0.reference', 'PR-JAN')
-            ->where('rows.0.description', 'Site Allowance — Ali Khan (Jan 2026)')
-            ->where('rows.0.account.id', $allowanceAccount->id)
-            ->where('rows.0.debit', '2000.00')
-            ->where('rows.0.balance', '2000.00')
-            ->where('rows.1.reference', 'PR-FEB')
-            ->where('rows.1.balance', '5000.00')
-            ->where('totalDebit', '5000.00')
-            ->where('totalCredit', '0.00')
+            ->where('rows.0.date', '05-02-2026')
+            ->where('rows.0.description', 'Salary of Ali Khan (Jan 2026)')
+            ->where('rows.0.account.id', $this->cashAccount->id)
+            ->where('rows.0.credit', '20000.00')
+            ->where('rows.0.balance', '20000.00')
+            ->where('rows.1.description', 'Salary of Ali Khan (Feb 2026)')
+            ->where('rows.1.balance', '50000.00')
+            ->where('totalDebit', '0.00')
+            ->where('totalCredit', '50000.00')
         );
     }
 
-    public function test_employee_filter_applies_date_range_to_approval_date(): void
+    public function test_employee_filter_applies_date_range_to_payment_date(): void
     {
-        AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
-        $employee = Employee::factory()->create();
-        $this->createAllowance(PayrollRun::factory()->approved()->create(['reference' => 'PR-JAN', 'approved_at' => '2026-01-31 10:00:00']), $employee, $this->project, '2000.00');
-        $this->createAllowance(PayrollRun::factory()->approved()->create(['reference' => 'PR-MAR', 'approved_at' => '2026-03-31 10:00:00']), $employee, $this->project, '3000.00');
+        $employee = Employee::factory()->projectBased($this->project)->create(['name' => 'Ali Khan']);
+        $this->paySalary($employee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
+        $this->paySalary($employee, $this->project, '30000.00', '2026-02-01', '2026-03-05');
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger', [
@@ -393,54 +387,55 @@ class ProjectLedgerTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->has('rows', 1)
-            ->where('rows.0.reference', 'PR-MAR')
+            ->where('rows.0.description', 'Salary of Ali Khan (Feb 2026)')
         );
     }
 
     public function test_employee_filter_returns_nothing_for_a_different_account(): void
     {
-        AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
-        $employee = Employee::factory()->create();
-        $this->createAllowance(PayrollRun::factory()->approved()->create(), $employee, $this->project, '2000.00');
+        $employee = Employee::factory()->projectBased($this->project)->create();
+        $this->paySalary($employee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger', [
                 'project_id' => $this->project->id,
                 'employee_id' => $employee->id,
-                'account_head_id' => $this->cashAccount->id,
+                'account_head_id' => $this->expenseAccount->id,
             ]));
 
         $response->assertInertia(fn ($page) => $page
             ->has('rows', 0)
-            ->where('totalDebit', '0.00')
+            ->where('totalCredit', '0.00')
         );
     }
 
-    public function test_lists_only_employees_with_allowances_on_the_project(): void
+    public function test_lists_all_employees_of_the_project(): void
     {
-        $employee = Employee::factory()->create(['name' => 'Ali Khan']);
-        $this->createAllowance(PayrollRun::factory()->approved()->create(), $employee, $this->project, '2000.00');
-        $this->createAllowance(PayrollRun::factory()->approved()->create(), Employee::factory()->create(), Project::factory()->create(), '2000.00');
-        $this->createAllowance(PayrollRun::factory()->submitted()->create(), Employee::factory()->create(), $this->project, '2000.00');
-        $formerEmployee = Employee::factory()->create(['name' => 'Bilal Ahmed']);
-        $this->createAllowance(PayrollRun::factory()->approved()->create(), $formerEmployee, $this->project, '2000.00');
+        $projectEmployee = Employee::factory()->projectBased($this->project)->create(['name' => 'Ali Khan']);
+        $assignedEmployee = Employee::factory()->create(['name' => 'Bilal Ahmed']);
+        ProjectAssignment::factory()->create(['employee_id' => $assignedEmployee->id, 'project_id' => $this->project->id]);
+        $formerEmployee = Employee::factory()->create(['name' => 'Danish Raza']);
+        $this->paySalary($formerEmployee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
         $formerEmployee->delete();
+        $this->paySalary(Employee::factory()->create(), Project::factory()->create(), '20000.00', '2026-01-01', '2026-02-05');
+        ProjectAssignment::factory()->create(['project_id' => Project::factory()->create()->id]);
+        Employee::factory()->projectBased($this->project)->create()->delete();
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger', ['project_id' => $this->project->id]));
 
         $response->assertInertia(fn ($page) => $page
-            ->has('employees', 2)
-            ->where('employees.0.id', $employee->id)
-            ->where('employees.1.id', $formerEmployee->id)
+            ->has('employees', 3)
+            ->where('employees.0.id', $projectEmployee->id)
+            ->where('employees.1.id', $assignedEmployee->id)
+            ->where('employees.2.id', $formerEmployee->id)
         );
     }
 
-    public function test_employee_filter_shows_allowances_of_a_deleted_employee(): void
+    public function test_employee_filter_shows_payments_of_a_deleted_employee(): void
     {
-        AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
-        $employee = Employee::factory()->create(['name' => 'Bilal Ahmed']);
-        $this->createAllowance(PayrollRun::factory()->approved()->create(['period_start' => '2026-01-01']), $employee, $this->project, '2000.00', 'Site Allowance');
+        $employee = Employee::factory()->projectBased($this->project)->create(['name' => 'Bilal Ahmed']);
+        $this->paySalary($employee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
         $employee->delete();
 
         $response = $this->actingAs($this->user)
@@ -451,15 +446,14 @@ class ProjectLedgerTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->has('rows', 1)
-            ->where('rows.0.description', 'Site Allowance — Bilal Ahmed (Jan 2026)')
+            ->where('rows.0.description', 'Salary of Bilal Ahmed (Jan 2026)')
         );
     }
 
     public function test_export_pdf_with_employee_filter(): void
     {
-        AccountHead::factory()->expense()->create(['code' => '5006', 'name' => 'Project Allowances']);
-        $employee = Employee::factory()->create();
-        $this->createAllowance(PayrollRun::factory()->approved()->create(), $employee, $this->project, '2000.00');
+        $employee = Employee::factory()->projectBased($this->project)->create();
+        $this->paySalary($employee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
 
         $response = $this->actingAs($this->user)
             ->get(route('reports.project-ledger.export', [
@@ -472,16 +466,25 @@ class ProjectLedgerTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
     }
 
-    private function createAllowance(PayrollRun $run, Employee $employee, Project $project, string $amount, string $name = 'Project Allowance'): PayslipItem
+    /**
+     * Pay one approved payslip through the payment endpoint, as the payroll page does.
+     */
+    private function paySalary(Employee $employee, Project $project, string $netSalary, string $periodStart, string $paidAt): void
     {
-        $payslip = Payslip::query()->where('payroll_run_id', $run->id)->where('employee_id', $employee->id)->first()
-            ?? Payslip::factory()->for($run, 'payrollRun')->for($employee)->create();
-
-        return PayslipItem::factory()->for($payslip)->create([
-            'type' => PayslipItemType::Allowance,
-            'name' => $name,
-            'amount' => $amount,
-            'project_id' => $project->id,
+        $run = PayrollRun::factory()->approved()->create([
+            'period_start' => $periodStart,
+            'payment_account_id' => $this->cashAccount->id,
+            'approved_at' => $periodStart.' 10:00:00',
         ]);
+        $payslip = Payslip::factory()->for($run, 'payrollRun')->for($employee)->create([
+            'project_id' => $project->id,
+            'net_salary' => $netSalary,
+        ]);
+
+        $this->actingAs($this->user)->post(route('payroll.pay', $run), [
+            'payslip_ids' => [$payslip->id],
+            'payment_account_id' => $this->cashAccount->id,
+            'paid_at' => $paidAt,
+        ])->assertSessionHasNoErrors();
     }
 }

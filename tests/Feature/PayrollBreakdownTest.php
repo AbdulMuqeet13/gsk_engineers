@@ -134,9 +134,9 @@ class PayrollBreakdownTest extends TestCase
             ->map(fn ($line) => [$line->accountHead->code, $line->project_id, $line->debit, $line->credit])
             ->sortBy(0)->values()->all();
         $this->assertSame([
-            ['1002', null, '0.00', '75000.00'],
             ['2030', null, '0.00', '3000.00'],
             ['2040', null, '0.00', '2000.00'],
+            ['2050', null, '0.00', '75000.00'],
             ['5001', null, '70000.00', '0.00'],
             ['5006', $assignment->project_id, '10000.00', '0.00'],
         ], $lines);

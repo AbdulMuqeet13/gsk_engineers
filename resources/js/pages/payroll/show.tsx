@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { CheckCircle2, Send, Trash2, XCircle } from 'lucide-react';
+import { Banknote, CheckCircle2, Send, Trash2, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { getPayslipColumns } from '@/components/payroll/payslip-columns';
 import { SubmitPayrollDialog } from '@/components/payroll/submit-payroll-dialog';
@@ -7,18 +7,20 @@ import { ApprovePayrollDialog } from '@/components/payroll/approve-payroll-dialo
 import { RejectPayrollDialog } from '@/components/payroll/reject-payroll-dialog';
 import { DeletePayrollDialog } from '@/components/payroll/delete-payroll-dialog';
 import { EditPayslipDialog } from '@/components/payroll/edit-payslip-dialog';
+import { PayPayslipsDialog } from '@/components/payroll/pay-payslips-dialog';
 import { PayslipBreakdownDialog } from '@/components/payroll/payslip-breakdown-dialog';
 import { DataTable } from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCan } from '@/hooks/use-can';
-import type { PayrollRun, Payslip } from '@/types';
+import type { AccountHead, PayrollRun, Payslip } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/PayrollRunController';
 import { dashboard } from '@/routes';
 
 type PayrollShowPageProps = {
     payrollRun: PayrollRun;
+    paymentAccounts: Pick<AccountHead, 'id' | 'code' | 'name'>[];
 };
 
 const statusBadgeVariants: Record<string, 'secondary' | 'info-soft' | 'success-soft' | 'destructive-soft'> = {
@@ -34,13 +36,17 @@ function formatAmount(amount: string): string {
     });
 }
 
-export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
+export default function PayrollShow({
+    payrollRun,
+    paymentAccounts = [],
+}: PayrollShowPageProps) {
     const { can } = useCan();
     const canRun = can('payroll.run');
     const canApprove = can('payroll.approve');
 
     const isDraft = payrollRun.status === 'draft';
     const isSubmitted = payrollRun.status === 'submitted';
+    const isApproved = payrollRun.status === 'approved';
 
     const [submittingRun, setSubmittingRun] = useState(false);
     const [approvingRun, setApprovingRun] = useState(false);
@@ -48,17 +54,29 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
     const [deletingRun, setDeletingRun] = useState(false);
     const [editingPayslip, setEditingPayslip] = useState<Payslip | null>(null);
     const [viewingPayslip, setViewingPayslip] = useState<Payslip | null>(null);
+    const [payingPayslips, setPayingPayslips] = useState<Payslip[] | null>(null);
+
+    const unpaidPayslips = useMemo(
+        () => (payrollRun.payslips ?? []).filter((payslip) => !payslip.paid_at),
+        [payrollRun.payslips],
+    );
+    const unpaidAmount = unpaidPayslips
+        .reduce((sum, payslip) => sum + parseFloat(payslip.net_salary), 0)
+        .toFixed(2);
 
     const payslipColumns = useMemo(
         () =>
             getPayslipColumns({
                 onEdit: setEditingPayslip,
                 onViewBreakdown: setViewingPayslip,
+                onPay: (payslip) => setPayingPayslips([payslip]),
                 canRun,
+                canPay: canApprove,
                 isDraft,
+                isApproved,
                 payrollRunId: payrollRun.id,
             }),
-        [canRun, isDraft, payrollRun.id],
+        [canRun, canApprove, isDraft, isApproved, payrollRun.id],
     );
 
     return (
@@ -72,6 +90,12 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                         description="Payroll run details and payslips."
                     />
                     <div className="flex items-center gap-2">
+                        {isApproved && canApprove && unpaidPayslips.length > 0 && (
+                            <Button onClick={() => setPayingPayslips(unpaidPayslips)}>
+                                <Banknote className="mr-2 size-4" />
+                                Pay All Unpaid ({unpaidPayslips.length})
+                            </Button>
+                        )}
                         {isDraft && canRun && (
                             <Button onClick={() => setSubmittingRun(true)}>
                                 <Send className="mr-2 size-4" />
@@ -131,8 +155,30 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                         </p>
                     </div>
                     <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm">Project</p>
+                        <p className="text-sm font-medium">
+                            {payrollRun.project
+                                ? `${payrollRun.project.code} - ${payrollRun.project.name}`
+                                : 'All projects'}
+                        </p>
+                    </div>
+                    {isApproved && (
+                        <div className="space-y-1">
+                            <p className="text-muted-foreground text-sm">
+                                Unpaid
+                            </p>
+                            <p className="font-mono text-sm font-medium">
+                                {formatAmount(unpaidAmount)}
+                                <span className="text-muted-foreground ml-1 font-sans text-xs">
+                                    ({unpaidPayslips.length} of{' '}
+                                    {payrollRun.payslips?.length ?? 0} payslips)
+                                </span>
+                            </p>
+                        </div>
+                    )}
+                    <div className="space-y-1">
                         <p className="text-muted-foreground text-sm">
-                            Payment Account
+                            Default Payment Account
                         </p>
                         <p className="text-sm font-medium">
                             {payrollRun.payment_account
@@ -243,6 +289,16 @@ export default function PayrollShow({ payrollRun }: PayrollShowPageProps) {
                     open={!!editingPayslip}
                     onClose={() => setEditingPayslip(null)}
                     payslip={editingPayslip}
+                />
+            )}
+
+            {payingPayslips && (
+                <PayPayslipsDialog
+                    open={!!payingPayslips}
+                    onClose={() => setPayingPayslips(null)}
+                    payrollRun={payrollRun}
+                    payslips={payingPayslips}
+                    paymentAccounts={paymentAccounts}
                 />
             )}
 

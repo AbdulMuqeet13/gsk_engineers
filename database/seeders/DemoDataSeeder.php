@@ -526,9 +526,10 @@ class DemoDataSeeder extends Seeder
             'period_end' => '2026-07-31',
             'payment_account_id' => $bank->id,
             'description' => 'July 2026 salary disbursement',
-        ], $admin);
+        ], $admin)['run'];
         $this->payrollService->submit($julyRun);
         $this->payrollService->approve($julyRun, $admin);
+        $this->payrollService->pay($julyRun, $julyRun->payslips->modelKeys(), $bank->id, now()->toDateString(), $admin);
 
         // Approved payroll — August
         $augRun = $this->payrollService->create([
@@ -536,9 +537,10 @@ class DemoDataSeeder extends Seeder
             'period_end' => '2026-08-31',
             'payment_account_id' => $bank->id,
             'description' => 'August 2026 salary disbursement',
-        ], $admin);
+        ], $admin)['run'];
         $this->payrollService->submit($augRun);
         $this->payrollService->approve($augRun, $admin);
+        $this->payrollService->pay($augRun, $augRun->payslips->modelKeys(), $bank->id, now()->toDateString(), $admin);
 
         // Submitted payroll — September (pending approval)
         $sepRun = $this->payrollService->create([
@@ -546,7 +548,7 @@ class DemoDataSeeder extends Seeder
             'period_end' => '2026-09-30',
             'payment_account_id' => $bank->id,
             'description' => 'September 2026 salary disbursement',
-        ], $admin);
+        ], $admin)['run'];
         $this->payrollService->submit($sepRun);
     }
 
