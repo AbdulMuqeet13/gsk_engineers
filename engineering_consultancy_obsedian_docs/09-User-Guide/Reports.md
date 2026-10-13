@@ -110,18 +110,19 @@ Shows all posted transactions for a specific project across all account types.
 - **Project** (required) -- Select the project to view
 - **Date From / Date To** -- Optional date range
 - **Account** -- All accounts or filter to a specific one
-- **Employee** -- All employees or a single employee (enabled once a project is selected; lists only employees with project allowances on an approved payroll run for that project, including deleted employees)
+- **Employee** -- All employees or a single employee (enabled once a project is selected; lists all employees of that project: project employees, employees assigned to it, and anyone (including deleted employees) who was paid a salary for it)
 
 **Columns:** Date, Reference, Description, Account (Code - Name), Type, Debit, Credit, Balance
 
 **Note:** The **Balance** column only shows a running balance when a single account is selected. When viewing all accounts, it shows "--" because a running balance across different account types is not meaningful.
 
-**Employee filter:** Payroll posts project allowances to the journal summed per project, so the ledger itself has no per-employee lines. When an employee is selected, the rows instead come from that employee's **project allowances on approved payroll runs** for the project:
-- Date = payroll approval date, Reference = payroll run reference
-- Description = allowance name, employee and month (e.g. "Site Allowance -- Ali Khan (Jan 2026)")
-- Shown as a debit to **5006 Project Allowances** with a running balance
-- Date filters apply to the approval date; choosing any account other than 5006 returns no rows
-- Salaries (posted without a project), expenses and manual journal entries are not included
+**Employee filter:** Shows the **salary payments made to that employee for the project**. When a salary is paid from a payroll run (see [[09-User-Guide/Payroll#Paying Salaries]]), the bank/cash line of the payment records the employee and, for project-type employees, their project. Selecting an employee shows those lines:
+- Date = payment date, Reference = the payment's journal entry
+- Description = employee and pay month (e.g. "Salary of Ali Khan (Jan 2026)")
+- Shown as a credit to the account it was paid from; **Balance** is the running total paid
+- Date filters apply to the payment date; choosing an account other than the one paid from returns no rows
+- Only payments made with **Pay** / **Pay All Unpaid** appear. Runs approved before per-employee payments existed paid everyone in one combined line, so those payments can't be shown per employee
+- Internal employees' salaries aren't tied to a project, so they don't appear
 - Exports include the filter and the PDF header shows the employee name
 
 **Footer:** Total Debits, Total Credits

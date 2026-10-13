@@ -107,7 +107,7 @@ Draft payslip edit (`UpdatePayslipRequest`): tax, security, other deductions, no
 | 2040 Employee Security Deposits | | Σ security |
 | Payment account | | Σ net |
 
-**Overlapping runs blocked** -- `PayrollRun::scopeOverlapping()`; a new run cannot overlap an existing run unless that run is **rejected**. Checked in `StorePayrollRunRequest::after()` (field error on `period_start`) and again in `PayrollService::create()` (`OverlappingPayrollException`, with row lock).
+**Overlapping runs blocked** -- `PayrollRun::scopeOverlapping()`; a new run cannot overlap an existing run unless that run is **rejected**. Checked in `StorePayrollRunRequest::after()` (field error on `period_start`) and again in `PayrollService::create()` (`OverlappingPayrollException`, with row lock). *(Later changed to a per-employee check: employees already on an overlapping non-rejected run are skipped; `OverlappingPayrollException` is thrown only when every employee in scope is covered, and the controller maps it to a `period_start` error.)*
 
 Payslip PDF now lists every earning (components + allowances with project code) and deductions (tax, security, other).
 

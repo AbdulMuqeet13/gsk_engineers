@@ -147,7 +147,13 @@ There is no Prettier config or dependency; `npx prettier` downloads defaults (do
 `Employee::currentSalary` excludes future-dated records; payroll uses `salaryEffectiveOn(period_end)`. Don't use "latest record" for display.
 
 ### Payroll run overlap
-A new run cannot overlap a non-rejected run. Demo data already has July-September 2026 runs.
+An employee cannot be on two non-rejected runs with overlapping periods; employees already covered are skipped, and the run is refused only when everyone in scope is covered. Demo data already has July-September 2026 runs for all employees.
 
-### Project ledger employee filter needs payslip items
-The employee filter reads allowance `payslip_items`, not journal lines (payroll posts allowances summed per project). Payslips created before itemised allowances have no items, so those runs never appear and the Employee dropdown can be empty. Only approved runs count.
+### Project ledger employee filter reads salary payment lines
+The employee filter uses `journal_lines.employee_id`, which is only set by `PayrollService::pay()` (one Dr 2050 + one Cr pay-from line per payslip; the Cr line also carries `payslips.project_id`). Runs approved before per-employee payments credited the bank in one combined line, and posted entries are immutable, so those payments never appear per employee. Approval lines (salaries, allowances) carry no employee.
+
+### Reversing a salary payment entry doesn't unmark the payslip
+Payments post a journal entry (Dr 2050, Cr pay-from account) and set `paid_at` on the payslips. Reversing that entry from Journal Entries corrects the books but the payslips still show **Paid**, and the Pay button won't reappear. The same applies to reversing a payroll approval entry.
+
+### Salaries payable needs account 2050
+Approval credits **2050 Salaries Payable** and payments debit it. Existing installs must re-run `php artisan db:seed --class=ChartOfAccountsSeeder`, otherwise approval and payment fail with a missing-account error.

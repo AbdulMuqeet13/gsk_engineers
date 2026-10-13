@@ -137,9 +137,11 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 |------|------|--------|
 | payrollRuns | PaginatedData\<PayrollRun\> | Query with search + status/date filters |
 | payrollStatuses | string[] | PayrollStatus::values() |
-| paymentAccounts | AccountHead[] | Inertia::optional, asset-type accounts |
+| paymentAccounts | AccountHead[] | Asset-type accounts (closure) |
+| projects | Project[] | For the create dialog scope |
+| employees | Employee[] | Active employees with project_id + assignments; the dialog filters them by the chosen project |
 
-**Features:** Search by reference, filter by status and date range, create/delete/submit/approve/reject dialogs
+**Features:** Search by reference, filter by status and date range, create/delete/submit/approve/reject dialogs, Project column, "x / y paid" on approved runs
 
 ### Payroll Show
 **Path:** `pages/payroll/show.tsx`
@@ -147,10 +149,10 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 
 | Prop | Type | Source |
 |------|------|--------|
-| payrollRun | PayrollRun | With payslips and employees |
-| payrollStatuses | string[] | PayrollStatus::values() |
+| payrollRun | PayrollRun | With payslips (incl. payment fields), employees, project |
+| paymentAccounts | AccountHead[] | Asset-type accounts for the pay dialog |
 
-**Features:** Payslip list with inline editing (deductions, notes), submit/approve/reject actions
+**Features:** Payslip list with inline editing (deductions, notes), submit/approve/reject actions, Payment column (Paid/Unpaid), per-payslip Pay and Pay All Unpaid on approved runs
 
 ### Transfers
 **Path:** `pages/transfers/index.tsx`
@@ -254,7 +256,7 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 | totals | object | { totalDebit, totalCredit } |
 | accountHeads | AccountHead[] | Active accounts for filter |
 | projects | Project[] | For project selector |
-| employees | Pick<Employee, 'id' \| 'name' \| 'designation'>[] | Employees (incl. deleted) with allowances on the selected project in approved runs (reloaded with rows) |
+| employees | Pick<Employee, 'id' \| 'name' \| 'designation'>[] | All employees of the selected project: project-based, assigned, and any (incl. deleted) paid a salary for it (reloaded with rows) |
 
 **Features:** Project selector (required), date range, account and employee filters, running balance (single account or employee), PDF/Excel export. Changing project resets the employee filter.
 

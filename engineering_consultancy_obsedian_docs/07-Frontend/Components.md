@@ -87,7 +87,7 @@
 | File | Purpose |
 |------|---------|
 | `payroll-columns.tsx` | Column definitions with status badge, period display, total amount |
-| `create-payroll-dialog.tsx` | Create dialog with period, description, payment account |
+| `create-payroll-dialog.tsx` | Create dialog with period, payment account, optional project and employees scope, description |
 | `submit-payroll-dialog.tsx` | Submit confirmation |
 | `approve-payroll-dialog.tsx` | Approval confirmation with JE creation notice |
 | `reject-payroll-dialog.tsx` | Rejection dialog with required reason |
@@ -170,6 +170,8 @@ Installed via shadcn CLI (New York style). Includes: Button, Dialog, Input, Sele
 | `payslip-breakdown-dialog.tsx` | Earnings (components, allowances with project code) and deductions |
 | `payslip-columns.tsx` | Now shows salary, allowances, gross, tax, security, other deductions, net |
 | `edit-payslip-dialog.tsx` | Edits tax, security, other deductions with live net |
+| `employee-multi-select.tsx` | Searchable multi-select of employees (create dialog scope) |
+| `pay-payslips-dialog.tsx` | Pays one or many payslips: pay-from account, payment date, net total |
 
 ### Utilities
 | File | Exports |

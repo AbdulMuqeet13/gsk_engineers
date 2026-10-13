@@ -12,12 +12,12 @@ See [[02-Architecture/Database Schema]] for detailed column definitions.
 | `employees` | Employee | Yes | belongsTo project, hasMany assignments + payslips + salaries + securityRefunds, hasOne currentSalary, morphMany attachments |
 | `project_assignments` | ProjectAssignment | No | belongsTo employee + project, hasMany allowances |
 | `journal_entries` | JournalEntry | No | hasMany lines, belongsTo creator, self-ref reversals, morphMany attachments |
-| `journal_lines` | JournalLine | No | belongsTo journalEntry + accountHead + project |
+| `journal_lines` | JournalLine | No | belongsTo journalEntry + accountHead + project + employee (nullable; set on salary payment lines) |
 | `expenses` | Expense | No | belongsTo accountHead + paymentAccount + project + journalEntry + creator + approver, morphMany attachments |
 | `attendance` | Attendance | No | belongsTo employee + marker |
 | `leave_requests` | LeaveRequest | No | belongsTo employee + creator + approver |
-| `payroll_runs` | PayrollRun | No | hasMany payslips, belongsTo paymentAccount + journalEntry + creator + approver |
-| `payslips` | Payslip | No | belongsTo payrollRun + employee + employeeSalary, hasMany items |
+| `payroll_runs` | PayrollRun | No | hasMany payslips, belongsTo paymentAccount + project (nullable scope) + journalEntry + creator + approver |
+| `payslips` | Payslip | No | belongsTo payrollRun + employee + employeeSalary + paymentAccount + paymentJournalEntry + payer (paid_by), belongsTo project (snapshot of a project-type employee's project at run creation), hasMany items; `paid_at` null = unpaid |
 | `inter_project_transfers` | InterProjectTransfer | No | belongsTo fromProject + toProject + fromAccount + toAccount + journalEntry + creator |
 | `project_incomes` | ProjectIncome | No | belongsTo project + incomeAccount + depositAccount + journalEntry + creator |
 | `account_transfers` | AccountTransfer | No | belongsTo fromAccount + toAccount + project + journalEntry + creator |

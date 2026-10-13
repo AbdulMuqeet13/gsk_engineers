@@ -125,11 +125,14 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 | POST | `/payroll/{payroll_run}/approve` | `payroll.approve` | PayrollRunController@approve |
 | POST | `/payroll/{payroll_run}/reject` | `payroll.reject` | PayrollRunController@reject |
 | PUT | `/payroll/{payroll_run}/payslips/{payslip}` | `payroll.payslips.update` | PayrollRunController@updatePayslip |
+| POST | `/payroll/{payroll_run}/payments` | `payroll.pay` | PayrollRunController@pay |
 
-**Index Props:** payrollRuns (paginated, with payslipsCount + paymentAccount + creator + approver), payrollStatuses, paymentAccounts (optional)
+**Index Props:** payrollRuns (paginated, with payslipsCount + paidPayslipsCount + paymentAccount + project + creator + approver), payrollStatuses, paymentAccounts, projects, employees (active, with project_id + assignments, for the create dialog scope)
 **Filters:** search (reference), status, date_from, date_to
 
-**Show Props:** payrollRun (with payslips.employee), payrollStatuses
+**Show Props:** payrollRun (with payslips.employee incl. deleted, payslips.paymentAccount, payslips.paymentJournalEntry, project), paymentAccounts
+
+**pay:** `PayPayslipsRequest` (payslip_ids of this run, payment_account_id asset, paid_at between approval date and today), policy `pay` (`payroll.approve` + approved run), `PayPayslipsAction` → `PayrollService::pay()`
 
 ### Inter-Project Transfers
 | Method | URI | Name | Controller Method |
@@ -206,7 +209,7 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 | GET | `/reports/project-ledger` | `reports.project-ledger` | ProjectLedgerController@index |
 | GET | `/reports/project-ledger/export` | `reports.project-ledger.export` | ProjectLedgerController@export |
 
-**Index Props:** rows (ProjectLedgerRow[]), totals (totalDebit, totalCredit), accountHeads, projects, employees (employees, including soft-deleted, with allowance payslip items on the selected project in approved runs)
+**Index Props:** rows (ProjectLedgerRow[]), totals (totalDebit, totalCredit), accountHeads, projects, employees (all employees of the selected project: project-based and assigned employees, plus any employee, including soft-deleted, with posted journal lines tagged to the project). `employee_id` filters the ledger's journal lines by `journal_lines.employee_id`; rows then use the line memo as description and a running total paid (credit − debit) as balance
 **Filters:** project_id (required), date_from, date_to, account_head_id, employee_id
 **Employee mode:** with `employee_id`, rows are built from `PayslipItem` allowances (approved runs, matching project/employee, dated by `approved_at`) against account 5006 instead of journal lines
 **Permission:** `reports.project`
@@ -276,7 +279,7 @@ Registered **before** the `payroll` resource so `/payroll/salary-components` isn
 **Permission:** view `payroll.view`, manage `payroll.run`
 
 ### Payroll -- Phase 9 changes
-- `store` flashes how many active employees were skipped (no salary effective by period end) and catches `OverlappingPayrollException`
+- `store` flashes how many employees were skipped (no salary effective by period end / already on an overlapping run) and turns `OverlappingPayrollException` (every in-scope employee already covered) into a `period_start` validation error
 - `show` loads `payslips.items.project`
 - `downloadPayslip` loads `items.project` for the itemised PDF
 
