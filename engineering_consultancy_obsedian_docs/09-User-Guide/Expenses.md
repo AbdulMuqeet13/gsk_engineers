@@ -42,7 +42,7 @@ The expense list shows:
 | Status | Draft, Submitted, Approved, or Rejected |
 | Created By | Who created the expense |
 
-Use **search** (by description or reference) and **status filter** to find expenses.
+Use **search** (by description or reference) and the **Status**, **Project**, **Account Head** and **From/To** date filters to find expenses.
 
 ## Creating an Expense
 
@@ -51,8 +51,8 @@ Use **search** (by description or reference) and **status filter** to find expen
    - **Date** (required)
    - **Description** (required, max 500 characters)
    - **Amount** (required, must be greater than 0)
-   - **Expense Account** (required) -- Category of the expense (e.g., Office Supplies, Transportation). Only expense-type accounts are shown.
-   - **Payment Account** (required) -- How it was paid (e.g., Cash in Hand, Bank Account). Only asset-type accounts are shown.
+   - **Expense Category** (required) -- The account debited (e.g., Fuel, Rent). Lists all active expense accounts plus debit asset accounts (e.g., Project Fund, Accounts Receivable).
+   - **Payment Account** (required) -- How it was paid. Lists all active debit asset accounts (Cash, Bank, Project Fund, ...); new asset accounts appear automatically. Must differ from the category.
    - **Project** -- Optional, tag the expense to a specific project
    - **Notes** -- Additional details (max 2000 characters)
 3. Click **Save**.

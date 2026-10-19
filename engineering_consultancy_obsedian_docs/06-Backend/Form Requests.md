@@ -65,8 +65,9 @@ public function authorize(): bool
 - `date`: required, date
 - `description`: required, string, max:500
 - `amount`: required, numeric, gt:0, decimal:0,2
-- `account_head_id`: required, exists in account_heads (where type=expense, is_active=true)
-- `payment_account_id`: required, exists in account_heads (where type=asset, is_active=true)
+- `account_head_id` / `payment_account_id`: shared rules from `App\Concerns\ExpenseValidationRules::expenseAccountRules()`
+  - `account_head_id`: required, active, not deleted, debit-normal `expense` **or** `asset` account
+  - `payment_account_id`: required, active, not deleted, debit-normal `asset` account, `different:account_head_id`
 - `project_id`: nullable, exists in projects
 - `notes`: nullable, string, max:2000
 

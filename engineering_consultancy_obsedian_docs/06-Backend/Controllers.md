@@ -88,7 +88,7 @@ All controllers use the `FlashesToast` trait and delegate write operations to Ac
 | POST | `/expenses/{expense}/approve` | `expenses.approve` | ExpenseController@approve |
 | POST | `/expenses/{expense}/reject` | `expenses.reject` | ExpenseController@reject |
 
-**Index Props:** expenses (paginated, with accountHead + paymentAccount + project + creator + approver), expenseStatuses, expenseAccounts (optional), paymentAccounts (optional), projects (optional)
+**Index Props:** expenses (paginated, with accountHead + paymentAccount + project + creator + approver), expenseStatuses, expenseAccounts (optional; active debit-normal expense + asset accounts), paymentAccounts (optional; active debit-normal asset accounts), projects (optional)
 **Filters:** search (reference/description), status, project_id, account_head_id, date_from, date_to
 
 ### Attendance

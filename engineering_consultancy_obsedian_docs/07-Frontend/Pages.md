@@ -99,11 +99,11 @@ All pages use `AppLayout`, `Head` for title, and dialog-first CRUD.
 |------|------|--------|
 | expenses | PaginatedData\<Expense\> | Query with search + status/project/account/date filters |
 | expenseStatuses | string[] | ExpenseStatus::values() |
-| expenseAccounts | AccountHead[] | Inertia::optional, expense-type accounts |
-| paymentAccounts | AccountHead[] | Inertia::optional, asset-type accounts (Cash, Bank) |
+| expenseAccounts | AccountHead[] | Inertia::optional, active debit-normal expense + asset accounts |
+| paymentAccounts | AccountHead[] | Inertia::optional, active debit-normal asset accounts (no hardcoded codes) |
 | projects | Project[] | Inertia::optional |
 
-**Features:** Search by reference/description, filter by status/project/category/date range, create/edit/delete/submit/approve/reject dialogs, approval workflow badges
+**Features:** Search by reference/description, filter by status, project, account head (category) and date range, create/edit/delete/submit/approve/reject dialogs, approval workflow badges
 
 ### Attendance
 **Path:** `pages/attendance/index.tsx`

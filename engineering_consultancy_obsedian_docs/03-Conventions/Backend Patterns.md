@@ -165,4 +165,4 @@ enum EmployeeType: string
 - **Snapshots:** payroll copies salary components and allowances into `payslip_items` so history never changes when master data does.
 - **Guard in both layers:** business rules that need a friendly field error (payroll overlap) are checked in the Form Request `after()` *and* enforced in the service with a domain exception (race-safe).
 - **Resolve accounts lazily:** journal line builders resolve account codes with `firstOrFail()` only for lines that carry an amount.
-- **Reusable rules:** `App\Concerns\SalaryValidationRules` (rules + attribute names + after-check helper).
+- **Reusable rules:** `App\Concerns\SalaryValidationRules` (rules + attribute names + after-check helper), `App\Concerns\ExpenseValidationRules` (expense category + payment account rules shared by store/update).

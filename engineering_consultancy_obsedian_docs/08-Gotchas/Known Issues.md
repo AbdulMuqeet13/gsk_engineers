@@ -157,3 +157,6 @@ Payments post a journal entry (Dr 2050, Cr pay-from account) and set `paid_at` o
 
 ### Salaries payable needs account 2050
 Approval credits **2050 Salaries Payable** and payments debit it. Existing installs must re-run `php artisan db:seed --class=ChartOfAccountsSeeder`, otherwise approval and payment fail with a missing-account error.
+
+### Expenses booked to an asset category don't hit P&L
+The Expense Category dropdown also lists debit asset accounts. Approving such an expense posts Dr asset / Cr payment account -- correct double-entry, but Profit & Loss and the Income/Expense Summary only read `expense`-type accounts, so it won't show as an expense there.
