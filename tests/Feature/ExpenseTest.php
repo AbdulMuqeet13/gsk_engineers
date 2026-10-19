@@ -204,6 +204,54 @@ class ExpenseTest extends TestCase
             ->assertSessionHasErrors('account_head_id');
     }
 
+    public function test_index_lists_debit_asset_accounts_for_category_and_payment(): void
+    {
+        $projectFund = AccountHead::factory()->asset()->create(['code' => '1003', 'name' => 'Project Fund']);
+        AccountHead::factory()->asset()->create(['code' => '1004', 'is_active' => false]);
+
+        $this->actingAs($this->user)
+            ->get(route('expenses.index'))
+            ->assertInertia(fn ($page) => $page
+                ->has('expenseAccounts', 3)
+                ->where('expenseAccounts.0.id', $this->cashAccount->id)
+                ->where('expenseAccounts.1.id', $projectFund->id)
+                ->where('expenseAccounts.2.id', $this->expenseAccount->id)
+                ->has('paymentAccounts', 2)
+                ->where('paymentAccounts.0.id', $this->cashAccount->id)
+                ->where('paymentAccounts.1.id', $projectFund->id)
+            );
+    }
+
+    public function test_store_accepts_asset_account_as_category(): void
+    {
+        $projectFund = AccountHead::factory()->asset()->create(['code' => '1003', 'name' => 'Project Fund']);
+
+        $this->actingAs($this->user)
+            ->post(route('expenses.store'), [
+                'date' => '2026-01-15',
+                'description' => 'Fund transfer',
+                'amount' => '100.00',
+                'account_head_id' => $projectFund->id,
+                'payment_account_id' => $this->cashAccount->id,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('expenses', ['account_head_id' => $projectFund->id]);
+    }
+
+    public function test_store_rejects_same_account_for_category_and_payment(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('expenses.store'), [
+                'date' => '2026-01-15',
+                'description' => 'Test',
+                'amount' => '100.00',
+                'account_head_id' => $this->cashAccount->id,
+                'payment_account_id' => $this->cashAccount->id,
+            ])
+            ->assertSessionHasErrors('payment_account_id');
+    }
+
     public function test_store_validates_positive_amount(): void
     {
         $data = [

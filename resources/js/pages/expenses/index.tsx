@@ -18,6 +18,13 @@ import {
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useCan } from '@/hooks/use-can';
 import { useDataTable } from '@/hooks/use-data-table';
 import type {
@@ -144,6 +151,83 @@ export default function Expenses({
                                         )
                                     }
                                 />
+                                <div className="flex items-center gap-1">
+                                    <Label
+                                        htmlFor="filter-project"
+                                        className="text-muted-foreground text-xs"
+                                    >
+                                        Project
+                                    </Label>
+                                    <Select
+                                        value={
+                                            (filters.project_id as string) ?? ''
+                                        }
+                                        onValueChange={(value) =>
+                                            setFilter(
+                                                'project_id',
+                                                value || undefined,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="filter-project"
+                                            className="h-8 w-[160px]"
+                                        >
+                                            <SelectValue placeholder="All projects" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">All</SelectItem>
+                                            {projects.map((project) => (
+                                                <SelectItem
+                                                    key={project.id}
+                                                    value={String(project.id)}
+                                                >
+                                                    {project.code} -{' '}
+                                                    {project.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Label
+                                        htmlFor="filter-account-head"
+                                        className="text-muted-foreground text-xs"
+                                    >
+                                        Account Head
+                                    </Label>
+                                    <Select
+                                        value={
+                                            (filters.account_head_id as string) ??
+                                            ''
+                                        }
+                                        onValueChange={(value) =>
+                                            setFilter(
+                                                'account_head_id',
+                                                value || undefined,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="filter-account-head"
+                                            className="h-8 w-[160px]"
+                                        >
+                                            <SelectValue placeholder="All account heads" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">All</SelectItem>
+                                            {expenseAccounts.map((account) => (
+                                                <SelectItem
+                                                    key={account.id}
+                                                    value={String(account.id)}
+                                                >
+                                                    {account.code} -{' '}
+                                                    {account.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="flex items-center gap-1">
                                     <Label
                                         htmlFor="date-from"

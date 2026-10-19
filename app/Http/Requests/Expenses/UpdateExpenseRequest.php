@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Expenses;
 
+use App\Concerns\ExpenseValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateExpenseRequest extends FormRequest
 {
+    use ExpenseValidationRules;
+
     public function authorize(): bool
     {
         return $this->user()->can('expenses.update')
@@ -22,8 +25,7 @@ class UpdateExpenseRequest extends FormRequest
             'date' => ['required', 'date'],
             'description' => ['required', 'string', 'max:500'],
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
-            'account_head_id' => ['required', 'integer', Rule::exists('account_heads', 'id')->where('type', 'expense')->where('is_active', true)],
-            'payment_account_id' => ['required', 'integer', Rule::exists('account_heads', 'id')->where('type', 'asset')->where('is_active', true)],
+            ...$this->expenseAccountRules(),
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')->whereNotIn('status', ['completed', 'cancelled'])],
             'notes' => ['nullable', 'string', 'max:2000'],
             'cheque_number' => ['nullable', 'string', 'max:100'],

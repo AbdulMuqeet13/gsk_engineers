@@ -9,7 +9,9 @@ use App\Actions\Expenses\RejectExpenseAction;
 use App\Actions\Expenses\SubmitExpenseAction;
 use App\Actions\Expenses\UpdateExpenseAction;
 use App\Concerns\FlashesToast;
+use App\Enums\AccountType;
 use App\Enums\ExpenseStatus;
+use App\Enums\NormalBalance;
 use App\Http\Requests\Expenses\ApproveExpenseRequest;
 use App\Http\Requests\Expenses\RejectExpenseRequest;
 use App\Http\Requests\Expenses\StoreExpenseRequest;
@@ -63,13 +65,14 @@ class ExpenseController extends Controller
             'expenses' => $expenses,
             'expenseStatuses' => ExpenseStatus::values(),
             'expenseAccounts' => fn () => AccountHead::where('is_active', true)
-                ->where('type', 'expense')
+                ->whereIn('type', [AccountType::Expense, AccountType::Asset])
+                ->where('normal_balance', NormalBalance::Debit)
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
                 ->get(),
             'paymentAccounts' => fn () => AccountHead::where('is_active', true)
-                ->where('type', 'asset')
-                ->whereIn('code', ['1001', '1002'])
+                ->where('type', AccountType::Asset)
+                ->where('normal_balance', NormalBalance::Debit)
                 ->select('id', 'code', 'name')
                 ->orderBy('code')
                 ->get(),
