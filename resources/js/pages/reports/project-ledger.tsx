@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { BookOpen } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { DataTableSearch } from '@/components/data-table/data-table-search';
 import { DatePicker } from '@/components/date-picker';
 import { ExportButtons } from '@/components/reports/export-buttons';
 import { getProjectLedgerColumns } from '@/components/reports/project-ledger-columns';
@@ -75,6 +76,12 @@ export default function ProjectLedger({
     const [employeeId, setEmployeeId] = useState<string>(
         queryParams.get('employee_id') ?? '',
     );
+    const [search, setSearch] = useState<string>(
+        queryParams.get('search') ?? '',
+    );
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
 
     const columns = getProjectLedgerColumns();
 
@@ -88,10 +95,11 @@ export default function ProjectLedger({
                     date_to: params.date_to ?? dateTo,
                     account_head_id: params.account_head_id ?? accountHeadId,
                     employee_id: params.employee_id ?? employeeId,
+                    search: (params.search ?? search) || undefined,
                 },
             });
         },
-        [projectId, dateFrom, dateTo, accountHeadId, employeeId],
+        [projectId, dateFrom, dateTo, accountHeadId, employeeId, search],
     );
 
     function handleProjectChange(value: string) {
@@ -126,6 +134,20 @@ export default function ProjectLedger({
         const resolvedValue = value === 'all' ? '' : value;
         setEmployeeId(resolvedValue);
         reloadData({ employee_id: resolvedValue });
+    }
+
+    function handleSearchChange(value: string) {
+        setSearch(value);
+
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
+        }
+
+        if (projectId) {
+            searchDebounceRef.current = setTimeout(() => {
+                reloadData({ search: value });
+            }, 300);
+        }
     }
 
     return (
@@ -240,11 +262,20 @@ export default function ProjectLedger({
                                     date_to: dateTo,
                                     account_head_id: accountHeadId,
                                     employee_id: employeeId,
+                                    search,
                                 }}
                             />
                         </div>
                     )}
                 </div>
+
+                {projectId && (
+                    <DataTableSearch
+                        value={search}
+                        onChange={handleSearchChange}
+                        placeholder="Search reference or description..."
+                    />
+                )}
 
                 {employeeId && (
                     <p className="text-muted-foreground text-sm">

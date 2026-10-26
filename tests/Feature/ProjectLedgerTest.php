@@ -134,6 +134,49 @@ class ProjectLedgerTest extends TestCase
         );
     }
 
+    public function test_filters_by_search_on_reference_and_description(): void
+    {
+        $service = app(JournalService::class);
+
+        $rentEntry = $service->create([
+            'date' => '2026-01-15',
+            'description' => 'Pay rent from cash',
+            'type' => 'standard',
+            'lines' => [
+                ['account_head_id' => $this->expenseAccount->id, 'project_id' => $this->project->id, 'debit' => '10000.00', 'credit' => '0.00', 'memo' => null],
+                ['account_head_id' => $this->cashAccount->id, 'project_id' => $this->project->id, 'debit' => '0.00', 'credit' => '10000.00', 'memo' => null],
+            ],
+        ], $this->user);
+        $service->post($rentEntry);
+
+        $incomeEntry = $service->create([
+            'date' => '2026-01-20',
+            'description' => 'Consulting fee received',
+            'type' => 'standard',
+            'lines' => [
+                ['account_head_id' => $this->cashAccount->id, 'project_id' => $this->project->id, 'debit' => '4000.00', 'credit' => '0.00', 'memo' => null],
+                ['account_head_id' => $this->incomeAccount->id, 'project_id' => $this->project->id, 'debit' => '0.00', 'credit' => '4000.00', 'memo' => null],
+            ],
+        ], $this->user);
+        $service->post($incomeEntry);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.project-ledger', ['project_id' => $this->project->id, 'search' => 'rent']))
+            ->assertInertia(fn ($page) => $page
+                ->has('rows', 2)
+                ->where('rows.0.description', 'Pay rent from cash')
+                ->where('totalDebit', '10000.00')
+            );
+
+        $this->actingAs($this->user)
+            ->get(route('reports.project-ledger', ['project_id' => $this->project->id, 'search' => $incomeEntry->fresh()->reference]))
+            ->assertInertia(fn ($page) => $page
+                ->has('rows', 2)
+                ->where('rows.0.reference', $incomeEntry->fresh()->reference)
+                ->where('totalDebit', '4000.00')
+            );
+    }
+
     public function test_running_balance_when_single_account_selected(): void
     {
         $service = app(JournalService::class);

@@ -134,6 +134,10 @@ class ProjectLedgerController extends Controller
             ->when($accountHeadId, fn ($q, $id) => $q->where('account_head_id', $id))
             ->with(['journalEntry:id,date,reference,description', 'accountHead:id,code,name,type,normal_balance'])
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+            ->when($request->input('search'), fn ($q, string $search) => $q->where(fn ($q2) => $q2
+                ->where('journal_entries.reference', 'like', "%{$search}%")
+                ->orWhere('journal_entries.description', 'like', "%{$search}%")
+                ->orWhere('journal_lines.memo', 'like', "%{$search}%")))
             ->orderBy('journal_entries.date', 'asc')
             ->orderBy('journal_lines.id', 'asc')
             ->select('journal_lines.*')
