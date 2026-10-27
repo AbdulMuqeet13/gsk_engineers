@@ -161,6 +161,16 @@ export default function ProjectLedger({
                 />
 
                 <div className="flex flex-wrap items-end gap-4">
+                    <div className="w-64">
+                        <Label htmlFor="search">Search</Label>
+                        <DataTableSearch
+                            id="search"
+                            value={search}
+                            onChange={handleSearchChange}
+                            placeholder="Reference or description..."
+                        />
+                    </div>
+
                     <div className="w-56">
                         <Label htmlFor="project">Project</Label>
                         <Select
@@ -268,14 +278,6 @@ export default function ProjectLedger({
                         </div>
                     )}
                 </div>
-
-                {projectId && (
-                    <DataTableSearch
-                        value={search}
-                        onChange={handleSearchChange}
-                        placeholder="Search reference or description..."
-                    />
-                )}
 
                 {employeeId && (
                     <p className="text-muted-foreground text-sm">

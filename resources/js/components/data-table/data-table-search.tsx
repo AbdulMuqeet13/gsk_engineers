@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 type DataTableSearchProps = {
+    id?: string;
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -11,6 +12,7 @@ type DataTableSearchProps = {
 };
 
 export function DataTableSearch({
+    id,
     value,
     onChange,
     placeholder = 'Search...',
@@ -39,6 +41,7 @@ export function DataTableSearch({
         <div className={`relative max-w-sm ${className ?? ''}`}>
             <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
+                id={id}
                 placeholder={placeholder}
                 value={localValue}
                 onChange={(e) => handleChange(e.target.value)}
