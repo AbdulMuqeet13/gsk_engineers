@@ -336,6 +336,83 @@ class ProjectLedgerTest extends TestCase
         $response->assertInertia(fn ($page) => $page->has('rows', 0));
     }
 
+    public function test_all_projects_shows_lines_of_every_project(): void
+    {
+        $service = app(JournalService::class);
+        $otherProject = Project::factory()->active()->create();
+
+        foreach ([[$this->project, '10000.00'], [$otherProject, '4000.00'], [null, '9000.00']] as [$project, $amount]) {
+            $entry = $service->create([
+                'date' => '2026-01-15',
+                'description' => 'Pay rent',
+                'type' => 'standard',
+                'lines' => [
+                    ['account_head_id' => $this->expenseAccount->id, 'project_id' => $project?->id, 'debit' => $amount, 'credit' => '0.00', 'memo' => null],
+                    ['account_head_id' => $this->cashAccount->id, 'project_id' => $project?->id, 'debit' => '0.00', 'credit' => $amount, 'memo' => null],
+                ],
+            ], $this->user);
+            $service->post($entry);
+        }
+
+        $response = $this->actingAs($this->user)
+            ->get(route('reports.project-ledger', ['project_id' => 'all']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('rows', 4)
+            ->where('rows.0.project.code', $this->project->code)
+            ->where('rows.2.project.code', $otherProject->code)
+            ->where('totalDebit', '14000.00')
+            ->where('totalCredit', '14000.00')
+        );
+    }
+
+    public function test_all_projects_lists_employees_of_every_project(): void
+    {
+        $projectEmployee = Employee::factory()->projectBased($this->project)->create(['name' => 'Ali Khan']);
+        $assignedEmployee = Employee::factory()->internal()->create(['name' => 'Bilal Ahmed']);
+        ProjectAssignment::factory()->create(['employee_id' => $assignedEmployee->id, 'project_id' => Project::factory()->create()->id]);
+        $formerEmployee = Employee::factory()->internal()->create(['name' => 'Danish Raza']);
+        $this->paySalary($formerEmployee, $this->project, '20000.00', '2026-01-01', '2026-02-05');
+        $formerEmployee->delete();
+        Employee::factory()->internal()->create();
+
+        $response = $this->actingAs($this->user)
+            ->get(route('reports.project-ledger', ['project_id' => 'all']));
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('employees', 3)
+            ->where('employees.0.id', $projectEmployee->id)
+            ->where('employees.1.id', $assignedEmployee->id)
+            ->where('employees.2.id', $formerEmployee->id)
+        );
+    }
+
+    public function test_export_all_projects(): void
+    {
+        $service = app(JournalService::class);
+
+        $entry = $service->create([
+            'date' => '2026-01-15',
+            'description' => 'Test entry',
+            'type' => 'standard',
+            'lines' => [
+                ['account_head_id' => $this->expenseAccount->id, 'project_id' => $this->project->id, 'debit' => '10000.00', 'credit' => '0.00', 'memo' => null],
+                ['account_head_id' => $this->cashAccount->id, 'project_id' => $this->project->id, 'debit' => '0.00', 'credit' => '10000.00', 'memo' => null],
+            ],
+        ], $this->user);
+        $service->post($entry);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.project-ledger.export', ['project_id' => 'all', 'format' => 'pdf']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($this->user)
+            ->get(route('reports.project-ledger.export', ['project_id' => 'all', 'format' => 'excel']))
+            ->assertOk()
+            ->assertDownload('project-ledger-all-projects.xlsx');
+    }
+
     public function test_export_pdf(): void
     {
         $service = app(JournalService::class);

@@ -33,6 +33,8 @@ import type {
 import { index } from '@/actions/App/Http/Controllers/ProjectLedgerController';
 import { dashboard } from '@/routes';
 
+const ALL_PROJECTS = 'all';
+
 type ProjectLedgerPageProps = {
     rows: ProjectLedgerRow[];
     totalDebit: string;
@@ -83,12 +85,18 @@ export default function ProjectLedger({
         null,
     );
 
-    const columns = getProjectLedgerColumns();
+    const isAllProjects = projectId === ALL_PROJECTS;
+    const columns = getProjectLedgerColumns(isAllProjects);
 
     const reloadData = useCallback(
-        (params: Record<string, string>) => {
+        (params: Record<string, string>, reloadEmployees: boolean = false) => {
             router.reload({
-                only: ['rows', 'totalDebit', 'totalCredit', 'employees'],
+                only: [
+                    'rows',
+                    'totalDebit',
+                    'totalCredit',
+                    ...(reloadEmployees ? ['employees'] : []),
+                ],
                 data: {
                     project_id: params.project_id ?? projectId,
                     date_from: params.date_from ?? dateFrom,
@@ -105,7 +113,7 @@ export default function ProjectLedger({
     function handleProjectChange(value: string) {
         setProjectId(value);
         setEmployeeId('');
-        reloadData({ project_id: value, employee_id: '' });
+        reloadData({ project_id: value, employee_id: '' }, true);
     }
 
     function handleDateFromChange(value: string) {
@@ -181,6 +189,9 @@ export default function ProjectLedger({
                                 <SelectValue placeholder="Select a project..." />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value={ALL_PROJECTS}>
+                                    All Projects
+                                </SelectItem>
                                 {projects.map((project) => (
                                     <SelectItem
                                         key={project.id}
@@ -318,7 +329,7 @@ export default function ProjectLedger({
                                         colSpan={columns.length}
                                         className="text-muted-foreground h-24 text-center"
                                     >
-                                        No transactions found for this project.
+                                        No transactions found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -339,7 +350,7 @@ export default function ProjectLedger({
                         <TableFooter>
                             <TableRow>
                                 <TableCell
-                                    colSpan={5}
+                                    colSpan={columns.length - 3}
                                     className="text-right font-bold"
                                 >
                                     Totals

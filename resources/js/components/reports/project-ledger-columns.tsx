@@ -26,13 +26,28 @@ type LedgerColumn = {
     render: (row: ProjectLedgerRow) => React.ReactNode;
 };
 
-export function getProjectLedgerColumns(): LedgerColumn[] {
+export function getProjectLedgerColumns(
+    showProject: boolean = false,
+): LedgerColumn[] {
     return [
         {
             key: 'date',
             header: 'Date',
             render: (row) => row.date,
         },
+        ...(showProject
+            ? [
+                  {
+                      key: 'project',
+                      header: 'Project',
+                      render: (row: ProjectLedgerRow) => (
+                          <span className="font-mono text-sm">
+                              {row.project?.code}
+                          </span>
+                      ),
+                  },
+              ]
+            : []),
         {
             key: 'reference',
             header: 'Reference',

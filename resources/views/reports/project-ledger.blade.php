@@ -1,9 +1,9 @@
 @extends('reports.layout')
 
-@section('title', 'Project Ledger — ' . $project->code)
+@section('title', 'Project Ledger — ' . ($isAllProjects ? 'All Projects' : $project->code))
 
 @section('filters')
-    <strong>Project:</strong> {{ $project->code }} — {{ $project->name }}
+    <strong>Project:</strong> {{ $isAllProjects ? 'All Projects' : $project->code . ' — ' . $project->name }}
     @if($employee)
         &nbsp; <strong>Employee:</strong> {{ $employee->name }}
     @endif
@@ -14,6 +14,9 @@
     <thead>
         <tr>
             <th>Date</th>
+            @if($isAllProjects)
+                <th>Project</th>
+            @endif
             <th>Reference</th>
             <th>Description</th>
             <th>Account</th>
@@ -29,6 +32,9 @@
         @forelse($rows as $row)
             <tr>
                 <td>{{ $row['date'] }}</td>
+                @if($isAllProjects)
+                    <td>{{ $row['project']['code'] ?? '' }}</td>
+                @endif
                 <td class="font-mono">{{ $row['reference'] }}</td>
                 <td>{{ $row['description'] }}</td>
                 <td>{{ $row['account']['code'] }} - {{ $row['account']['name'] }}</td>
@@ -40,12 +46,12 @@
                 @endif
             </tr>
         @empty
-            <tr><td colspan="{{ $hasAccountFilter ? 8 : 7 }}" class="text-center">No transactions found.</td></tr>
+            <tr><td colspan="{{ 7 + ($hasAccountFilter ? 1 : 0) + ($isAllProjects ? 1 : 0) }}" class="text-center">No transactions found.</td></tr>
         @endforelse
     </tbody>
     <tfoot>
         <tr class="grand-total">
-            <td colspan="5" class="text-right">Totals</td>
+            <td colspan="{{ $isAllProjects ? 6 : 5 }}" class="text-right">Totals</td>
             <td class="text-right font-mono">{{ number_format((float)$totalDebit, 2) }}</td>
             <td class="text-right font-mono">{{ number_format((float)$totalCredit, 2) }}</td>
             @if($hasAccountFilter)

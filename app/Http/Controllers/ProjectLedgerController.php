@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\JournalLine;
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,6 +16,11 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ProjectLedgerController extends Controller
 {
+    /**
+     * Sentinel value for the project filter that spans every project.
+     */
+    public const ALL_PROJECTS = 'all';
+
     public function index(Request $request): Response
     {
         abort_unless($request->user()->can('reports.project'), 403);
@@ -43,23 +49,7 @@ class ProjectLedgerController extends Controller
             'projects' => fn () => Project::select('id', 'name', 'code')
                 ->orderBy('name')
                 ->get(),
-            'employees' => fn () => $projectId
-                ? Employee::withTrashed()
-                    ->select('id', 'name', 'designation')
-                    ->where(fn ($q) => $q
-                        ->where(fn ($q2) => $q2
-                            ->whereNull('deleted_at')
-                            ->where(fn ($q3) => $q3
-                                ->where('project_id', $projectId)
-                                ->orWhereHas('assignments', fn ($q4) => $q4->where('project_id', $projectId))))
-                        ->orWhereIn('id', JournalLine::query()
-                            ->select('employee_id')
-                            ->where('project_id', $projectId)
-                            ->whereNotNull('employee_id')
-                            ->whereHas('journalEntry', fn ($q2) => $q2->posted())))
-                    ->orderBy('name')
-                    ->get()
-                : [],
+            'employees' => fn () => $projectId ? $this->getEmployees($projectId) : [],
         ]);
     }
 
@@ -72,7 +62,9 @@ class ProjectLedgerController extends Controller
 
         $accountHeadId = $request->input('account_head_id');
         $data = $this->getReportData($request, $projectId, $accountHeadId);
-        $project = Project::findOrFail($projectId);
+        $isAllProjects = $projectId === self::ALL_PROJECTS;
+        $project = $isAllProjects ? null : Project::findOrFail($projectId);
+        $fileLabel = $project?->code ?? 'all-projects';
         $format = $request->input('format', 'pdf');
 
         $employee = $request->input('employee_id') ? Employee::withTrashed()->find($request->input('employee_id')) : null;
@@ -84,6 +76,7 @@ class ProjectLedgerController extends Controller
             foreach ($data['rows'] as $row) {
                 $writer->addRow([
                     'Date' => $row['date'],
+                    ...($isAllProjects ? ['Project' => $row['project']['code'] ?? ''] : []),
                     'Reference' => $row['reference'],
                     'Description' => $row['description'],
                     'Account' => $row['account']['code'].' - '.$row['account']['name'],
@@ -96,6 +89,7 @@ class ProjectLedgerController extends Controller
 
             $writer->addRow([
                 'Date' => '',
+                ...($isAllProjects ? ['Project' => ''] : []),
                 'Reference' => '',
                 'Description' => 'Totals',
                 'Account' => '',
@@ -106,16 +100,47 @@ class ProjectLedgerController extends Controller
             ]);
             $writer->close();
 
-            return response()->download($path, 'project-ledger-'.$project->code.($employee ? '-employee-'.$employee->id : '').'.xlsx')->deleteFileAfterSend(true);
+            return response()->download($path, 'project-ledger-'.$fileLabel.($employee ? '-employee-'.$employee->id : '').'.xlsx')->deleteFileAfterSend(true);
         }
 
         $pdf = Pdf::loadView('reports.project-ledger', array_merge($data, [
             'project' => $project,
+            'isAllProjects' => $isAllProjects,
             'employee' => $employee,
             'hasAccountFilter' => (bool) $accountHeadId || (bool) $employee,
         ]));
 
-        return $pdf->download('project-ledger-'.$project->code.'.pdf');
+        return $pdf->download('project-ledger-'.$fileLabel.'.pdf');
+    }
+
+    /**
+     * Employees linked to the given project (or any project), including trashed
+     * employees that still have posted project transactions.
+     *
+     * @return Collection<int, Employee>
+     */
+    private function getEmployees(int|string $projectId): Collection
+    {
+        $isAllProjects = $projectId === self::ALL_PROJECTS;
+
+        return Employee::withTrashed()
+            ->select('id', 'name', 'designation')
+            ->where(fn ($q) => $q
+                ->where(fn ($q2) => $q2
+                    ->whereNull('deleted_at')
+                    ->where(fn ($q3) => $isAllProjects
+                        ? $q3->whereNotNull('project_id')->orWhereHas('assignments')
+                        : $q3->where('project_id', $projectId)
+                            ->orWhereHas('assignments', fn ($q4) => $q4->where('project_id', $projectId))))
+                ->orWhereIn('id', JournalLine::query()
+                    ->select('employee_id')
+                    ->when($isAllProjects,
+                        fn ($q2) => $q2->whereNotNull('project_id'),
+                        fn ($q2) => $q2->where('project_id', $projectId))
+                    ->whereNotNull('employee_id')
+                    ->whereHas('journalEntry', fn ($q2) => $q2->posted())))
+            ->orderBy('name')
+            ->get();
     }
 
     /**
@@ -124,15 +149,19 @@ class ProjectLedgerController extends Controller
     private function getReportData(Request $request, int|string $projectId, ?string $accountHeadId): array
     {
         $employeeId = $request->input('employee_id');
+        $isAllProjects = $projectId === self::ALL_PROJECTS;
 
         $lines = JournalLine::query()
             ->whereHas('journalEntry', fn ($q) => $q->posted()
                 ->when($request->input('date_from'), fn ($q2, $d) => $q2->where('date', '>=', $d))
                 ->when($request->input('date_to'), fn ($q2, $d) => $q2->where('date', '<=', $d)))
-            ->where('project_id', $projectId)
+            ->when($isAllProjects,
+                fn ($q) => $q->whereNotNull('journal_lines.project_id'),
+                fn ($q) => $q->where('journal_lines.project_id', $projectId))
             ->when($employeeId, fn ($q, $id) => $q->where('employee_id', $id))
             ->when($accountHeadId, fn ($q, $id) => $q->where('account_head_id', $id))
             ->with(['journalEntry:id,date,reference,description', 'accountHead:id,code,name,type,normal_balance'])
+            ->when($isAllProjects, fn ($q) => $q->with('project:id,code,name'))
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
             ->when($request->input('search'), fn ($q, string $search) => $q->where(fn ($q2) => $q2
                 ->where('journal_entries.reference', 'like', "%{$search}%")
@@ -177,6 +206,7 @@ class ProjectLedgerController extends Controller
             $rows[] = [
                 'id' => $line->id,
                 'date' => $line->journalEntry->date->format('d-m-Y'),
+                'project' => $isAllProjects ? $line->project?->only('id', 'code', 'name') : null,
                 'reference' => $line->journalEntry->reference,
                 'description' => $employeeId && $line->memo ? $line->memo : $line->journalEntry->description,
                 'account' => [

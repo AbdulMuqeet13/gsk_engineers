@@ -453,6 +453,7 @@ export type CashbookSummary = {
 export type ProjectLedgerRow = {
     id: number;
     date: string;
+    project: Pick<Project, 'id' | 'code' | 'name'> | null;
     reference: string;
     description: string;
     account: Pick<AccountHead, 'id' | 'code' | 'name' | 'type'>;
