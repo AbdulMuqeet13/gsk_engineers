@@ -1,5 +1,4 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { SalaryComponentAmountField } from '@/components/employees/salary-component-amount-field';
 import { formatAmount } from '@/lib/utils';
 import type { SalaryComponent } from '@/types';
 
@@ -10,7 +9,7 @@ export type SalaryComponentAmount = {
 
 type SalaryBreakdownFieldsProps = {
     idPrefix: string;
-    salaryComponents: Pick<SalaryComponent, 'id' | 'name'>[];
+    salaryComponents: Pick<SalaryComponent, 'id' | 'name' | 'type'>[];
     components: SalaryComponentAmount[];
     taxAmount: string;
     securityAmount: string;
@@ -21,7 +20,7 @@ type SalaryBreakdownFieldsProps = {
 };
 
 export function buildComponentAmounts(
-    salaryComponents: Pick<SalaryComponent, 'id' | 'name'>[],
+    salaryComponents: Pick<SalaryComponent, 'id' | 'name' | 'type'>[],
     existing: SalaryComponentAmount[] = [],
 ): SalaryComponentAmount[] {
     return salaryComponents.map((component) => ({
@@ -43,12 +42,26 @@ export function SalaryBreakdownFields({
     onSecurityChange,
     errors,
 }: SalaryBreakdownFieldsProps) {
-    const grossSalary = components.reduce(
-        (total, component) => total + (Number(component.amount) || 0),
-        0,
+    const indexedComponents = salaryComponents.map((salaryComponent, index) => ({
+        salaryComponent,
+        index,
+        amount: components[index]?.amount ?? '',
+    }));
+    const earnings = indexedComponents.filter(
+        ({ salaryComponent }) => salaryComponent.type !== 'deduction',
     );
-    const netSalary =
-        grossSalary - (Number(taxAmount) || 0) - (Number(securityAmount) || 0);
+    const deductions = indexedComponents.filter(
+        ({ salaryComponent }) => salaryComponent.type === 'deduction',
+    );
+    const sumAmounts = (items: typeof indexedComponents) =>
+        items.reduce((total, item) => total + (Number(item.amount) || 0), 0);
+
+    const grossSalary = sumAmounts(earnings);
+    const totalDeductions =
+        sumAmounts(deductions) +
+        (Number(taxAmount) || 0) +
+        (Number(securityAmount) || 0);
+    const netSalary = grossSalary - totalDeductions;
 
     return (
         <div className="space-y-4 rounded-lg border p-4">
@@ -60,81 +73,64 @@ export function SalaryBreakdownFields({
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {salaryComponents.map((salaryComponent, index) => (
-                    <div key={salaryComponent.id} className="min-w-0 space-y-2">
-                        <Label
-                            htmlFor={`${idPrefix}-component-${salaryComponent.id}`}
-                        >
-                            {salaryComponent.name}
-                        </Label>
-                        <Input
+            <div className="space-y-3">
+                <h4 className="text-sm font-medium">Earnings</h4>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {earnings.map(({ salaryComponent, index, amount }) => (
+                        <SalaryComponentAmountField
+                            key={salaryComponent.id}
                             id={`${idPrefix}-component-${salaryComponent.id}`}
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={components[index]?.amount ?? ''}
-                            onChange={(e) =>
-                                onComponentChange(index, e.target.value)
-                            }
+                            label={salaryComponent.name}
+                            value={amount}
+                            error={errors[`components.${index}.amount`]}
+                            onChange={(value) => onComponentChange(index, value)}
                         />
-                        {errors[`components.${index}.amount`] && (
-                            <p className="text-destructive text-sm">
-                                {errors[`components.${index}.amount`]}
-                            </p>
-                        )}
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
+
+            <div className="space-y-3">
+                <h4 className="text-sm font-medium">Deductions</h4>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <SalaryComponentAmountField
+                        id={`${idPrefix}-tax`}
+                        label="Monthly Tax"
+                        value={taxAmount}
+                        error={errors.tax_amount}
+                        onChange={onTaxChange}
+                    />
+                    <SalaryComponentAmountField
+                        id={`${idPrefix}-security`}
+                        label="Monthly Security Deduction"
+                        value={securityAmount}
+                        error={errors.security_amount}
+                        onChange={onSecurityChange}
+                    />
+                    {deductions.map(({ salaryComponent, index, amount }) => (
+                        <SalaryComponentAmountField
+                            key={salaryComponent.id}
+                            id={`${idPrefix}-component-${salaryComponent.id}`}
+                            label={salaryComponent.name}
+                            value={amount}
+                            error={errors[`components.${index}.amount`]}
+                            onChange={(value) => onComponentChange(index, value)}
+                        />
+                    ))}
+                </div>
+            </div>
+
             {errors.components && (
                 <p className="text-destructive text-sm">{errors.components}</p>
             )}
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="min-w-0 space-y-2">
-                    <Label htmlFor={`${idPrefix}-tax`}>Monthly Tax</Label>
-                    <Input
-                        id={`${idPrefix}-tax`}
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={taxAmount}
-                        onChange={(e) => onTaxChange(e.target.value)}
-                    />
-                    {errors.tax_amount && (
-                        <p className="text-destructive text-sm">
-                            {errors.tax_amount}
-                        </p>
-                    )}
-                </div>
-
-                <div className="min-w-0 space-y-2">
-                    <Label htmlFor={`${idPrefix}-security`}>
-                        Monthly Security Deduction
-                    </Label>
-                    <Input
-                        id={`${idPrefix}-security`}
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={securityAmount}
-                        onChange={(e) => onSecurityChange(e.target.value)}
-                    />
-                    {errors.security_amount && (
-                        <p className="text-destructive text-sm">
-                            {errors.security_amount}
-                        </p>
-                    )}
-                </div>
-            </div>
 
             <div className="bg-muted/50 grid grid-cols-2 gap-2 rounded-md p-3 text-sm">
                 <span className="text-muted-foreground">Gross Salary</span>
                 <span className="text-right font-mono font-medium">
                     {formatAmount(grossSalary)}
+                </span>
+                <span className="text-muted-foreground">Total Deductions</span>
+                <span className="text-destructive text-right font-mono font-medium">
+                    {formatAmount(totalDeductions)}
                 </span>
                 <span className="text-muted-foreground">
                     Net (before allowances)

@@ -71,7 +71,7 @@ class HandleInertiaRequestsTest extends TestCase
 
         $response = $this->actingAs($user)
             ->followingRedirects()
-            ->post(route('salary-components.store'), ['name' => 'Bonus', 'sort_order' => 9]);
+            ->post(route('salary-components.store'), ['name' => 'Bonus', 'type' => 'earning', 'sort_order' => 9]);
 
         $response->assertInertia(fn ($page) => $page
             ->component('payroll/salary-components/index')

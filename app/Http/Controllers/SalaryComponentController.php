@@ -24,7 +24,7 @@ class SalaryComponentController extends Controller
         abort_unless($request->user()->can(PermissionEnum::PayrollView->value), 403);
 
         return Inertia::render('payroll/salary-components/index', [
-            'salaryComponents' => SalaryComponent::ordered()->get(['id', 'name', 'sort_order', 'is_active']),
+            'salaryComponents' => SalaryComponent::ordered()->get(['id', 'name', 'type', 'sort_order', 'is_active']),
         ]);
     }
 

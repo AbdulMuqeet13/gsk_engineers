@@ -11,7 +11,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { SalaryComponent } from '@/types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import type { SalaryComponent, SalaryComponentType } from '@/types';
 import {
     store,
     update,
@@ -34,6 +41,7 @@ export function SalaryComponentFormDialog({
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         name: salaryComponent?.name ?? '',
+        type: salaryComponent?.type ?? ('earning' as SalaryComponentType),
         sort_order: String(salaryComponent?.sort_order ?? nextSortOrder),
         is_active: salaryComponent?.is_active ?? true,
     });
@@ -72,8 +80,9 @@ export function SalaryComponentFormDialog({
                             : 'Add Salary Component'}
                     </DialogTitle>
                     <DialogDescription>
-                        Components make up an employee's salary breakdown, e.g.
-                        Basic Salary or House Rent.
+                        Earnings (e.g. Basic Salary, House Rent) add to the
+                        salary; deductions (e.g. Mess Charges) are taken off it
+                        every month.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -115,6 +124,34 @@ export function SalaryComponentFormDialog({
                                 </p>
                             )}
                         </div>
+                    </div>
+
+                    <div className="min-w-0 space-y-2">
+                        <Label htmlFor="salary-component-type">Type</Label>
+                        <Select
+                            value={data.type}
+                            onValueChange={(value) =>
+                                setData('type', value as SalaryComponentType)
+                            }
+                        >
+                            <SelectTrigger
+                                id="salary-component-type"
+                                className="w-full"
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="earning">Earning</SelectItem>
+                                <SelectItem value="deduction">
+                                    Deduction
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.type && (
+                            <p className="text-destructive text-sm">
+                                {errors.type}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">

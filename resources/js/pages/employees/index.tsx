@@ -22,7 +22,7 @@ type IndexProps = {
     employees: PaginatedResponse<Employee>;
     employeeTypes: string[];
     projects?: Array<{ id: number; name: string; code: string }>;
-    salaryComponents?: Pick<SalaryComponent, 'id' | 'name'>[];
+    salaryComponents?: Pick<SalaryComponent, 'id' | 'name' | 'type'>[];
 };
 
 export default function Index({

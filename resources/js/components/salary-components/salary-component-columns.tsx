@@ -39,6 +39,21 @@ export function getSalaryComponentColumns({
             ),
         },
         {
+            accessorKey: 'type',
+            header: () => <span>Type</span>,
+            cell: ({ row }) => (
+                <Badge
+                    variant={
+                        row.original.type === 'deduction'
+                            ? 'destructive-soft'
+                            : 'success-soft'
+                    }
+                >
+                    {row.original.type === 'deduction' ? 'Deduction' : 'Earning'}
+                </Badge>
+            ),
+        },
+        {
             accessorKey: 'is_active',
             header: () => <span>Status</span>,
             cell: ({ row }) => (

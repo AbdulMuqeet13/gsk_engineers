@@ -25,6 +25,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $gross_salary
  * @property string $tax_amount
  * @property string $security_amount
+ * @property string $component_deductions
  * @property string $deductions
  * @property string $net_salary
  * @property int $days_worked
@@ -48,7 +49,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable([
     'payroll_run_id', 'employee_id', 'project_id', 'employee_salary_id', 'salary_amount',
     'allowances_amount', 'gross_salary', 'tax_amount', 'security_amount',
-    'deductions', 'net_salary', 'days_worked', 'days_absent', 'notes',
+    'component_deductions', 'deductions', 'net_salary', 'days_worked', 'days_absent', 'notes',
     'paid_at', 'payment_account_id', 'payment_journal_entry_id', 'paid_by',
 ])]
 class Payslip extends Model
@@ -67,6 +68,7 @@ class Payslip extends Model
             'gross_salary' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'security_amount' => 'decimal:2',
+            'component_deductions' => 'decimal:2',
             'deductions' => 'decimal:2',
             'net_salary' => 'decimal:2',
             'paid_at' => 'date:d-m-Y',

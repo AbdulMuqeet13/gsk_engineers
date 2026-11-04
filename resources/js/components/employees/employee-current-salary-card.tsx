@@ -39,11 +39,18 @@ export function EmployeeCurrentSalaryCard({
         );
     }
 
+    const earningComponents = (salary.components ?? []).filter(
+        (component) => component.salary_component?.type !== 'deduction',
+    );
+    const deductionComponents = (salary.components ?? []).filter(
+        (component) => component.salary_component?.type === 'deduction',
+    );
     const grossWithAllowances = Number(salary.gross_salary) + allowancesTotal;
     const netSalary =
         grossWithAllowances -
         Number(salary.tax_amount) -
-        Number(salary.security_amount);
+        Number(salary.security_amount) -
+        Number(salary.deductions_amount);
 
     return (
         <Card>
@@ -56,7 +63,7 @@ export function EmployeeCurrentSalaryCard({
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-                {(salary.components ?? []).map((component) => (
+                {earningComponents.map((component) => (
                     <div key={component.id} className="flex justify-between">
                         <span>{component.salary_component?.name}</span>
                         <span className="font-mono">
@@ -89,6 +96,14 @@ export function EmployeeCurrentSalaryCard({
                         {formatAmount(salary.security_amount)}
                     </span>
                 </div>
+                {deductionComponents.map((component) => (
+                    <div key={component.id} className="flex justify-between">
+                        <span>{component.salary_component?.name}</span>
+                        <span className="text-destructive font-mono">
+                            {formatAmount(component.amount)}
+                        </span>
+                    </div>
+                ))}
                 <Separator />
                 <div className="flex justify-between text-base font-semibold">
                     <span>Net Salary</span>

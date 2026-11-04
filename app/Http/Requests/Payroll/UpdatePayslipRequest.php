@@ -40,7 +40,12 @@ class UpdatePayslipRequest extends FormRequest
                 /** @var Payslip $payslip */
                 $payslip = $this->route('payslip');
                 $gross = $payslip->getRawOriginal('gross_salary') ?? $payslip->gross_salary;
-                $totalDeductions = bcadd(bcadd((string) $this->input('tax_amount'), (string) $this->input('security_amount'), 2), (string) $this->input('deductions'), 2);
+                $totalDeductions = array_reduce([
+                    (string) $this->input('tax_amount'),
+                    (string) $this->input('security_amount'),
+                    $payslip->getRawOriginal('component_deductions') ?? $payslip->component_deductions,
+                    (string) $this->input('deductions'),
+                ], fn (string $total, string $amount) => bcadd($total, $amount, 2), '0.00');
 
                 if (bccomp($totalDeductions, $gross, 2) === 1) {
                     $validator->errors()->add('deductions', 'Total deductions cannot exceed the gross salary.');

@@ -54,7 +54,7 @@ class EmployeeController extends Controller
             'employees' => $employees,
             'employeeTypes' => EmployeeType::values(),
             'projects' => fn () => Project::select('id', 'name', 'code')->orderBy('name')->get(),
-            'salaryComponents' => fn () => SalaryComponent::where('is_active', true)->ordered()->get(['id', 'name']),
+            'salaryComponents' => fn () => SalaryComponent::where('is_active', true)->ordered()->get(['id', 'name', 'type']),
         ]);
     }
 
@@ -64,7 +64,7 @@ class EmployeeController extends Controller
 
         $employee->load([
             'project:id,name,code',
-            'salaries.components.salaryComponent:id,name',
+            'salaries.components.salaryComponent:id,name,type',
             'salaries.creator:id,name',
             'assignments.project:id,name,code',
             'assignments.allowances',
@@ -80,7 +80,7 @@ class EmployeeController extends Controller
                 ->latest('id')
                 ->limit(12)
                 ->get(),
-            'salaryComponents' => fn () => SalaryComponent::where('is_active', true)->ordered()->get(['id', 'name']),
+            'salaryComponents' => fn () => SalaryComponent::where('is_active', true)->ordered()->get(['id', 'name', 'type']),
             'salaryChangeTypes' => array_values(array_diff(SalaryChangeType::values(), [SalaryChangeType::Initial->value])),
             'paymentAccounts' => fn () => AccountHead::where('is_active', true)
                 ->where('type', AccountType::Asset)

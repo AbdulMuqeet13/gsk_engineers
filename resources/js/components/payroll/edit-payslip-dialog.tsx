@@ -37,6 +37,7 @@ export function EditPayslipDialog({
         Number(payslip.gross_salary) -
         (Number(data.tax_amount) || 0) -
         (Number(data.security_amount) || 0) -
+        Number(payslip.component_deductions) -
         (Number(data.deductions) || 0);
 
     function handleSubmit(e: React.FormEvent) {
@@ -139,6 +140,16 @@ export function EditPayslipDialog({
                         <span className="text-right font-mono">
                             {formatAmount(payslip.gross_salary)}
                         </span>
+                        {Number(payslip.component_deductions) > 0 && (
+                            <>
+                                <span className="text-muted-foreground">
+                                    Salary Deductions
+                                </span>
+                                <span className="text-destructive text-right font-mono">
+                                    {formatAmount(payslip.component_deductions)}
+                                </span>
+                            </>
+                        )}
                         <span className="text-muted-foreground">
                             Net Salary
                         </span>

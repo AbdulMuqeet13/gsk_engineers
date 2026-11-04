@@ -35,7 +35,7 @@ type AddSalaryRecordDialogProps = {
     onClose: () => void;
     employee: Employee;
     currentSalary: EmployeeSalary | null;
-    salaryComponents: Pick<SalaryComponent, 'id' | 'name'>[];
+    salaryComponents: Pick<SalaryComponent, 'id' | 'name' | 'type'>[];
     salaryChangeTypes: SalaryChangeType[];
 };
 

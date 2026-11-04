@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\EmployeeSalary;
 use App\Models\PayrollRun;
 use App\Models\ProjectAssignment;
+use App\Models\SalaryComponent;
 use App\Models\User;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -139,6 +140,82 @@ class PayrollBreakdownTest extends TestCase
             ['2050', null, '0.00', '75000.00'],
             ['5001', null, '70000.00', '0.00'],
             ['5006', $assignment->project_id, '10000.00', '0.00'],
+        ], $lines);
+    }
+
+    private function employeeWithDeductionComponent(string $basic, string $deduction): Employee
+    {
+        $employee = Employee::factory()->withSalary($basic)->create();
+        $salary = $employee->salaries()->sole();
+        $salary->update(['deductions_amount' => $deduction]);
+        $salary->components()->create([
+            'salary_component_id' => SalaryComponent::factory()->deduction()->create(['name' => 'Mess Charges'])->id,
+            'amount' => $deduction,
+        ]);
+
+        return $employee;
+    }
+
+    public function test_deduction_components_are_snapshotted_and_reduce_net_salary(): void
+    {
+        $this->employeeWithDeductionComponent('50000.00', '1500.00');
+
+        $payslip = $this->generatePayroll()->payslips()->sole();
+
+        $this->assertSame('50000.00', $payslip->gross_salary);
+        $this->assertSame('1500.00', $payslip->component_deductions);
+        $this->assertSame('48500.00', $payslip->net_salary);
+        $deduction = $payslip->items()->where('type', PayslipItemType::Deduction)->sole();
+        $this->assertSame('Mess Charges', $deduction->name);
+        $this->assertSame('1500.00', $deduction->amount);
+    }
+
+    public function test_editing_draft_payslip_keeps_deduction_components_in_net_salary(): void
+    {
+        $this->employeeWithDeductionComponent('50000.00', '1500.00');
+        $run = $this->generatePayroll();
+        $payslip = $run->payslips()->sole();
+
+        $this->actingAs($this->user)->put(route('payroll.payslips.update', [$run, $payslip]), [
+            'tax_amount' => '1000.00',
+            'security_amount' => '0.00',
+            'deductions' => '500.00',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('47000.00', $payslip->fresh()->net_salary);
+        $this->assertSame('47000.00', $run->fresh()->total_amount);
+    }
+
+    public function test_editing_draft_payslip_rejects_deductions_above_gross_including_deduction_components(): void
+    {
+        $this->employeeWithDeductionComponent('50000.00', '1500.00');
+        $run = $this->generatePayroll();
+        $payslip = $run->payslips()->sole();
+
+        $response = $this->actingAs($this->user)->put(route('payroll.payslips.update', [$run, $payslip]), [
+            'tax_amount' => '0.00',
+            'security_amount' => '0.00',
+            'deductions' => '48500.01',
+        ]);
+
+        $response->assertSessionHasErrors(['deductions' => 'Total deductions cannot exceed the gross salary.']);
+        $this->assertSame('48500.00', $payslip->fresh()->net_salary);
+    }
+
+    public function test_approval_journal_lowers_salary_expense_by_deduction_components(): void
+    {
+        $this->employeeWithDeductionComponent('50000.00', '1500.00');
+        $run = $this->generatePayroll();
+        $run->update(['status' => PayrollStatus::Submitted]);
+
+        $this->actingAs($this->user)->post(route('payroll.approve', $run));
+
+        $lines = $run->fresh()->journalEntry->lines()->with('accountHead')->get()
+            ->map(fn ($line) => [$line->accountHead->code, $line->debit, $line->credit])
+            ->sortBy(0)->values()->all();
+        $this->assertSame([
+            ['2050', '0.00', '48500.00'],
+            ['5001', '48500.00', '0.00'],
         ], $lines);
     }
 

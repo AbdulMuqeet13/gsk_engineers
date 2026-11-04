@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\RoleEnum;
+use App\Enums\SalaryComponentType;
 use App\Models\EmployeeSalaryComponent;
 use App\Models\SalaryComponent;
 use App\Models\User;
@@ -44,10 +45,10 @@ class SalaryComponentTest extends TestCase
     public function test_store_creates_component(): void
     {
         $this->actingAs($this->hrUser())
-            ->post(route('salary-components.store'), ['name' => 'Utility Allowance', 'sort_order' => 5, 'is_active' => true])
+            ->post(route('salary-components.store'), ['name' => 'Mess Charges', 'type' => 'deduction', 'sort_order' => 5, 'is_active' => true])
             ->assertRedirect(route('salary-components.index'));
 
-        $this->assertDatabaseHas('salary_components', ['name' => 'Utility Allowance', 'sort_order' => 5]);
+        $this->assertDatabaseHas('salary_components', ['name' => 'Mess Charges', 'type' => 'deduction', 'sort_order' => 5]);
     }
 
     public function test_store_rejects_duplicate_name(): void
@@ -62,10 +63,22 @@ class SalaryComponentTest extends TestCase
         $component = SalaryComponent::factory()->create();
 
         $this->actingAs($this->hrUser())
-            ->put(route('salary-components.update', $component), ['name' => $component->name, 'sort_order' => 3, 'is_active' => false])
+            ->put(route('salary-components.update', $component), ['name' => $component->name, 'type' => 'earning', 'sort_order' => 3, 'is_active' => false])
             ->assertRedirect(route('salary-components.index'));
 
         $this->assertFalse($component->fresh()->is_active);
+    }
+
+    public function test_update_rejects_type_change_for_component_used_by_salary_records(): void
+    {
+        $line = EmployeeSalaryComponent::factory()->create();
+        $component = $line->salaryComponent;
+
+        $response = $this->actingAs($this->hrUser())
+            ->put(route('salary-components.update', $component), ['name' => $component->name, 'type' => 'deduction', 'sort_order' => 3]);
+
+        $response->assertSessionHasErrors(['type' => 'The type cannot be changed because salary records already use this component.']);
+        $this->assertSame(SalaryComponentType::Earning, $component->fresh()->type);
     }
 
     public function test_deleting_used_component_keeps_existing_salary_amounts(): void

@@ -80,8 +80,46 @@ class EmployeeSalaryTest extends TestCase
             'components' => [['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '0']],
         ]);
 
-        $response->assertSessionHasErrors(['components' => 'Enter an amount for at least one salary component.']);
+        $response->assertSessionHasErrors(['components' => 'Enter an amount for at least one earning component.']);
         $this->assertDatabaseEmpty('employees');
+    }
+
+    public function test_deduction_components_are_kept_out_of_gross_salary(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $messCharges = SalaryComponent::factory()->deduction()->create(['name' => 'Mess Charges']);
+
+        $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '60000.00'],
+                ['salary_component_id' => $messCharges->id, 'amount' => '1500.00'],
+            ],
+        ])->assertRedirect(route('employees.show', $employee));
+
+        $salary = $employee->salaries()->latest('id')->first();
+        $this->assertSame('60000.00', $salary->gross_salary);
+        $this->assertSame('1500.00', $salary->deductions_amount);
+        $this->assertSame(2, $salary->components()->count());
+    }
+
+    public function test_deduction_components_cannot_exceed_earnings(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $deduction = SalaryComponent::factory()->deduction()->create();
+
+        $response = $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '10000.00'],
+                ['salary_component_id' => $deduction->id, 'amount' => '10000.01'],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors(['components' => 'Salary deductions cannot exceed the earnings.']);
+        $this->assertSame(1, $employee->salaries()->count());
     }
 
     public function test_increment_adds_a_new_salary_record(): void

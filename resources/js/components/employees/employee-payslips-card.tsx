@@ -52,6 +52,9 @@ export function EmployeePayslipsCard({ payslips }: EmployeePayslipsCardProps) {
                                     Security
                                 </TableHead>
                                 <TableHead className="text-right">
+                                    Deductions
+                                </TableHead>
+                                <TableHead className="text-right">
                                     Net
                                 </TableHead>
                             </TableRow>
@@ -89,6 +92,13 @@ export function EmployeePayslipsCard({ payslips }: EmployeePayslipsCardProps) {
                                     </TableCell>
                                     <TableCell className="text-right font-mono">
                                         {formatAmount(payslip.security_amount)}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {formatAmount(
+                                            Number(
+                                                payslip.component_deductions,
+                                            ) + Number(payslip.deductions),
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right font-mono font-medium">
                                         {formatAmount(payslip.net_salary)}

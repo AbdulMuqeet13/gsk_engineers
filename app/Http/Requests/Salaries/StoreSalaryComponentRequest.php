@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Salaries;
 
+use App\Enums\SalaryComponentType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,6 +20,7 @@ class StoreSalaryComponentRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('salary_components', 'name')],
+            'type' => ['required', Rule::enum(SalaryComponentType::class)],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];

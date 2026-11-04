@@ -47,6 +47,7 @@ class PayrollReportController extends Controller
                         'Gross Salary' => $slip['gross_salary'],
                         'Tax' => $slip['tax_amount'],
                         'Security' => $slip['security_amount'],
+                        'Salary Deductions' => $slip['component_deductions'],
                         'Other Deductions' => $slip['deductions'],
                         'Net Salary' => $slip['net_salary'],
                     ]);
@@ -104,6 +105,7 @@ class PayrollReportController extends Controller
                     'gross_salary' => $slip->gross_salary,
                     'tax_amount' => $slip->tax_amount,
                     'security_amount' => $slip->security_amount,
+                    'component_deductions' => $slip->component_deductions,
                     'deductions' => $slip->deductions,
                     'net_salary' => $slip->net_salary,
                     'days_worked' => $slip->days_worked,

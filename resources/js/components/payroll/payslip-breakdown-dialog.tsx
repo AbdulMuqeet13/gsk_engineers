@@ -20,11 +20,23 @@ export function PayslipBreakdownDialog({
     onClose,
     payslip,
 }: PayslipBreakdownDialogProps) {
-    const earnings = payslip.items ?? [];
+    const items = payslip.items ?? [];
+    const earnings = items.filter((item) => item.type !== 'deduction');
     const deductions = [
-        { label: 'Income Tax', amount: payslip.tax_amount },
-        { label: 'Security Deposit', amount: payslip.security_amount },
-        { label: 'Other Deductions', amount: payslip.deductions },
+        { key: 'tax', label: 'Income Tax', amount: payslip.tax_amount },
+        {
+            key: 'security',
+            label: 'Security Deposit',
+            amount: payslip.security_amount,
+        },
+        ...items
+            .filter((item) => item.type === 'deduction')
+            .map((item) => ({
+                key: `item-${item.id}`,
+                label: item.name,
+                amount: item.amount,
+            })),
+        { key: 'other', label: 'Other Deductions', amount: payslip.deductions },
     ];
 
     return (
@@ -79,7 +91,7 @@ export function PayslipBreakdownDialog({
                     <p className="font-medium">Deductions</p>
                     {deductions.map((deduction) => (
                         <div
-                            key={deduction.label}
+                            key={deduction.key}
                             className="flex justify-between"
                         >
                             <span>{deduction.label}</span>

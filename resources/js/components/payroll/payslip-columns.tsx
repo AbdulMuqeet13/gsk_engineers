@@ -101,6 +101,15 @@ export function getPayslipColumns({
             ),
         },
         {
+            accessorKey: 'component_deductions',
+            header: () => <span className="block text-right">Salary Ded.</span>,
+            cell: ({ row }) => (
+                <span className="block text-right font-mono text-sm">
+                    {formatAmount(row.original.component_deductions)}
+                </span>
+            ),
+        },
+        {
             accessorKey: 'deductions',
             header: () => <span className="block text-right">Other Ded.</span>,
             cell: ({ row }) => (

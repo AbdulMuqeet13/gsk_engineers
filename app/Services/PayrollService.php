@@ -127,10 +127,15 @@ class PayrollService
                     fn (string $total, array $item) => bcadd($total, $item['amount'], 2),
                     '0.00',
                 );
+                $componentDeductions = array_reduce(
+                    array_filter($items, fn (array $item) => $item['type'] === PayslipItemType::Deduction),
+                    fn (string $total, array $item) => bcadd($total, $item['amount'], 2),
+                    '0.00',
+                );
                 $taxAmount = $salary->getRawOriginal('tax_amount') ?? $salary->tax_amount;
                 $securityAmount = $salary->getRawOriginal('security_amount') ?? $salary->security_amount;
                 $grossSalary = bcadd($salaryAmount, $allowancesAmount, 2);
-                $netSalary = $this->calculateNetSalary($grossSalary, $taxAmount, $securityAmount, '0.00');
+                $netSalary = $this->calculateNetSalary($grossSalary, [$taxAmount, $securityAmount, $componentDeductions]);
 
                 $payslip = $run->payslips()->create([
                     'employee_id' => $employee->id,
@@ -141,6 +146,7 @@ class PayrollService
                     'gross_salary' => $grossSalary,
                     'tax_amount' => $taxAmount,
                     'security_amount' => $securityAmount,
+                    'component_deductions' => $componentDeductions,
                     'deductions' => '0.00',
                     'net_salary' => $netSalary,
                     'days_worked' => $attendance['days_worked'],
@@ -180,7 +186,8 @@ class PayrollService
     }
 
     /**
-     * Snapshot the salary components and project allowances for a payslip.
+     * Snapshot the salary components (earnings and deductions) and project
+     * allowances for a payslip.
      *
      * @return array<int, array{type: PayslipItemType, name: string, amount: string, project_id: int|null}>
      */
@@ -190,7 +197,7 @@ class PayrollService
 
         foreach ($salary->components as $component) {
             $items[] = [
-                'type' => PayslipItemType::Component,
+                'type' => $component->salaryComponent->isDeduction() ? PayslipItemType::Deduction : PayslipItemType::Component,
                 'name' => $component->salaryComponent->name,
                 'amount' => $component->getRawOriginal('amount') ?? $component->amount,
                 'project_id' => null,
@@ -212,11 +219,14 @@ class PayrollService
     }
 
     /**
-     * Net salary = gross − tax − security − other deductions.
+     * Net salary = gross − every deduction (tax, security, salary deduction
+     * components, other deductions).
+     *
+     * @param  array<int, string>  $deductions
      */
-    private function calculateNetSalary(string $gross, string $tax, string $security, string $otherDeductions): string
+    private function calculateNetSalary(string $gross, array $deductions): string
     {
-        return bcsub(bcsub(bcsub($gross, $tax, 2), $security, 2), $otherDeductions, 2);
+        return array_reduce($deductions, fn (string $net, string $deduction) => bcsub($net, $deduction, 2), $gross);
     }
 
     /**
@@ -265,12 +275,12 @@ class PayrollService
                 'tax_amount' => $data['tax_amount'],
                 'security_amount' => $data['security_amount'],
                 'deductions' => $data['deductions'],
-                'net_salary' => $this->calculateNetSalary(
-                    $grossSalary,
+                'net_salary' => $this->calculateNetSalary($grossSalary, [
                     (string) $data['tax_amount'],
                     (string) $data['security_amount'],
+                    $payslip->getRawOriginal('component_deductions') ?? $payslip->component_deductions,
                     (string) $data['deductions'],
-                ),
+                ]),
                 'notes' => $data['notes'] ?? $payslip->notes,
             ]);
 
@@ -334,7 +344,8 @@ class PayrollService
     /**
      * Build the balanced journal lines for an approved payroll run.
      *
-     * Dr Salaries (salary − other deductions), Dr Project Allowances per project,
+     * Dr Salaries (salary − salary deduction components − other deductions),
+     * Dr Project Allowances per project,
      * Cr Salary Tax Payable, Cr Employee Security Deposits, Cr Salaries Payable (net).
      * The net salaries are paid later per payslip through pay().
      *
@@ -352,11 +363,11 @@ class PayrollService
         $allowancesByProject = [];
 
         foreach ($run->payslips as $payslip) {
-            $salaryExpense = bcadd($salaryExpense, bcsub(
+            $salaryExpense = bcadd($salaryExpense, bcsub(bcsub(
                 $payslip->getRawOriginal('salary_amount') ?? $payslip->salary_amount,
-                $payslip->getRawOriginal('deductions') ?? $payslip->deductions,
+                $payslip->getRawOriginal('component_deductions') ?? $payslip->component_deductions,
                 2,
-            ), 2);
+            ), $payslip->getRawOriginal('deductions') ?? $payslip->deductions, 2), 2);
             $taxTotal = bcadd($taxTotal, $payslip->getRawOriginal('tax_amount') ?? $payslip->tax_amount, 2);
             $securityTotal = bcadd($securityTotal, $payslip->getRawOriginal('security_amount') ?? $payslip->security_amount, 2);
             $netTotal = bcadd($netTotal, $payslip->getRawOriginal('net_salary') ?? $payslip->net_salary, 2);

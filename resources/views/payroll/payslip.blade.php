@@ -35,7 +35,7 @@
             <tr>
                 <td colspan="2"><strong>Earnings</strong></td>
             </tr>
-            @forelse($payslip->items as $item)
+            @forelse($payslip->items->reject(fn ($item) => $item->type === \App\Enums\PayslipItemType::Deduction) as $item)
                 <tr>
                     <td>
                         {{ $item->name }}
@@ -66,6 +66,12 @@
                 <td>Security Deposit</td>
                 <td class="text-right font-mono text-red">{{ number_format((float) $payslip->security_amount, 2) }}</td>
             </tr>
+            @foreach($payslip->items->filter(fn ($item) => $item->type === \App\Enums\PayslipItemType::Deduction) as $item)
+                <tr>
+                    <td>{{ $item->name }}</td>
+                    <td class="text-right font-mono text-red">{{ number_format((float) $item->amount, 2) }}</td>
+                </tr>
+            @endforeach
             <tr>
                 <td>Other Deductions</td>
                 <td class="text-right font-mono text-red">{{ number_format((float) $payslip->deductions, 2) }}</td>

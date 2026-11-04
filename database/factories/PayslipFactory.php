@@ -28,12 +28,23 @@ class PayslipFactory extends Factory
             'gross_salary' => $basicSalary,
             'tax_amount' => 0,
             'security_amount' => 0,
+            'component_deductions' => 0,
             'deductions' => 0,
             'net_salary' => $basicSalary,
             'days_worked' => 26,
             'days_absent' => 0,
             'notes' => null,
         ];
+    }
+
+    public function withComponentDeductions(float $componentDeductions = 2000): static
+    {
+        return $this->state(function (array $attributes) use ($componentDeductions) {
+            return [
+                'component_deductions' => $componentDeductions,
+                'net_salary' => bcsub((string) $attributes['net_salary'], (string) $componentDeductions, 2),
+            ];
+        });
     }
 
     public function withDeductions(float $deductions = 5000): static

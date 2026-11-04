@@ -20,6 +20,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon $effective_date
  * @property SalaryChangeType $change_type
  * @property string $gross_salary
+ * @property string $deductions_amount
  * @property string $tax_amount
  * @property string $security_amount
  * @property string|null $remarks
@@ -31,7 +32,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Collection<int, EmployeeSalaryComponent> $components
  */
 #[Fillable([
-    'employee_id', 'effective_date', 'change_type', 'gross_salary',
+    'employee_id', 'effective_date', 'change_type', 'gross_salary', 'deductions_amount',
     'tax_amount', 'security_amount', 'remarks', 'created_by',
 ])]
 class EmployeeSalary extends Model
@@ -48,6 +49,7 @@ class EmployeeSalary extends Model
             'effective_date' => 'date:d-m-Y',
             'change_type' => SalaryChangeType::class,
             'gross_salary' => 'decimal:2',
+            'deductions_amount' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'security_amount' => 'decimal:2',
         ];

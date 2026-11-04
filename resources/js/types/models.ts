@@ -57,9 +57,12 @@ export type Employee = {
 
 export type SalaryChangeType = 'initial' | 'increment' | 'decrement' | 'revision';
 
+export type SalaryComponentType = 'earning' | 'deduction';
+
 export type SalaryComponent = {
     id: number;
     name: string;
+    type: SalaryComponentType;
     sort_order: number;
     is_active: boolean;
 };
@@ -69,7 +72,7 @@ export type EmployeeSalaryComponent = {
     employee_salary_id: number;
     salary_component_id: number;
     amount: string;
-    salary_component?: Pick<SalaryComponent, 'id' | 'name'>;
+    salary_component?: Pick<SalaryComponent, 'id' | 'name' | 'type'>;
 };
 
 export type EmployeeSalary = {
@@ -78,6 +81,7 @@ export type EmployeeSalary = {
     effective_date: string;
     change_type: SalaryChangeType;
     gross_salary: string;
+    deductions_amount: string;
     tax_amount: string;
     security_amount: string;
     remarks: string | null;
@@ -271,6 +275,7 @@ export type Payslip = {
     gross_salary: string;
     tax_amount: string;
     security_amount: string;
+    component_deductions: string;
     deductions: string;
     net_salary: string;
     days_worked: number;
@@ -289,7 +294,7 @@ export type Payslip = {
     updated_at: string;
 };
 
-export type PayslipItemType = 'component' | 'allowance';
+export type PayslipItemType = 'component' | 'allowance' | 'deduction';
 
 export type PayslipItem = {
     id: number;

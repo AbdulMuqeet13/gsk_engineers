@@ -27,7 +27,7 @@ type EmployeeShowPageProps = {
     securityBalance: string;
     currentSalaryId: number | null;
     payslips: Payslip[];
-    salaryComponents?: Pick<SalaryComponent, 'id' | 'name'>[];
+    salaryComponents?: Pick<SalaryComponent, 'id' | 'name' | 'type'>[];
     salaryChangeTypes: SalaryChangeType[];
     paymentAccounts?: Pick<AccountHead, 'id' | 'code' | 'name'>[];
 };

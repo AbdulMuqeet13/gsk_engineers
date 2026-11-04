@@ -62,6 +62,9 @@ export function EmployeeSalaryHistoryCard({
                             <TableHead className="text-right">
                                 Security
                             </TableHead>
+                            <TableHead className="text-right">
+                                Deductions
+                            </TableHead>
                             <TableHead>Remarks</TableHead>
                             {canUpdate && (
                                 <TableHead className="sr-only">
@@ -131,6 +134,9 @@ export function EmployeeSalaryHistoryCard({
                                     </TableCell>
                                     <TableCell className="text-right font-mono">
                                         {formatAmount(salary.security_amount)}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {formatAmount(salary.deductions_amount)}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground max-w-[200px] truncate">
                                         {salary.remarks ?? '—'}

@@ -6,6 +6,7 @@ enum PayslipItemType: string
 {
     case Component = 'component';
     case Allowance = 'allowance';
+    case Deduction = 'deduction';
 
     /**
      * @return string[]

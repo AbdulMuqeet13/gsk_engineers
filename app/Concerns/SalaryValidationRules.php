@@ -2,8 +2,11 @@
 
 namespace App\Concerns;
 
+use App\Enums\SalaryComponentType;
+use App\Models\SalaryComponent;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 trait SalaryValidationRules
 {
@@ -39,13 +42,42 @@ trait SalaryValidationRules
     }
 
     /**
-     * Require the component amounts to add up to more than zero.
+     * Require the earning components to add up to more than zero and the
+     * deduction components not to exceed them.
      */
-    protected function componentsTotalIsPositive(): bool
+    protected function validateSalaryBreakdownTotals(Validator $validator): void
     {
-        $total = collect($this->input('components', []))
-            ->sum(fn (mixed $component) => is_array($component) && is_numeric($component['amount'] ?? null) ? (float) $component['amount'] : 0);
+        if ($validator->errors()->has('components') || $validator->errors()->has('components.*')) {
+            return;
+        }
 
-        return $total > 0;
+        $amounts = collect($this->input('components', []))
+            ->filter(fn (mixed $component) => is_array($component) && is_numeric($component['amount'] ?? null));
+
+        $deductionComponentIds = SalaryComponent::withTrashed()
+            ->whereIn('id', $amounts->pluck('salary_component_id'))
+            ->where('type', SalaryComponentType::Deduction)
+            ->pluck('id');
+
+        $earnings = '0.00';
+        $deductions = '0.00';
+
+        foreach ($amounts as $component) {
+            if ($deductionComponentIds->contains((int) $component['salary_component_id'])) {
+                $deductions = bcadd($deductions, (string) $component['amount'], 2);
+            } else {
+                $earnings = bcadd($earnings, (string) $component['amount'], 2);
+            }
+        }
+
+        if (bccomp($earnings, '0', 2) !== 1) {
+            $validator->errors()->add('components', 'Enter an amount for at least one earning component.');
+
+            return;
+        }
+
+        if (bccomp($deductions, $earnings, 2) === 1) {
+            $validator->errors()->add('components', 'Salary deductions cannot exceed the earnings.');
+        }
     }
 }

@@ -25,6 +25,7 @@ export type PayrollReportSlip = {
     gross_salary: string;
     tax_amount: string;
     security_amount: string;
+    component_deductions: string;
     deductions: string;
     net_salary: string;
     days_worked: number;
@@ -149,6 +150,16 @@ export function getSlipColumns(): SlipColumn[] {
             render: (row) => (
                 <span className="text-right font-mono text-sm text-destructive">
                     {formatAmount(row.security_amount)}
+                </span>
+            ),
+        },
+        {
+            key: 'component_deductions',
+            header: 'Salary Ded.',
+            className: 'text-right',
+            render: (row) => (
+                <span className="text-right font-mono text-sm text-destructive">
+                    {formatAmount(row.component_deductions)}
                 </span>
             ),
         },

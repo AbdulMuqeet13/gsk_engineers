@@ -32,7 +32,7 @@ type CreateEmployeeDialogProps = {
     onClose: () => void;
     employeeTypes: string[];
     projects: Array<{ id: number; name: string; code: string }>;
-    salaryComponents: Pick<SalaryComponent, 'id' | 'name'>[];
+    salaryComponents: Pick<SalaryComponent, 'id' | 'name' | 'type'>[];
 };
 
 export function CreateEmployeeDialog({

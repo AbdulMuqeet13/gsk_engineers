@@ -8,6 +8,7 @@ use App\Enums\JournalEntryType;
 use App\Enums\LeaveType;
 use App\Enums\RoleEnum;
 use App\Enums\SalaryChangeType;
+use App\Enums\SalaryComponentType;
 use App\Models\AccountHead;
 use App\Models\Attendance;
 use App\Models\Employee;
@@ -42,6 +43,7 @@ class DemoDataSeeder extends Seeder
 
         $users = $this->seedUsers();
         $projects = $this->seedProjects();
+        $this->seedDeductionComponents();
         $employees = $this->seedEmployees($projects);
 
         $this->seedProjectAssignments($employees, $projects);
@@ -219,8 +221,21 @@ class DemoDataSeeder extends Seeder
     }
 
     /**
+     * Add a deduction component so the demo salaries show deductions
+     * alongside the earning components seeded by the migration.
+     */
+    private function seedDeductionComponents(): void
+    {
+        SalaryComponent::firstOrCreate(
+            ['name' => 'Provident Fund'],
+            ['type' => SalaryComponentType::Deduction, 'sort_order' => 10, 'is_active' => true],
+        );
+    }
+
+    /**
      * Record an initial salary split into Basic (70%) and House Rent (30%),
-     * with tax on higher salaries and a 2% security deduction.
+     * with a 5% Provident Fund deduction on Basic, tax on higher salaries
+     * and a 2% security deduction.
      */
     private function recordSalary(Employee $employee, int $grossSalary): Employee
     {
@@ -246,6 +261,7 @@ class DemoDataSeeder extends Seeder
         return [
             ['salary_component_id' => SalaryComponent::where('name', 'Basic Salary')->value('id'), 'amount' => $basic],
             ['salary_component_id' => SalaryComponent::where('name', 'House Rent')->value('id'), 'amount' => bcsub((string) $grossSalary, $basic, 2)],
+            ['salary_component_id' => SalaryComponent::where('name', 'Provident Fund')->value('id'), 'amount' => bcmul($basic, '0.05', 2)],
         ];
     }
 

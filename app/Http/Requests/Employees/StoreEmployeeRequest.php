@@ -52,11 +52,7 @@ class StoreEmployeeRequest extends FormRequest
     public function after(): array
     {
         return [
-            function (Validator $validator) {
-                if (! $validator->errors()->has('components') && ! $this->componentsTotalIsPositive()) {
-                    $validator->errors()->add('components', 'Enter an amount for at least one salary component.');
-                }
-            },
+            fn (Validator $validator) => $this->validateSalaryBreakdownTotals($validator),
         ];
     }
 }

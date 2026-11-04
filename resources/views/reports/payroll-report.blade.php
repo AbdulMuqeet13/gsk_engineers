@@ -13,7 +13,7 @@
 <table style="margin-bottom: 15px;">
     <thead>
         <tr class="section-header">
-            <td colspan="9">{{ $run['reference'] }} — {{ $run['period_start'] }} to {{ $run['period_end'] }} — Total: {{ number_format((float)$run['total_amount'], 2) }}</td>
+            <td colspan="10">{{ $run['reference'] }} — {{ $run['period_start'] }} to {{ $run['period_end'] }} — Total: {{ number_format((float)$run['total_amount'], 2) }}</td>
         </tr>
         <tr>
             <th>Employee</th>
@@ -23,6 +23,7 @@
             <th class="text-right">Gross Salary</th>
             <th class="text-right">Tax</th>
             <th class="text-right">Security</th>
+            <th class="text-right">Salary Ded.</th>
             <th class="text-right">Other Ded.</th>
             <th class="text-right">Net Salary</th>
         </tr>
@@ -37,6 +38,7 @@
                 <td class="text-right font-mono">{{ number_format((float)$slip['gross_salary'], 2) }}</td>
                 <td class="text-right font-mono text-red">{{ number_format((float)$slip['tax_amount'], 2) }}</td>
                 <td class="text-right font-mono text-red">{{ number_format((float)$slip['security_amount'], 2) }}</td>
+                <td class="text-right font-mono text-red">{{ number_format((float)$slip['component_deductions'], 2) }}</td>
                 <td class="text-right font-mono text-red">{{ number_format((float)$slip['deductions'], 2) }}</td>
                 <td class="text-right font-mono font-bold">{{ number_format((float)$slip['net_salary'], 2) }}</td>
             </tr>
