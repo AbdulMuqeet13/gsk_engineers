@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PayslipItemType;
 use App\Enums\RoleEnum;
 use App\Models\AccountHead;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use App\Models\PayslipItem;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -91,5 +93,29 @@ class PayslipDownloadTest extends TestCase
                 'payslip' => $this->payslip,
             ]))
             ->assertNotFound();
+    }
+
+    public function test_payslip_lists_deduction_components_under_deductions_not_earnings(): void
+    {
+        $payslip = Payslip::factory()->withComponentDeductions(1500)->create([
+            'payroll_run_id' => $this->payrollRun->id,
+            'employee_id' => Employee::factory(),
+        ]);
+        PayslipItem::factory()->for($payslip)->create(['type' => PayslipItemType::Component, 'name' => 'Basic Salary', 'amount' => $payslip->gross_salary]);
+        PayslipItem::factory()->for($payslip)->create(['type' => PayslipItemType::Deduction, 'name' => 'Mess Charges', 'amount' => '1500.00']);
+        $payslip->load(['employee', 'items.project']);
+
+        $html = view('payroll.payslip', [
+            'payrollRun' => $this->payrollRun,
+            'payslip' => $payslip,
+            'employee' => $payslip->employee,
+        ])->render();
+
+        $earnings = substr($html, 0, strpos($html, '<strong>Deductions</strong>'));
+        $deductions = substr($html, strpos($html, '<strong>Deductions</strong>'));
+        $this->assertStringContainsString('Basic Salary', $earnings);
+        $this->assertStringNotContainsString('Mess Charges', $earnings);
+        $this->assertStringContainsString('Mess Charges', $deductions);
+        $this->assertStringContainsString('1,500.00', $deductions);
     }
 }

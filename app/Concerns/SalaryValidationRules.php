@@ -42,12 +42,13 @@ trait SalaryValidationRules
     }
 
     /**
-     * Require the earning components to add up to more than zero and the
-     * deduction components not to exceed them.
+     * Require the earning components to add up to more than zero and every
+     * monthly deduction (tax, security and deduction components) together
+     * not to exceed them, so the net salary can never be negative.
      */
     protected function validateSalaryBreakdownTotals(Validator $validator): void
     {
-        if ($validator->errors()->has('components') || $validator->errors()->has('components.*')) {
+        if ($validator->errors()->hasAny(['components', 'components.*', 'tax_amount', 'security_amount'])) {
             return;
         }
 
@@ -60,7 +61,7 @@ trait SalaryValidationRules
             ->pluck('id');
 
         $earnings = '0.00';
-        $deductions = '0.00';
+        $deductions = bcadd((string) ($this->input('tax_amount') ?? '0'), (string) ($this->input('security_amount') ?? '0'), 2);
 
         foreach ($amounts as $component) {
             if ($deductionComponentIds->contains((int) $component['salary_component_id'])) {
@@ -77,7 +78,7 @@ trait SalaryValidationRules
         }
 
         if (bccomp($deductions, $earnings, 2) === 1) {
-            $validator->errors()->add('components', 'Salary deductions cannot exceed the earnings.');
+            $validator->errors()->add('components', 'Total deductions (tax, security and deduction components) cannot exceed the earnings.');
         }
     }
 }

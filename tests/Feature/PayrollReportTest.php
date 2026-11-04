@@ -97,6 +97,18 @@ class PayrollReportTest extends TestCase
         );
     }
 
+    public function test_includes_component_deductions_in_payslip_details(): void
+    {
+        $run = PayrollRun::factory()->approved()->create();
+        Payslip::factory()->withComponentDeductions(1500)->create(['payroll_run_id' => $run->id]);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.payroll'))
+            ->assertInertia(fn ($page) => $page
+                ->where('runs.0.payslips.0.component_deductions', '1500.00')
+            );
+    }
+
     public function test_filters_by_date_range(): void
     {
         PayrollRun::factory()->approved()->create([

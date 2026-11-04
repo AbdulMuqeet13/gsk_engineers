@@ -118,8 +118,105 @@ class EmployeeSalaryTest extends TestCase
             ],
         ]);
 
-        $response->assertSessionHasErrors(['components' => 'Salary deductions cannot exceed the earnings.']);
+        $response->assertSessionHasErrors(['components' => 'Total deductions (tax, security and deduction components) cannot exceed the earnings.']);
         $this->assertSame(1, $employee->salaries()->count());
+    }
+
+    public function test_deduction_components_equal_to_earnings_are_allowed(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $deduction = SalaryComponent::factory()->deduction()->create();
+
+        $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '10000.00'],
+                ['salary_component_id' => $deduction->id, 'amount' => '10000.00'],
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('10000.00', $employee->salaries()->latest('id')->first()->deductions_amount);
+    }
+
+    public function test_tax_security_and_deduction_components_together_cannot_exceed_earnings(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $deduction = SalaryComponent::factory()->deduction()->create();
+
+        $response = $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '10000.00'],
+                ['salary_component_id' => $deduction->id, 'amount' => '6000.00'],
+            ],
+            'tax_amount' => '3000.00',
+            'security_amount' => '1000.01',
+        ]);
+
+        $response->assertSessionHasErrors(['components' => 'Total deductions (tax, security and deduction components) cannot exceed the earnings.']);
+        $this->assertSame(1, $employee->salaries()->count());
+    }
+
+    public function test_only_deduction_amounts_without_earnings_are_rejected(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $deduction = SalaryComponent::factory()->deduction()->create();
+
+        $response = $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => ''],
+                ['salary_component_id' => $deduction->id, 'amount' => '500.00'],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors(['components' => 'Enter an amount for at least one earning component.']);
+        $this->assertSame(1, $employee->salaries()->count());
+    }
+
+    public function test_soft_deleted_deduction_component_cannot_be_used_in_a_new_salary_record(): void
+    {
+        $employee = Employee::factory()->withSalary('50000.00')->create();
+        $deduction = SalaryComponent::factory()->deduction()->create();
+        $deduction->delete();
+
+        $this->actingAs($this->admin())->post(route('employees.salaries.store', $employee), [
+            'effective_date' => '2026-07-01',
+            'change_type' => SalaryChangeType::Revision->value,
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '60000.00'],
+                ['salary_component_id' => $deduction->id, 'amount' => '500.00'],
+            ],
+        ])->assertSessionHasErrors('components.1.salary_component_id');
+
+        $this->assertSame(1, $employee->salaries()->count());
+    }
+
+    public function test_creating_employee_with_deduction_component_records_deductions_amount(): void
+    {
+        $deduction = SalaryComponent::factory()->deduction()->create();
+
+        $this->actingAs($this->admin())->post(route('employees.store'), [
+            'name' => 'Ali Raza',
+            'designation' => 'Site Engineer',
+            'department' => 'Engineering',
+            'type' => 'internal',
+            'date_of_joining' => '2026-01-15',
+            'cnic' => '12345-6789012-3',
+            'address' => 'Lahore',
+            'components' => [
+                ['salary_component_id' => $this->componentId('Basic Salary'), 'amount' => '40000.00'],
+                ['salary_component_id' => $deduction->id, 'amount' => '2000.00'],
+            ],
+            'tax_amount' => '1000.00',
+        ])->assertSessionHasNoErrors();
+
+        $salary = Employee::where('name', 'Ali Raza')->sole()->salaries()->sole();
+        $this->assertSame('40000.00', $salary->gross_salary);
+        $this->assertSame('2000.00', $salary->deductions_amount);
     }
 
     public function test_increment_adds_a_new_salary_record(): void

@@ -81,6 +81,47 @@ class SalaryComponentTest extends TestCase
         $this->assertSame(SalaryComponentType::Earning, $component->fresh()->type);
     }
 
+    public function test_store_rejects_missing_or_unknown_type(): void
+    {
+        $this->actingAs($this->hrUser())
+            ->post(route('salary-components.store'), ['name' => 'Bonus', 'sort_order' => 5])
+            ->assertSessionHasErrors('type');
+
+        $this->actingAs($this->hrUser())
+            ->post(route('salary-components.store'), ['name' => 'Bonus', 'type' => 'loan', 'sort_order' => 5])
+            ->assertSessionHasErrors('type');
+
+        $this->assertDatabaseMissing('salary_components', ['name' => 'Bonus']);
+    }
+
+    public function test_update_can_change_type_of_unused_component(): void
+    {
+        $component = SalaryComponent::factory()->create();
+
+        $this->actingAs($this->hrUser())
+            ->put(route('salary-components.update', $component), ['name' => $component->name, 'type' => 'deduction', 'sort_order' => 3, 'is_active' => true])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(SalaryComponentType::Deduction, $component->fresh()->type);
+    }
+
+    public function test_used_component_can_still_be_renamed_when_type_is_unchanged(): void
+    {
+        $line = EmployeeSalaryComponent::factory()->create();
+        $component = $line->salaryComponent;
+
+        $this->actingAs($this->hrUser())
+            ->put(route('salary-components.update', $component), ['name' => 'Renamed', 'type' => $component->type->value, 'sort_order' => 3, 'is_active' => true])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Renamed', $component->fresh()->name);
+    }
+
+    public function test_existing_default_components_are_earnings(): void
+    {
+        $this->assertSame(4, SalaryComponent::where('type', SalaryComponentType::Earning)->count());
+    }
+
     public function test_deleting_used_component_keeps_existing_salary_amounts(): void
     {
         $line = EmployeeSalaryComponent::factory()->create(['amount' => '12000.00']);

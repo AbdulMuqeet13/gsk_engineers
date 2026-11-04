@@ -219,6 +219,56 @@ class PayrollBreakdownTest extends TestCase
         ], $lines);
     }
 
+    public function test_soft_deleted_deduction_component_still_deducts_from_existing_salary(): void
+    {
+        $employee = $this->employeeWithDeductionComponent('50000.00', '1500.00');
+        $employee->salaries()->sole()->components()->where('amount', '1500.00')->sole()
+            ->salaryComponent->delete();
+
+        $payslip = $this->generatePayroll()->payslips()->sole();
+
+        $this->assertSame('1500.00', $payslip->component_deductions);
+        $this->assertSame('48500.00', $payslip->net_salary);
+        $this->assertSame(PayslipItemType::Deduction, $payslip->items()->where('name', 'Mess Charges')->sole()->type);
+    }
+
+    public function test_approval_journal_balances_with_allowances_tax_security_and_deduction_components(): void
+    {
+        $employee = $this->employeeWithDeductionComponent('70000.00', '2500.00');
+        $employee->salaries()->sole()->update(['tax_amount' => '3000.00', 'security_amount' => '2000.00']);
+        $assignment = ProjectAssignment::factory()->for($employee)->create();
+        AssignmentAllowance::factory()->for($assignment, 'assignment')->create(['name' => 'Site Allowance', 'amount' => '10000.00']);
+
+        $run = $this->generatePayroll();
+        $payslip = $run->payslips()->sole();
+        $this->assertSame('80000.00', $payslip->gross_salary);
+        $this->assertSame('72500.00', $payslip->net_salary);
+
+        $run->update(['status' => PayrollStatus::Submitted]);
+        $this->actingAs($this->user)->post(route('payroll.approve', $run));
+
+        $lines = $run->fresh()->journalEntry->lines()->with('accountHead')->get();
+        $this->assertSame(0, bccomp($lines->sum('debit'), $lines->sum('credit'), 2));
+        $this->assertSame([
+            ['2030', '0.00', '3000.00'],
+            ['2040', '0.00', '2000.00'],
+            ['2050', '0.00', '72500.00'],
+            ['5001', '67500.00', '0.00'],
+            ['5006', '10000.00', '0.00'],
+        ], $lines->map(fn ($line) => [$line->accountHead->code, $line->debit, $line->credit])->sortBy(0)->values()->all());
+    }
+
+    public function test_changing_deduction_component_amount_later_does_not_change_generated_payslip(): void
+    {
+        $employee = $this->employeeWithDeductionComponent('50000.00', '1500.00');
+        $payslip = $this->generatePayroll()->payslips()->sole();
+
+        $employee->salaries()->sole()->components()->where('amount', '1500.00')->update(['amount' => '9000.00']);
+
+        $this->assertSame('1500.00', $payslip->fresh()->component_deductions);
+        $this->assertSame('1500.00', $payslip->items()->where('type', PayslipItemType::Deduction)->sole()->amount);
+    }
+
     public function test_security_balance_counts_only_approved_payroll(): void
     {
         $employee = Employee::factory()->withSalary('50000.00', securityAmount: '2000.00')->create();
