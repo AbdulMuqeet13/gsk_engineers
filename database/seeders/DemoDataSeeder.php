@@ -39,7 +39,7 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
-        $admin = User::where('email', 'test@example.com')->first();
+        $admin = User::role(RoleEnum::SuperAdmin)->firstOrFail();
 
         $users = $this->seedUsers();
         $projects = $this->seedProjects();

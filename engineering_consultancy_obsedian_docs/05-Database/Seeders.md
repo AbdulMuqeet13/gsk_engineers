@@ -6,7 +6,11 @@
 
 1. `RolesAndPermissionsSeeder` -- roles and permissions (must run first)
 2. `ChartOfAccountsSeeder` -- 24 default account heads
-3. `DemoDataSeeder` -- demo projects, employees (with salary records and a mid-year increment), assignments (with allowances), attendance, leave, incomes, expenses, payroll, transfers
+3. Super admin user -- from `SUPER_ADMIN_NAME`, `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD` in `.env` (seeding fails if email/password are missing; existing user is not overwritten)
+
+Earning salary components (Basic Salary, House Rent, Medical, Conveyance) are inserted by the `create_salary_components_table` migration.
+
+`DemoDataSeeder` is **not** run by default. For local demo data run `php artisan db:seed --class=DemoDataSeeder` -- demo projects, employees (with salary records and a mid-year increment), assignments (with allowances), attendance, leave, incomes, expenses, payroll, transfers
 
 ## RolesAndPermissionsSeeder
 
